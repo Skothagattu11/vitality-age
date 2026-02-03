@@ -37,9 +37,10 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
     if (!cardRef.current) return null;
     
     try {
+      // LinkedIn recommended size: 1200x627 (1.91:1 ratio)
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: null,
-        scale: 2,
+        backgroundColor: '#ffffff',
+        scale: 2.5, // Results in ~1200px width
         useCORS: true,
         logging: false,
       });
@@ -107,66 +108,67 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Shareable Card - Screenshot-friendly */}
+        {/* Shareable Card - Screenshot-friendly, LinkedIn size (1.91:1 ratio) */}
         <motion.div
           ref={cardRef}
           id="results-card"
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-muted border border-border shadow-lg"
+          className="relative overflow-hidden rounded-2xl bg-white border border-border shadow-lg"
+          style={{ aspectRatio: '1.91 / 1', width: '100%', maxWidth: '480px' }}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
-          {/* Decorative background elements */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className={cn(
-              "absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-30",
-              isYounger ? "bg-success" : isSame ? "bg-primary" : "bg-warning"
-            )} />
-            <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-3xl opacity-20 bg-secondary" />
-          </div>
+          {/* Subtle gradient background */}
+          <div 
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(250,248,255,1) 50%, rgba(255,252,245,1) 100%)'
+            }}
+          />
 
-          <div className="relative p-6 space-y-6">
+          <div className="relative h-full flex flex-col justify-between p-5">
             {/* Header with branding */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                <span className="font-semibold text-primary">Entropy Age</span>
+                <Sparkles className="w-5 h-5" style={{ color: '#00BCD4' }} />
+                <span className="font-semibold" style={{ color: '#00BCD4' }}>Entropy Age</span>
               </div>
-              <span className="text-xs text-muted-foreground">{formattedDate}</span>
+              <span className="text-xs" style={{ color: '#9CA3AF' }}>{formattedDate}</span>
             </div>
 
             {/* Main age display */}
-            <div className="text-center py-4">
-              <p className="text-sm text-muted-foreground mb-2">Your Functional Biological Age</p>
+            <div className="text-center flex-1 flex flex-col justify-center">
+              <p className="text-sm mb-1" style={{ color: '#6B7280' }}>Your Functional Biological Age</p>
               <motion.div
                 className="relative inline-block"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
               >
-                <span className={cn(
-                  "text-7xl font-bold",
-                  isYounger ? "text-success" : isSame ? "text-primary" : "text-warning"
-                )}>
+                <span 
+                  className="text-6xl font-bold"
+                  style={{ color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B' }}
+                >
                   {functionalAge}
                 </span>
-                <span className="text-2xl text-muted-foreground ml-1">yrs</span>
+                <span className="text-xl ml-1" style={{ color: '#9CA3AF' }}>yrs</span>
               </motion.div>
             </div>
 
             {/* Comparison row */}
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-6 mb-3">
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Actual Age</p>
-                <p className="text-xl font-semibold">{chronologicalAge}</p>
+                <p className="text-xs" style={{ color: '#9CA3AF' }}>Actual Age</p>
+                <p className="text-lg font-semibold" style={{ color: '#374151' }}>{chronologicalAge}</p>
               </div>
               
-              <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium",
-                isYounger ? "bg-success/15 text-success" : 
-                isSame ? "bg-primary/15 text-primary" : 
-                "bg-warning/15 text-warning"
-              )}>
+              <div 
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+                style={{
+                  backgroundColor: isYounger ? 'rgba(34,197,94,0.15)' : isSame ? 'rgba(0,188,212,0.15)' : 'rgba(245,158,11,0.15)',
+                  color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B'
+                }}
+              >
                 {isYounger ? (
                   <TrendingDown className="w-4 h-4" />
                 ) : isSame ? (
@@ -178,14 +180,14 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
               </div>
               
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Functional</p>
-                <p className="text-xl font-semibold">{functionalAge}</p>
+                <p className="text-xs" style={{ color: '#9CA3AF' }}>Functional</p>
+                <p className="text-lg font-semibold" style={{ color: '#374151' }}>{functionalAge}</p>
               </div>
             </div>
 
             {/* Footer branding */}
-            <div className="flex items-center justify-center pt-4 border-t border-border/50">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex items-center justify-center pt-3 border-t" style={{ borderColor: 'rgba(0,0,0,0.05)' }}>
+              <span className="text-xs" style={{ color: '#9CA3AF' }}>
                 Entropy Lifestyle • Functional Age Assessment
               </span>
             </div>
