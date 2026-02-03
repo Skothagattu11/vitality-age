@@ -108,12 +108,12 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Shareable Card - Screenshot-friendly, LinkedIn size (1.91:1 ratio) */}
+        {/* Shareable Card - Screenshot-friendly, 1:1 square for social media */}
         <motion.div
           ref={cardRef}
           id="results-card"
-          className="relative overflow-hidden rounded-2xl bg-white border border-border shadow-lg"
-          style={{ aspectRatio: '1.91 / 1', width: '100%', maxWidth: '480px' }}
+          className="relative overflow-hidden rounded-2xl bg-white border border-border shadow-lg mx-auto"
+          style={{ aspectRatio: '1 / 1', width: '100%', maxWidth: '400px' }}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
@@ -126,7 +126,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
             }}
           />
 
-          <div className="relative h-full flex flex-col justify-between p-5">
+          <div className="relative h-full flex flex-col p-6">
             {/* Header with branding */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -136,57 +136,57 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
               <span className="text-xs" style={{ color: '#9CA3AF' }}>{formattedDate}</span>
             </div>
 
-            {/* Main age display */}
-            <div className="text-center flex-1 flex flex-col justify-center">
-              <p className="text-sm mb-1" style={{ color: '#6B7280' }}>Your Functional Biological Age</p>
+            {/* Main age display - centered */}
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <p className="text-sm mb-2" style={{ color: '#6B7280' }}>Your Functional Biological Age</p>
               <motion.div
-                className="relative inline-block"
+                className="relative inline-block mb-4"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
               >
                 <span 
-                  className="text-6xl font-bold"
+                  className="text-7xl font-bold"
                   style={{ color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B' }}
                 >
                   {functionalAge}
                 </span>
-                <span className="text-xl ml-1" style={{ color: '#9CA3AF' }}>yrs</span>
+                <span className="text-2xl ml-1" style={{ color: '#9CA3AF' }}>yrs</span>
               </motion.div>
-            </div>
 
-            {/* Comparison row */}
-            <div className="flex items-center justify-center gap-6 mb-3">
-              <div className="text-center">
-                <p className="text-xs" style={{ color: '#9CA3AF' }}>Actual Age</p>
-                <p className="text-lg font-semibold" style={{ color: '#374151' }}>{chronologicalAge}</p>
-              </div>
-              
-              <div 
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
-                style={{
-                  backgroundColor: isYounger ? 'rgba(34,197,94,0.15)' : isSame ? 'rgba(0,188,212,0.15)' : 'rgba(245,158,11,0.15)',
-                  color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B'
-                }}
-              >
-                {isYounger ? (
-                  <TrendingDown className="w-4 h-4" />
-                ) : isSame ? (
-                  <Minus className="w-4 h-4" />
-                ) : (
-                  <TrendingUp className="w-4 h-4" />
-                )}
-                {gapText}
-              </div>
-              
-              <div className="text-center">
-                <p className="text-xs" style={{ color: '#9CA3AF' }}>Functional</p>
-                <p className="text-lg font-semibold" style={{ color: '#374151' }}>{functionalAge}</p>
+              {/* Comparison row */}
+              <div className="flex items-center justify-center gap-6">
+                <div className="text-center">
+                  <p className="text-xs" style={{ color: '#9CA3AF' }}>Actual Age</p>
+                  <p className="text-xl font-semibold" style={{ color: '#374151' }}>{chronologicalAge}</p>
+                </div>
+                
+                <div 
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+                  style={{
+                    backgroundColor: isYounger ? 'rgba(34,197,94,0.15)' : isSame ? 'rgba(0,188,212,0.15)' : 'rgba(245,158,11,0.15)',
+                    color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B'
+                  }}
+                >
+                  {isYounger ? (
+                    <TrendingDown className="w-4 h-4" />
+                  ) : isSame ? (
+                    <Minus className="w-4 h-4" />
+                  ) : (
+                    <TrendingUp className="w-4 h-4" />
+                  )}
+                  {gapText}
+                </div>
+                
+                <div className="text-center">
+                  <p className="text-xs" style={{ color: '#9CA3AF' }}>Functional</p>
+                  <p className="text-xl font-semibold" style={{ color: '#374151' }}>{functionalAge}</p>
+                </div>
               </div>
             </div>
 
             {/* Footer branding */}
-            <div className="flex items-center justify-center pt-3 border-t" style={{ borderColor: 'rgba(0,0,0,0.05)' }}>
+            <div className="flex items-center justify-center pt-4 border-t" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
               <span className="text-xs" style={{ color: '#9CA3AF' }}>
                 Entropy Lifestyle • Functional Age Assessment
               </span>
