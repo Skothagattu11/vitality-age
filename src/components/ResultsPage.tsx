@@ -13,6 +13,8 @@ import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { ComingSoonCard } from './ComingSoonCard';
 import { NotifyModal } from './NotifyModal';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 const EXPLORE_TOOLS = [
   {
@@ -75,6 +77,48 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
+  // Session tracking for responses
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    return localStorage.getItem('entropy-session-id');
+  });
+  const [responseSaved, setResponseSaved] = useState(false);
+
+  // Save assessment response to database on mount
+  useEffect(() => {
+    const saveResponse = async () => {
+      if (responseSaved) return;
+      
+      try {
+        const { data: insertedData, error } = await supabase
+          .from('assessment_responses')
+          .insert({
+            functional_age: functionalAge,
+            chronological_age: chronologicalAge,
+            gap: gap,
+            top_drivers: JSON.parse(JSON.stringify(topDrivers)) as Json,
+            assessment_data: JSON.parse(JSON.stringify(data)) as Json,
+          })
+          .select('session_id')
+          .single();
+        
+        if (error) {
+          console.error('Failed to save assessment response:', error);
+          return;
+        }
+        
+        if (insertedData?.session_id) {
+          setSessionId(insertedData.session_id);
+          localStorage.setItem('entropy-session-id', insertedData.session_id);
+        }
+        setResponseSaved(true);
+      } catch (err) {
+        console.error('Failed to save assessment response:', err);
+      }
+    };
+    
+    saveResponse();
+  }, [functionalAge, chronologicalAge, gap, topDrivers, data, responseSaved]);
+
   // Explore tools state
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
   const [selectedTool, setSelectedTool] = useState<typeof EXPLORE_TOOLS[0] | null>(null);
@@ -83,7 +127,6 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   // Load subscribed tools from database on mount
   useEffect(() => {
     const loadSubscriptions = async () => {
-      // We can't query by email since we don't know it, so we use localStorage as a cache
       const cached = localStorage.getItem('entropy-subscribed-tools');
       if (cached) {
         setSubscribedTools(JSON.parse(cached));
@@ -97,13 +140,25 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
     setNotifyModalOpen(true);
   };
 
-  const handleSubscriptionSuccess = () => {
+  const handleSubscriptionSuccess = async (email: string) => {
     if (!selectedTool) return;
     
     // Update local state and cache
     const newSubscribed = [...subscribedTools, selectedTool.id];
     setSubscribedTools(newSubscribed);
     localStorage.setItem('entropy-subscribed-tools', JSON.stringify(newSubscribed));
+    
+    // Link email to the assessment response if we have a session
+    if (sessionId) {
+      try {
+        await supabase
+          .from('assessment_responses')
+          .update({ email })
+          .eq('session_id', sessionId);
+      } catch (err) {
+        console.error('Failed to link email to response:', err);
+      }
+    }
     
     setNotifyModalOpen(false);
     toast.success("✅ You'll be notified when this tool becomes available.");
@@ -919,6 +974,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
           toolId={selectedTool?.id || ''}
           toolName={selectedTool?.name || ''}
           toolDescription={selectedTool?.fullDescription || ''}
+          sessionId={sessionId}
           onSuccess={handleSubscriptionSuccess}
         />
       </motion.div>

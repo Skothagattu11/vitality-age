@@ -14,23 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_responses: {
+        Row: {
+          assessment_data: Json
+          chronological_age: number
+          created_at: string
+          email: string | null
+          functional_age: number
+          gap: number
+          id: string
+          session_id: string
+          top_drivers: Json
+        }
+        Insert: {
+          assessment_data: Json
+          chronological_age: number
+          created_at?: string
+          email?: string | null
+          functional_age: number
+          gap: number
+          id?: string
+          session_id?: string
+          top_drivers: Json
+        }
+        Update: {
+          assessment_data?: Json
+          chronological_age?: number
+          created_at?: string
+          email?: string | null
+          functional_age?: number
+          gap?: number
+          id?: string
+          session_id?: string
+          top_drivers?: Json
+        }
+        Relationships: []
+      }
       tool_subscriptions: {
         Row: {
           created_at: string
           email: string
           id: string
+          session_id: string | null
           tool_id: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
+          session_id?: string | null
           tool_id: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          session_id?: string | null
           tool_id?: string
         }
         Relationships: []
