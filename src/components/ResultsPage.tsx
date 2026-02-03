@@ -2,14 +2,14 @@ import { motion } from 'framer-motion';
 import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, ChevronDown, Sparkles, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AssessmentData } from '@/types/assessment';
-import { exportResults } from '@/utils/scoring';
 import { cn } from '@/lib/utils';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import html2canvas from 'html2canvas';
 
 interface ResultsPageProps {
   result: AssessmentResult;
@@ -20,6 +20,8 @@ interface ResultsPageProps {
 export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   const { functionalAge, chronologicalAge, gap, topDrivers } = result;
   const [showInsights, setShowInsights] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   
   const isYounger = gap < 0;
   const isSame = gap === 0;
@@ -29,17 +31,64 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
       ? `${Math.abs(gap)}yr younger` 
       : `${gap}yr older`;
 
-  const handleExport = () => {
-    const jsonData = exportResults(data, result);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `entropy-age-results-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const captureCard = async (): Promise<string | null> => {
+    if (!cardRef.current) return null;
+    
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      return canvas.toDataURL('image/png');
+    } catch (error) {
+      console.error('Failed to capture card:', error);
+      return null;
+    }
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const imageData = await captureCard();
+      if (imageData) {
+        const link = document.createElement('a');
+        link.download = `entropy-age-${functionalAge}-${new Date().toISOString().split('T')[0]}.png`;
+        link.href = imageData;
+        link.click();
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleShare = async () => {
+    setIsExporting(true);
+    try {
+      const imageData = await captureCard();
+      if (imageData && navigator.share) {
+        // Convert base64 to blob for sharing
+        const response = await fetch(imageData);
+        const blob = await response.blob();
+        const file = new File([blob], 'entropy-age-results.png', { type: 'image/png' });
+        
+        await navigator.share({
+          title: 'My Entropy Age Results',
+          text: `My functional biological age is ${functionalAge}! (${gapText} than my actual age of ${chronologicalAge})`,
+          files: [file],
+        });
+      } else if (imageData) {
+        // Fallback: download the image
+        handleExport();
+      }
+    } catch (error) {
+      console.error('Share failed:', error);
+      // Fallback to download
+      handleExport();
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const formattedDate = new Date().toLocaleDateString('en-US', {
@@ -58,6 +107,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
       >
         {/* Shareable Card - Screenshot-friendly */}
         <motion.div
+          ref={cardRef}
           id="results-card"
           className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-muted border border-border shadow-lg"
           initial={{ opacity: 0, scale: 0.95 }}
@@ -131,21 +181,10 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
               </div>
             </div>
 
-            {/* Brief message */}
-            <p className="text-center text-sm text-muted-foreground px-4">
-              {isYounger ? (
-                <>Your body is performing like someone younger. Great work!</>
-              ) : isSame ? (
-                <>Your body is on track for your age. Keep it up!</>
-              ) : (
-                <>Focus on the areas below to improve your functional age.</>
-              )}
-            </p>
-
             {/* Footer branding */}
-            <div className="flex items-center justify-center pt-2 border-t border-border/50">
-              <span className="text-[10px] text-muted-foreground/60">
-                entropyage.app • Functional Age Assessment
+            <div className="flex items-center justify-center pt-4 border-t border-border/50">
+              <span className="text-xs text-muted-foreground">
+                Entropy Lifestyle • Functional Age Assessment
               </span>
             </div>
           </div>
@@ -267,26 +306,20 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
             <Button
               variant="outline"
               onClick={handleExport}
+              disabled={isExporting}
               className="flex-1"
             >
               <Download className="w-4 h-4 mr-2" />
-              Export
+              {isExporting ? 'Saving...' : 'Save Image'}
             </Button>
             <Button
               variant="outline"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: 'My Entropy Age Results',
-                    text: `My functional biological age is ${functionalAge}! (${gapText} than my actual age of ${chronologicalAge})`,
-                    url: window.location.href,
-                  });
-                }
-              }}
+              onClick={handleShare}
+              disabled={isExporting}
               className="flex-1"
             >
               <Share2 className="w-4 h-4 mr-2" />
-              Share
+              {isExporting ? 'Sharing...' : 'Share'}
             </Button>
           </div>
           <Button
