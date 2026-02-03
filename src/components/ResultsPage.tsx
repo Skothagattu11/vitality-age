@@ -51,8 +51,26 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   const [showInsights, setShowInsights] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [selectedDesign, setSelectedDesign] = useState<number>(0);
+  const [cardScale, setCardScale] = useState(1);
   const cardRef = useRef<HTMLDivElement>(null);
-  
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate card scale based on container width
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const cardWidth = 400; // Fixed card width
+        const scale = Math.min(containerWidth / cardWidth, 1);
+        setCardScale(scale);
+      }
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
+
   // Coming Soon state
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
   const [selectedTool, setSelectedTool] = useState<typeof COMING_SOON_TOOLS[0] | null>(null);
@@ -99,7 +117,13 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   const captureCard = async (): Promise<string | null> => {
     if (!cardRef.current) return null;
 
+    // Store original scale
+    const originalTransform = cardRef.current.style.transform;
+
     try {
+      // Reset scale to 1 for capturing
+      cardRef.current.style.transform = 'scale(1)';
+
       // Apply export-only adjustments for medal design
       const medalTextContainer = cardRef.current.querySelector('.medal-text-container') as HTMLElement;
       const medalBioText = cardRef.current.querySelector('.medal-bio-text') as HTMLElement;
@@ -115,14 +139,14 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         scale: 2.5,
         useCORS: true,
         logging: false,
-        width: cardRef.current.offsetWidth,
-        height: cardRef.current.offsetHeight,
+        width: 400,
+        height: 400,
         x: 0,
         y: 0,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: cardRef.current.offsetWidth,
-        windowHeight: cardRef.current.offsetHeight,
+        windowWidth: 400,
+        windowHeight: 400,
       });
 
       // Revert the adjustments
@@ -133,10 +157,16 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         medalBioText.style.marginTop = '4px';
       }
 
+      // Restore original scale
+      cardRef.current.style.transform = originalTransform;
+
       return canvas.toDataURL('image/png');
     } catch (error) {
       console.error('Failed to capture card:', error);
       // Make sure to revert even on error
+      if (cardRef.current) {
+        cardRef.current.style.transform = originalTransform;
+      }
       const medalTextContainer = cardRef.current?.querySelector('.medal-text-container') as HTMLElement;
       const medalBioText = cardRef.current?.querySelector('.medal-bio-text') as HTMLElement;
       if (medalTextContainer) {
@@ -206,37 +236,47 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Card Design Carousel */}
-        <div className="relative px-10 sm:px-6">
-          {/* Navigation Arrows */}
-          <button
-            onClick={() => setSelectedDesign(prev => (prev - 1 + CARD_DESIGNS.length) % CARD_DESIGNS.length)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-card shadow-md flex items-center justify-center hover:bg-muted transition-colors border border-border"
-          >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-          </button>
-          <button
-            onClick={() => setSelectedDesign(prev => (prev + 1) % CARD_DESIGNS.length)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-card shadow-md flex items-center justify-center hover:bg-muted transition-colors border border-border"
-          >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-          </button>
-
-          {/* Shareable Card */}
+        {/* Card Design Carousel with Swipe */}
+        <div
+          ref={containerRef}
+          className="relative w-full overflow-hidden touch-pan-y flex flex-col items-center"
+        >
+          {/* Swipeable container */}
           <motion.div
-            ref={cardRef}
-            id="results-card"
-            className="relative overflow-hidden rounded-2xl mx-auto w-full max-w-[400px]"
-            style={{
-              aspectRatio: '1 / 1',
-              background: '#FFFFFF',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (info.offset.x > 50) {
+                setSelectedDesign(prev => (prev - 1 + CARD_DESIGNS.length) % CARD_DESIGNS.length);
+              } else if (info.offset.x < -50) {
+                setSelectedDesign(prev => (prev + 1) % CARD_DESIGNS.length);
+              }
             }}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            key={selectedDesign}
+            className="cursor-grab active:cursor-grabbing"
+            style={{
+              width: `${400 * cardScale}px`,
+              height: `${400 * cardScale}px`,
+            }}
           >
+            {/* Shareable Card - Fixed size, scales to fit */}
+            <motion.div
+              ref={cardRef}
+              id="results-card"
+              className="relative overflow-hidden rounded-2xl"
+              style={{
+                width: '400px',
+                height: '400px',
+                background: '#FFFFFF',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                transform: `scale(${cardScale})`,
+                transformOrigin: 'top left',
+              }}
+              initial={{ opacity: 0, scale: 0.95 * cardScale }}
+              animate={{ opacity: 1, scale: cardScale }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              key={selectedDesign}
+            >
             {selectedDesign === 0 ? (
               /* Certificate Design */
               <>
@@ -470,7 +510,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                         color: '#9CA3AF',
                       }}
                     >
-                      entropylifestyle.com
+                      EntropyAge.com
                     </span>
                   </div>
                 </div>
@@ -675,12 +715,13 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                         color: '#A1887F',
                       }}
                     >
-                      entropylifestyle.com
+                      EntropyAge.com
                     </span>
                   </div>
                 </div>
               </>
             )}
+          </motion.div>
           </motion.div>
 
           {/* Design selector dots */}
@@ -809,40 +850,12 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
           </Collapsible>
         </motion.div>
 
-        {/* Coming Soon Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.65 }}
-          className="space-y-4"
-        >
-          <h3 className="text-lg font-semibold text-center text-foreground">Coming Soon</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {COMING_SOON_TOOLS.map((tool) => (
-              <ComingSoonCard
-                key={tool.id}
-                tool={tool}
-                isSubscribed={subscribedTools.includes(tool.id)}
-                onNotifyClick={() => handleNotifyClick(tool)}
-              />
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Notify Modal */}
-        <NotifyModal
-          open={notifyModalOpen}
-          onOpenChange={setNotifyModalOpen}
-          toolName={selectedTool?.name || ''}
-          onSubmit={handleEmailSubmit}
-        />
-
-        {/* Actions */}
+        {/* Actions - Save, Share, Retake */}
         <motion.div
           className="flex flex-col gap-3 pt-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.65 }}
         >
           <div className="flex gap-3">
             <Button
@@ -873,6 +886,34 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
             Retake Assessment
           </Button>
         </motion.div>
+
+        {/* Coming Soon Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="space-y-4"
+        >
+          <h3 className="text-lg font-semibold text-center text-foreground">Coming Soon</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {COMING_SOON_TOOLS.map((tool) => (
+              <ComingSoonCard
+                key={tool.id}
+                tool={tool}
+                isSubscribed={subscribedTools.includes(tool.id)}
+                onNotifyClick={() => handleNotifyClick(tool)}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Notify Modal */}
+        <NotifyModal
+          open={notifyModalOpen}
+          onOpenChange={setNotifyModalOpen}
+          toolName={selectedTool?.name || ''}
+          onSubmit={handleEmailSubmit}
+        />
       </motion.div>
     </div>
   );
