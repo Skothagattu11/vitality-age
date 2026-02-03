@@ -5,11 +5,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Bell } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const emailSchema = z.object({
   email: z
@@ -22,16 +21,25 @@ const emailSchema = z.object({
 interface NotifyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  toolId: string;
   toolName: string;
-  onSubmit: (email: string) => void;
+  toolDescription: string;
+  onSuccess: () => void;
 }
 
-export function NotifyModal({ open, onOpenChange, toolName, onSubmit }: NotifyModalProps) {
+export function NotifyModal({ 
+  open, 
+  onOpenChange, 
+  toolId,
+  toolName, 
+  toolDescription,
+  onSuccess 
+}: NotifyModalProps) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -42,12 +50,34 @@ export function NotifyModal({ open, onOpenChange, toolName, onSubmit }: NotifyMo
     }
 
     setIsSubmitting(true);
-    // Simulate brief delay for UX
-    setTimeout(() => {
-      onSubmit(result.data.email);
+    
+    try {
+      const { error: insertError } = await supabase
+        .from('tool_subscriptions')
+        .insert({
+          email: result.data.email,
+          tool_id: toolId,
+        });
+      
+      if (insertError) {
+        // Check for unique constraint violation
+        if (insertError.code === '23505') {
+          setError('This email is already subscribed for this tool');
+        } else {
+          console.error('Subscription error:', insertError);
+          setError('Something went wrong. Please try again.');
+        }
+        return;
+      }
+      
+      onSuccess();
       setEmail('');
+    } catch (err) {
+      console.error('Subscription error:', err);
+      setError('Something went wrong. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 300);
+    }
   };
 
   return (
@@ -55,13 +85,17 @@ export function NotifyModal({ open, onOpenChange, toolName, onSubmit }: NotifyMo
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{toolName}</DialogTitle>
-          <DialogDescription>
-            Get notified when this age tool becomes available.
-          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          {toolDescription}
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">
+              Be the first to access this age metric
+            </label>
             <Input
               type="email"
               placeholder="Enter your email"
@@ -83,8 +117,7 @@ export function NotifyModal({ open, onOpenChange, toolName, onSubmit }: NotifyMo
             className="w-full"
             disabled={isSubmitting || !email.trim()}
           >
-            <Bell className="w-4 h-4 mr-2" />
-            {isSubmitting ? 'Submitting...' : 'Notify me'}
+            {isSubmitting ? 'Submitting...' : 'Notify me when this is ready'}
           </Button>
 
           <p className="text-xs text-muted-foreground text-center">

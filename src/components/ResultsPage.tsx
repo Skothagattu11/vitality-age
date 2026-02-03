@@ -14,26 +14,30 @@ import { toast } from 'sonner';
 import { ComingSoonCard } from './ComingSoonCard';
 import { NotifyModal } from './NotifyModal';
 
-const COMING_SOON_TOOLS = [
+const EXPLORE_TOOLS = [
   {
     id: 'metabolic',
     name: 'Metabolic Age',
     description: 'Energy usage and metabolic efficiency',
+    fullDescription: 'Metabolic Age measures how efficiently your body converts food into energy and maintains cellular function. It reflects mitochondrial health, insulin sensitivity, and overall metabolic flexibility—key markers that influence how you age at a cellular level.',
   },
   {
     id: 'brain',
     name: 'Brain Age',
     description: 'Cognitive load and nervous system resilience',
+    fullDescription: 'Brain Age assesses cognitive processing speed, memory retention, and nervous system adaptability. It evaluates how well your brain handles stress, learns new information, and maintains neuroplasticity over time.',
   },
   {
     id: 'cardiovascular',
     name: 'Cardiovascular Age',
     description: 'Heart efficiency and recovery capacity',
+    fullDescription: 'Cardiovascular Age evaluates your heart\'s pumping efficiency, arterial flexibility, and recovery capacity after exertion. These factors determine how well your cardiovascular system supports daily activities and responds to physical demands.',
   },
   {
     id: 'longevity',
     name: 'Longevity Age Index',
     description: 'Long-term resilience and aging trajectory',
+    fullDescription: 'The Longevity Age Index combines multiple biomarkers and functional assessments to project your overall aging trajectory. It identifies patterns that correlate with healthy lifespan extension and resilience against age-related decline.',
   },
 ];
 
@@ -71,36 +75,37 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  // Coming Soon state
+  // Explore tools state
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<typeof COMING_SOON_TOOLS[0] | null>(null);
-  const [subscribedTools, setSubscribedTools] = useState<string[]>(() => {
-    const saved = localStorage.getItem('entropy-subscribed-tools');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [selectedTool, setSelectedTool] = useState<typeof EXPLORE_TOOLS[0] | null>(null);
+  const [subscribedTools, setSubscribedTools] = useState<string[]>([]);
 
-  // Persist subscribed tools to localStorage
+  // Load subscribed tools from database on mount
   useEffect(() => {
-    localStorage.setItem('entropy-subscribed-tools', JSON.stringify(subscribedTools));
-  }, [subscribedTools]);
+    const loadSubscriptions = async () => {
+      // We can't query by email since we don't know it, so we use localStorage as a cache
+      const cached = localStorage.getItem('entropy-subscribed-tools');
+      if (cached) {
+        setSubscribedTools(JSON.parse(cached));
+      }
+    };
+    loadSubscriptions();
+  }, []);
 
-  const handleNotifyClick = (tool: typeof COMING_SOON_TOOLS[0]) => {
+  const handleViewMore = (tool: typeof EXPLORE_TOOLS[0]) => {
     setSelectedTool(tool);
     setNotifyModalOpen(true);
   };
 
-  const handleEmailSubmit = (email: string) => {
+  const handleSubscriptionSuccess = () => {
     if (!selectedTool) return;
     
-    // Store email in localStorage (can be connected to backend later)
-    const subscriptions = JSON.parse(localStorage.getItem('entropy-email-subscriptions') || '{}');
-    subscriptions[selectedTool.id] = { email, subscribedAt: new Date().toISOString() };
-    localStorage.setItem('entropy-email-subscriptions', JSON.stringify(subscriptions));
+    // Update local state and cache
+    const newSubscribed = [...subscribedTools, selectedTool.id];
+    setSubscribedTools(newSubscribed);
+    localStorage.setItem('entropy-subscribed-tools', JSON.stringify(newSubscribed));
     
-    // Mark tool as subscribed
-    setSubscribedTools(prev => [...prev, selectedTool.id]);
     setNotifyModalOpen(false);
-    
     toast.success("✅ You'll be notified when this tool becomes available.");
   };
   
@@ -887,21 +892,21 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
           </Button>
         </motion.div>
 
-        {/* Coming Soon Section */}
+        {/* Explore Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
           className="space-y-4"
         >
-          <h3 className="text-lg font-semibold text-center text-foreground">Coming Soon</h3>
+          <h3 className="text-lg font-semibold text-center text-foreground">Explore</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {COMING_SOON_TOOLS.map((tool) => (
+            {EXPLORE_TOOLS.map((tool) => (
               <ComingSoonCard
                 key={tool.id}
                 tool={tool}
                 isSubscribed={subscribedTools.includes(tool.id)}
-                onNotifyClick={() => handleNotifyClick(tool)}
+                onViewMore={() => handleViewMore(tool)}
               />
             ))}
           </div>
@@ -911,8 +916,10 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         <NotifyModal
           open={notifyModalOpen}
           onOpenChange={setNotifyModalOpen}
+          toolId={selectedTool?.id || ''}
           toolName={selectedTool?.name || ''}
-          onSubmit={handleEmailSubmit}
+          toolDescription={selectedTool?.fullDescription || ''}
+          onSuccess={handleSubscriptionSuccess}
         />
       </motion.div>
     </div>
