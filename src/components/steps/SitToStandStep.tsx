@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { SitToStandResult, SkippedStep } from '@/types/assessment';
-import { cn } from '@/lib/utils';
 
 interface SitToStandStepProps {
   onComplete: (result: SitToStandResult) => void;
@@ -18,9 +17,8 @@ interface SitToStandStepProps {
 export function SitToStandStep({ onComplete, onSkip, onBack }: SitToStandStepProps) {
   const [reps, setReps] = useState<string>('');
   const [exertion, setExertion] = useState<number>(5);
-  const [timerCompleted, setTimerCompleted] = useState(false);
 
-  const canProgress = reps !== '' && parseInt(reps) >= 0 && timerCompleted;
+  const canProgress = reps !== '' && parseInt(reps) >= 0;
 
   const handleNext = () => {
     if (!canProgress) return;
@@ -65,69 +63,62 @@ export function SitToStandStep({ onComplete, onSkip, onBack }: SitToStandStepPro
             <div className="text-center">
               <h2 className="text-xl font-semibold mb-2">30-Second Chair Test</h2>
               <p className="text-muted-foreground text-sm">
-                Complete the timed test, then enter your results
+                Use the timer as a guide, then enter your results below
               </p>
             </div>
 
             {/* Timer */}
             <Timer
               duration={30}
-              onComplete={() => setTimerCompleted(true)}
+              onComplete={() => {}}
               size="lg"
               className="py-4"
             />
 
-            {timerCompleted && (
-              <div className="space-y-6 animate-fade-in-up">
-                {/* Reps input */}
-                <div className="space-y-2">
-                  <Label htmlFor="reps" className="text-base font-medium">
-                    How many sit-to-stands did you complete?
-                  </Label>
-                  <Input
-                    id="reps"
-                    type="number"
-                    min={0}
-                    max={50}
-                    value={reps}
-                    onChange={(e) => setReps(e.target.value)}
-                    placeholder="Enter number of reps"
-                    className="h-14 text-2xl text-center font-bold"
-                  />
-                </div>
-
-                {/* Exertion slider */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-baseline">
-                    <Label className="text-base font-medium">
-                      How hard did that feel? (0-10)
-                    </Label>
-                    <span className="text-2xl font-bold text-primary">{exertion}</span>
-                  </div>
-                  <Slider
-                    value={[exertion]}
-                    onValueChange={(v) => setExertion(v[0])}
-                    max={10}
-                    min={0}
-                    step={1}
-                    className="py-2"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>None</span>
-                    <span>Maximum</span>
-                  </div>
-                  <p className="text-sm text-center text-muted-foreground">
-                    {exertionLabels[exertion]}
-                  </p>
-                </div>
+            {/* Results input - always visible */}
+            <div className="space-y-6">
+              {/* Reps input */}
+              <div className="space-y-2">
+                <Label htmlFor="reps" className="text-base font-medium">
+                  How many sit-to-stands did you complete?
+                </Label>
+                <Input
+                  id="reps"
+                  type="number"
+                  min={0}
+                  max={50}
+                  value={reps}
+                  onChange={(e) => setReps(e.target.value)}
+                  placeholder="Enter number of reps"
+                  className="h-14 text-2xl text-center font-bold"
+                />
               </div>
-            )}
 
-            {!timerCompleted && (
-              <p className="text-center text-sm text-muted-foreground">
-                Start the timer to begin the test
-              </p>
-            )}
+              {/* Exertion slider */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-baseline">
+                  <Label className="text-base font-medium">
+                    How hard did that feel? (0-10)
+                  </Label>
+                  <span className="text-2xl font-bold text-primary">{exertion}</span>
+                </div>
+                <Slider
+                  value={[exertion]}
+                  onValueChange={(v) => setExertion(v[0])}
+                  max={10}
+                  min={0}
+                  step={1}
+                  className="py-2"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>None</span>
+                  <span>Maximum</span>
+                </div>
+                <p className="text-sm text-center text-muted-foreground">
+                  {exertionLabels[exertion]}
+                </p>
+              </div>
+            </div>
           </div>
         </StepWrapper>
       </div>

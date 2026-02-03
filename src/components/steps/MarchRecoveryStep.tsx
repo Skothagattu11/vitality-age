@@ -16,12 +16,11 @@ interface MarchRecoveryStepProps {
 }
 
 export function MarchRecoveryStep({ onComplete, onSkip, onBack }: MarchRecoveryStepProps) {
-  const [timerCompleted, setTimerCompleted] = useState(false);
   const [breathingDifficulty, setBreathingDifficulty] = useState(5);
   const [recoveryTime, setRecoveryTime] = useState<RecoveryTime | ''>('');
   const [noseBreathing, setNoseBreathing] = useState(5);
 
-  const canProgress = timerCompleted && recoveryTime !== '';
+  const canProgress = recoveryTime !== '';
 
   const handleNext = () => {
     if (!canProgress) return;
@@ -70,94 +69,87 @@ export function MarchRecoveryStep({ onComplete, onSkip, onBack }: MarchRecoveryS
             <div className="text-center">
               <h2 className="text-xl font-semibold mb-2">60-Second March</h2>
               <p className="text-muted-foreground text-sm">
-                March in place with high knees for 60 seconds
+                Use the timer as a guide, then answer the questions below
               </p>
             </div>
 
             {/* Timer */}
             <Timer
               duration={60}
-              onComplete={() => setTimerCompleted(true)}
+              onComplete={() => {}}
               size="md"
               className="py-2"
             />
 
-            {timerCompleted && (
-              <div className="space-y-6 animate-fade-in-up">
-                {/* Breathing difficulty */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-baseline">
-                    <Label className="text-base font-medium">
-                      How hard was breathing during?
-                    </Label>
-                    <span className="text-xl font-bold text-primary">{breathingDifficulty}/10</span>
-                  </div>
-                  <Slider
-                    value={[breathingDifficulty]}
-                    onValueChange={(v) => setBreathingDifficulty(v[0])}
-                    max={10}
-                    min={0}
-                    step={1}
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Easy</span>
-                    <span>Very Hard</span>
-                  </div>
-                </div>
-
-                {/* Recovery time */}
-                <div className="space-y-3">
+            {/* Results input - always visible */}
+            <div className="space-y-6">
+              {/* Breathing difficulty */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-baseline">
                   <Label className="text-base font-medium">
-                    How long until breathing felt normal?
+                    How hard was breathing during?
                   </Label>
-                  <RadioGroup value={recoveryTime} onValueChange={(v) => setRecoveryTime(v as RecoveryTime)}>
-                    <div className="grid grid-cols-2 gap-2">
-                      {recoveryOptions.map((option) => (
-                        <Label
-                          key={option.value}
-                          className={cn(
-                            'flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all text-sm',
-                            recoveryTime === option.value
-                              ? 'border-primary bg-primary/5'
-                              : 'border-border hover:border-primary/50'
-                          )}
-                        >
-                          <RadioGroupItem value={option.value} />
-                          <span>{option.label}</span>
-                        </Label>
-                      ))}
-                    </div>
-                  </RadioGroup>
+                  <span className="text-xl font-bold text-primary">{breathingDifficulty}/10</span>
                 </div>
-
-                {/* Nose breathing */}
-                <div className="space-y-3">
-                  <div className="flex justify-between items-baseline">
-                    <Label className="text-base font-medium">
-                      Could you breathe through your nose?
-                    </Label>
-                    <span className="text-xl font-bold text-primary">{noseBreathing}/10</span>
-                  </div>
-                  <Slider
-                    value={[noseBreathing]}
-                    onValueChange={(v) => setNoseBreathing(v[0])}
-                    max={10}
-                    min={0}
-                    step={1}
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Not at all</span>
-                    <span>Completely</span>
-                  </div>
+                <Slider
+                  value={[breathingDifficulty]}
+                  onValueChange={(v) => setBreathingDifficulty(v[0])}
+                  max={10}
+                  min={0}
+                  step={1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Easy</span>
+                  <span>Very Hard</span>
                 </div>
               </div>
-            )}
 
-            {!timerCompleted && (
-              <p className="text-center text-sm text-muted-foreground">
-                Start the timer and march with high knees
-              </p>
-            )}
+              {/* Recovery time */}
+              <div className="space-y-3">
+                <Label className="text-base font-medium">
+                  How long until breathing felt normal?
+                </Label>
+                <RadioGroup value={recoveryTime} onValueChange={(v) => setRecoveryTime(v as RecoveryTime)}>
+                  <div className="grid grid-cols-2 gap-2">
+                    {recoveryOptions.map((option) => (
+                      <Label
+                        key={option.value}
+                        className={cn(
+                          'flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all text-sm',
+                          recoveryTime === option.value
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/50'
+                        )}
+                      >
+                        <RadioGroupItem value={option.value} />
+                        <span>{option.label}</span>
+                      </Label>
+                    ))}
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Nose breathing */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-baseline">
+                  <Label className="text-base font-medium">
+                    Could you breathe through your nose?
+                  </Label>
+                  <span className="text-xl font-bold text-primary">{noseBreathing}/10</span>
+                </div>
+                <Slider
+                  value={[noseBreathing]}
+                  onValueChange={(v) => setNoseBreathing(v[0])}
+                  max={10}
+                  min={0}
+                  step={1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Not at all</span>
+                  <span>Completely</span>
+                </div>
+              </div>
+            </div>
           </div>
         </StepWrapper>
       </div>
