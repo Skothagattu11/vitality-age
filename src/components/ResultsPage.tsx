@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, ChevronDown, Sparkles, Share2 } from 'lucide-react';
+import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AssessmentData } from '@/types/assessment';
 import { cn } from '@/lib/utils';
@@ -17,10 +17,14 @@ interface ResultsPageProps {
   onRetake: () => void;
 }
 
+const CARD_DESIGNS = ['Certificate', 'Medal'] as const;
+type CardDesign = typeof CARD_DESIGNS[number];
+
 export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   const { functionalAge, chronologicalAge, gap, topDrivers } = result;
   const [showInsights, setShowInsights] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedDesign, setSelectedDesign] = useState<number>(0);
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Calculate the actual difference correctly
@@ -35,18 +39,53 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
 
   const captureCard = async (): Promise<string | null> => {
     if (!cardRef.current) return null;
-    
+
     try {
-      // LinkedIn recommended size: 1200x627 (1.91:1 ratio)
+      // Apply export-only adjustments for medal design
+      const medalTextContainer = cardRef.current.querySelector('.medal-text-container') as HTMLElement;
+      const medalBioText = cardRef.current.querySelector('.medal-bio-text') as HTMLElement;
+      if (medalTextContainer) {
+        medalTextContainer.style.marginTop = '-15px';
+      }
+      if (medalBioText) {
+        medalBioText.style.marginTop = '12px';
+      }
+
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2.5, // Results in ~1200px width
+        backgroundColor: null,
+        scale: 2.5,
         useCORS: true,
         logging: false,
+        width: cardRef.current.offsetWidth,
+        height: cardRef.current.offsetHeight,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: cardRef.current.offsetWidth,
+        windowHeight: cardRef.current.offsetHeight,
       });
+
+      // Revert the adjustments
+      if (medalTextContainer) {
+        medalTextContainer.style.marginTop = '0';
+      }
+      if (medalBioText) {
+        medalBioText.style.marginTop = '4px';
+      }
+
       return canvas.toDataURL('image/png');
     } catch (error) {
       console.error('Failed to capture card:', error);
+      // Make sure to revert even on error
+      const medalTextContainer = cardRef.current?.querySelector('.medal-text-container') as HTMLElement;
+      const medalBioText = cardRef.current?.querySelector('.medal-bio-text') as HTMLElement;
+      if (medalTextContainer) {
+        medalTextContainer.style.marginTop = '0';
+      }
+      if (medalBioText) {
+        medalBioText.style.marginTop = '4px';
+      }
       return null;
     }
   };
@@ -108,91 +147,504 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Shareable Card - Screenshot-friendly, 1:1 square for social media */}
-        <motion.div
-          ref={cardRef}
-          id="results-card"
-          className="relative overflow-hidden rounded-2xl bg-white border border-border shadow-lg mx-auto"
-          style={{ aspectRatio: '1 / 1', width: '100%', maxWidth: '400px' }}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-        >
-          {/* Subtle gradient background */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
+        {/* Card Design Carousel */}
+        <div className="relative px-6">
+          {/* Navigation Arrows */}
+          <button
+            onClick={() => setSelectedDesign(prev => (prev - 1 + CARD_DESIGNS.length) % CARD_DESIGNS.length)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          </button>
+          <button
+            onClick={() => setSelectedDesign(prev => (prev + 1) % CARD_DESIGNS.length)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-600" />
+          </button>
+
+          {/* Shareable Card */}
+          <motion.div
+            ref={cardRef}
+            id="results-card"
+            className="relative overflow-hidden rounded-2xl mx-auto"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(250,248,255,1) 50%, rgba(255,252,245,1) 100%)'
+              width: '400px',
+              height: '400px',
+              background: '#FFFFFF',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
             }}
-          />
-
-          <div className="relative h-full flex flex-col p-6">
-            {/* Header with branding */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5" style={{ color: '#00BCD4' }} />
-                <span className="font-semibold" style={{ color: '#00BCD4' }}>Entropy Age</span>
-              </div>
-              <span className="text-xs" style={{ color: '#9CA3AF' }}>{formattedDate}</span>
-            </div>
-
-            {/* Main age display - centered */}
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <p className="text-sm mb-2" style={{ color: '#6B7280' }}>Your Functional Biological Age</p>
-              <motion.div
-                className="relative inline-block mb-4"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
-              >
-                <span 
-                  className="text-7xl font-bold"
-                  style={{ color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B' }}
-                >
-                  {functionalAge}
-                </span>
-                <span className="text-2xl ml-1" style={{ color: '#9CA3AF' }}>yrs</span>
-              </motion.div>
-
-              {/* Comparison row */}
-              <div className="flex items-center justify-center gap-6">
-                <div className="text-center">
-                  <p className="text-xs" style={{ color: '#9CA3AF' }}>Actual Age</p>
-                  <p className="text-xl font-semibold" style={{ color: '#374151' }}>{chronologicalAge}</p>
-                </div>
-                
-                <div 
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            key={selectedDesign}
+          >
+            {selectedDesign === 0 ? (
+              /* Certificate Design */
+              <>
+                {/* Outer frame - dark elegant border */}
+                <div
                   style={{
-                    backgroundColor: isYounger ? 'rgba(34,197,94,0.15)' : isSame ? 'rgba(0,188,212,0.15)' : 'rgba(245,158,11,0.15)',
-                    color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B'
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(135deg, #2C3E50 0%, #1a252f 50%, #2C3E50 100%)',
+                    borderRadius: '16px',
+                  }}
+                />
+
+                {/* Frame bevel - gold/bronze accent */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '8px',
+                    right: '8px',
+                    bottom: '8px',
+                    background: 'linear-gradient(135deg, #D4AF37 0%, #B8860B 25%, #D4AF37 50%, #B8860B 75%, #D4AF37 100%)',
+                    borderRadius: '12px',
+                  }}
+                />
+
+                {/* Inner matting */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '12px',
+                    right: '12px',
+                    bottom: '12px',
+                    background: '#1C2833',
+                    borderRadius: '10px',
+                  }}
+                />
+
+                {/* Content area - cream/off-white center */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    right: '20px',
+                    bottom: '20px',
+                    background: '#FFFEF9',
+                    borderRadius: '6px',
+                  }}
+                />
+
+                {/* Corner accents - top left */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '24px',
+                    left: '24px',
+                    width: '20px',
+                    height: '20px',
+                    borderTop: '2px solid #D4AF37',
+                    borderLeft: '2px solid #D4AF37',
+                  }}
+                />
+                {/* Corner accents - top right */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '24px',
+                    right: '24px',
+                    width: '20px',
+                    height: '20px',
+                    borderTop: '2px solid #D4AF37',
+                    borderRight: '2px solid #D4AF37',
+                  }}
+                />
+                {/* Corner accents - bottom left */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '24px',
+                    left: '24px',
+                    width: '20px',
+                    height: '20px',
+                    borderBottom: '2px solid #D4AF37',
+                    borderLeft: '2px solid #D4AF37',
+                  }}
+                />
+                {/* Corner accents - bottom right */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '24px',
+                    right: '24px',
+                    width: '20px',
+                    height: '20px',
+                    borderBottom: '2px solid #D4AF37',
+                    borderRight: '2px solid #D4AF37',
+                  }}
+                />
+
+                {/* Card content */}
+                <div
+                  style={{
+                    position: 'relative',
+                    height: '100%',
+                    padding: '36px 40px',
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    flexDirection: 'column',
                   }}
                 >
-                  {isYounger ? (
-                    <TrendingDown className="w-4 h-4" />
-                  ) : isSame ? (
-                    <Minus className="w-4 h-4" />
-                  ) : (
-                    <TrendingUp className="w-4 h-4" />
-                  )}
-                  {gapText}
-                </div>
-                
-                <div className="text-center">
-                  <p className="text-xs" style={{ color: '#9CA3AF' }}>Functional</p>
-                  <p className="text-xl font-semibold" style={{ color: '#374151' }}>{functionalAge}</p>
-                </div>
-              </div>
-            </div>
+                  {/* Header row */}
+                  <div
+                    style={{
+                      marginBottom: '16px',
+                      overflow: 'visible',
+                      minHeight: '32px',
+                      paddingBottom: '4px',
+                    }}
+                  >
+                    <span
+                      style={{
+                        float: 'left',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        color: '#00BCD4',
+                        lineHeight: '32px',
+                      }}
+                    >
+                      ✦ Entropy Age
+                    </span>
+                    <span
+                      style={{
+                        float: 'right',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: '#9CA3AF',
+                        lineHeight: '32px',
+                      }}
+                    >
+                      {formattedDate}
+                    </span>
+                  </div>
 
-            {/* Footer branding */}
-            <div className="flex items-center justify-center pt-4 border-t" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
-              <span className="text-xs" style={{ color: '#9CA3AF' }}>
-                Entropy Lifestyle • Functional Age Assessment
-              </span>
-            </div>
+                  {/* Main content */}
+                  <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    {/* Label */}
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#9CA3AF',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.15em',
+                        marginBottom: '-9px',
+                      }}
+                    >
+                      Functional Biological Age
+                    </div>
+
+                    {/* Big number with 3D effect */}
+                    <div style={{ marginBottom: '32px', paddingBottom: '8px' }}>
+                      <span
+                        style={{
+                          fontSize: '110px',
+                          fontWeight: 800,
+                          color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B',
+                          lineHeight: '1',
+                          letterSpacing: '-0.04em',
+                          textShadow: isYounger
+                            ? '0 2px 0 #1DA34B, 0 4px 0 #188A3F, 0 6px 0 #147234, 0 8px 8px rgba(34, 197, 94, 0.3)'
+                            : isSame
+                              ? '0 2px 0 #00A5BD, 0 4px 0 #008FA3, 0 6px 0 #007889, 0 8px 8px rgba(0, 188, 212, 0.3)'
+                              : '0 2px 0 #E08A0A, 0 4px 0 #C77808, 0 6px 0 #AE6707, 0 8px 8px rgba(245, 158, 11, 0.3)',
+                          display: 'block',
+                        }}
+                      >
+                        {functionalAge}
+                      </span>
+                    </div>
+
+                    {/* Gap text - no background */}
+                    <div style={{ marginBottom: '20px' }}>
+                      <span
+                        style={{
+                          fontSize: '20px',
+                          fontWeight: 700,
+                          color: isYounger ? '#16A34A' : isSame ? '#0891B2' : '#D97706',
+                        }}
+                      >
+                        {isYounger ? '↓ ' : isSame ? '→ ' : '↑ '}{gapText}
+                      </span>
+                    </div>
+
+                    {/* Divider line */}
+                    <div
+                      style={{
+                        width: '60%',
+                        height: '1px',
+                        backgroundColor: '#E5E7EB',
+                        margin: '0 auto 12px auto',
+                      }}
+                    />
+
+                    {/* Actual age */}
+                    <div
+                      style={{
+                        fontSize: '16px',
+                        color: '#6B7280',
+                      }}
+                    >
+                      Actual age: <span style={{ fontWeight: 700, color: '#374151' }}>{chronologicalAge}</span>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div
+                    style={{
+                      paddingTop: '12px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: '#9CA3AF',
+                      }}
+                    >
+                      entropylifestyle.com
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Medal Design - Clean & Premium */
+              <>
+                {/* Background - beige */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: '#F5F5DC',
+                    borderRadius: '16px',
+                  }}
+                />
+
+                {/* Card content */}
+                <div
+                  style={{
+                    position: 'relative',
+                    height: '100%',
+                    padding: '24px',
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  {/* Header */}
+                  <div style={{ textAlign: 'center' }}>
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#8B4513',
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      ✦ Entropy Age ✦
+                    </span>
+                  </div>
+
+                  {/* Medal Container */}
+                  <div
+                    style={{
+                      position: 'relative',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {/* Two-stripe Ribbon */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '6px',
+                        marginBottom: '-12px',
+                        zIndex: 1,
+                      }}
+                    >
+                      {/* Left ribbon stripe */}
+                      <div
+                        style={{
+                          width: '16px',
+                          height: '45px',
+                          background: '#DC2626',
+                          borderRadius: '0 0 3px 3px',
+                        }}
+                      />
+                      {/* Right ribbon stripe */}
+                      <div
+                        style={{
+                          width: '16px',
+                          height: '45px',
+                          background: '#DC2626',
+                          borderRadius: '0 0 3px 3px',
+                        }}
+                      />
+                    </div>
+
+                    {/* Medal */}
+                    <div
+                      style={{
+                        width: '180px',
+                        height: '180px',
+                        borderRadius: '50%',
+                        background: '#daa520',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        zIndex: 2,
+                        border: '4px solid #b8860b',
+                      }}
+                    >
+                      {/* Inner circle - must be position:relative for text positioning */}
+                      <div
+                        style={{
+                          width: '150px',
+                          height: '150px',
+                          borderRadius: '50%',
+                          background: '#fffef5',
+                          border: '3px solid #daa520',
+                          position: 'relative',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {/* Text container - absolutely positioned within inner circle */}
+                        <div
+                          className="medal-text-container"
+                          style={{
+                            position: 'absolute',
+                            top: '0',
+                            left: '0',
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {/* Age number with 3D gold effect */}
+                          <span
+                            style={{
+                              fontSize: '60px',
+                              fontWeight: 800,
+                              color: '#DAA520',
+                              lineHeight: '1',
+                              textShadow: '0 2px 0 #B8860B, 0 4px 0 #996515, 0 6px 0 #7A5210, 0 8px 8px rgba(218, 165, 32, 0.4)',
+                            }}
+                          >
+                            {functionalAge}
+                          </span>
+                          <span
+                            className="medal-bio-text"
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              color: '#A0522D',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              marginTop: '4px',
+                            }}
+                          >
+                            Biological Age
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom info */}
+                  <div style={{ textAlign: 'center' }}>
+                    {/* Gap indicator */}
+                    <div
+                      style={{
+                        fontSize: '22px',
+                        fontWeight: 700,
+                        color: isYounger ? '#16A34A' : isSame ? '#0891B2' : '#B45309',
+                        marginBottom: '6px',
+                      }}
+                    >
+                      {isYounger ? '↓ ' : isSame ? '→ ' : '↑ '}{gapText}
+                    </div>
+
+                    {/* Actual age */}
+                    <div
+                      style={{
+                        fontSize: '14px',
+                        color: '#5D4037',
+                      }}
+                    >
+                      Actual age: <span style={{ fontWeight: 700, color: '#3E2723' }}>{chronologicalAge}</span>
+                    </div>
+
+                    {/* Date */}
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: '#8D6E63',
+                        marginTop: '6px',
+                      }}
+                    >
+                      {formattedDate}
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div style={{ textAlign: 'center' }}>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        color: '#A1887F',
+                      }}
+                    >
+                      entropylifestyle.com
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
+          </motion.div>
+
+          {/* Design selector dots */}
+          <div className="flex justify-center gap-2 mt-4">
+            {CARD_DESIGNS.map((design, index) => (
+              <button
+                key={design}
+                onClick={() => setSelectedDesign(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all",
+                  selectedDesign === index
+                    ? "bg-secondary w-6"
+                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                )}
+                aria-label={`Select ${design} design`}
+              />
+            ))}
           </div>
-        </motion.div>
+          <p className="text-center text-sm text-muted-foreground mt-2">
+            {CARD_DESIGNS[selectedDesign]} Style
+          </p>
+        </div>
 
         {/* Areas to Improve - Collapsible */}
         <motion.div
