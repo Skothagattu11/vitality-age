@@ -8,8 +8,34 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import html2canvas from 'html2canvas';
+import { toast } from 'sonner';
+import { ComingSoonCard } from './ComingSoonCard';
+import { NotifyModal } from './NotifyModal';
+
+const COMING_SOON_TOOLS = [
+  {
+    id: 'metabolic',
+    name: 'Metabolic Age',
+    description: 'Energy usage and metabolic efficiency',
+  },
+  {
+    id: 'brain',
+    name: 'Brain Age',
+    description: 'Cognitive load and nervous system resilience',
+  },
+  {
+    id: 'cardiovascular',
+    name: 'Cardiovascular Age',
+    description: 'Heart efficiency and recovery capacity',
+  },
+  {
+    id: 'longevity',
+    name: 'Longevity Age Index',
+    description: 'Long-term resilience and aging trajectory',
+  },
+];
 
 interface ResultsPageProps {
   result: AssessmentResult;
@@ -26,6 +52,39 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [selectedDesign, setSelectedDesign] = useState<number>(0);
   const cardRef = useRef<HTMLDivElement>(null);
+  
+  // Coming Soon state
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<typeof COMING_SOON_TOOLS[0] | null>(null);
+  const [subscribedTools, setSubscribedTools] = useState<string[]>(() => {
+    const saved = localStorage.getItem('entropy-subscribed-tools');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Persist subscribed tools to localStorage
+  useEffect(() => {
+    localStorage.setItem('entropy-subscribed-tools', JSON.stringify(subscribedTools));
+  }, [subscribedTools]);
+
+  const handleNotifyClick = (tool: typeof COMING_SOON_TOOLS[0]) => {
+    setSelectedTool(tool);
+    setNotifyModalOpen(true);
+  };
+
+  const handleEmailSubmit = (email: string) => {
+    if (!selectedTool) return;
+    
+    // Store email in localStorage (can be connected to backend later)
+    const subscriptions = JSON.parse(localStorage.getItem('entropy-email-subscriptions') || '{}');
+    subscriptions[selectedTool.id] = { email, subscribedAt: new Date().toISOString() };
+    localStorage.setItem('entropy-email-subscriptions', JSON.stringify(subscriptions));
+    
+    // Mark tool as subscribed
+    setSubscribedTools(prev => [...prev, selectedTool.id]);
+    setNotifyModalOpen(false);
+    
+    toast.success("✅ You'll be notified when this tool becomes available.");
+  };
   
   // Calculate the actual difference correctly
   const actualGap = chronologicalAge - functionalAge;
@@ -750,6 +809,34 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
             </CollapsibleContent>
           </Collapsible>
         </motion.div>
+
+        {/* Coming Soon Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65 }}
+          className="space-y-4"
+        >
+          <h3 className="text-lg font-semibold text-center text-foreground">Coming Soon</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {COMING_SOON_TOOLS.map((tool) => (
+              <ComingSoonCard
+                key={tool.id}
+                tool={tool}
+                isSubscribed={subscribedTools.includes(tool.id)}
+                onNotifyClick={() => handleNotifyClick(tool)}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Notify Modal */}
+        <NotifyModal
+          open={notifyModalOpen}
+          onOpenChange={setNotifyModalOpen}
+          toolName={selectedTool?.name || ''}
+          onSubmit={handleEmailSubmit}
+        />
 
         {/* Actions */}
         <motion.div
