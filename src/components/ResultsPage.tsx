@@ -23,13 +23,15 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   const [isExporting, setIsExporting] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
-  const isYounger = gap < 0;
-  const isSame = gap === 0;
+  // Calculate the actual difference correctly
+  const actualGap = chronologicalAge - functionalAge;
+  const isYounger = actualGap > 0;
+  const isSame = actualGap === 0;
   const gapText = isSame 
     ? 'On track' 
     : isYounger 
-      ? `${Math.abs(gap)}yr younger` 
-      : `${gap}yr older`;
+      ? `${actualGap}yr younger` 
+      : `${Math.abs(actualGap)}yr older`;
 
   const captureCard = async (): Promise<string | null> => {
     if (!cardRef.current) return null;
@@ -128,7 +130,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <span className="font-semibold gradient-text">Entropy Age</span>
+                <span className="font-semibold text-primary">Entropy Age</span>
               </div>
               <span className="text-xs text-muted-foreground">{formattedDate}</span>
             </div>
