@@ -24,7 +24,8 @@ interface NotifyModalProps {
   toolId: string;
   toolName: string;
   toolDescription: string;
-  onSuccess: () => void;
+  sessionId?: string | null;
+  onSuccess: (email: string) => void;
 }
 
 export function NotifyModal({ 
@@ -33,6 +34,7 @@ export function NotifyModal({
   toolId,
   toolName, 
   toolDescription,
+  sessionId,
   onSuccess 
 }: NotifyModalProps) {
   const [email, setEmail] = useState('');
@@ -57,6 +59,7 @@ export function NotifyModal({
         .insert({
           email: result.data.email,
           tool_id: toolId,
+          session_id: sessionId || undefined,
         });
       
       if (insertError) {
@@ -70,7 +73,7 @@ export function NotifyModal({
         return;
       }
       
-      onSuccess();
+      onSuccess(result.data.email);
       setEmail('');
     } catch (err) {
       console.error('Subscription error:', err);
