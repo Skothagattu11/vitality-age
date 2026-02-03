@@ -207,29 +207,28 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         transition={{ duration: 0.5 }}
       >
         {/* Card Design Carousel */}
-        <div className="relative px-6">
+        <div className="relative px-10 sm:px-6">
           {/* Navigation Arrows */}
           <button
             onClick={() => setSelectedDesign(prev => (prev - 1 + CARD_DESIGNS.length) % CARD_DESIGNS.length)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-card shadow-md flex items-center justify-center hover:bg-muted transition-colors border border-border"
           >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
           </button>
           <button
             onClick={() => setSelectedDesign(prev => (prev + 1) % CARD_DESIGNS.length)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-card shadow-md flex items-center justify-center hover:bg-muted transition-colors border border-border"
           >
-            <ChevronRight className="w-5 h-5 text-gray-600" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
           </button>
 
           {/* Shareable Card */}
           <motion.div
             ref={cardRef}
             id="results-card"
-            className="relative overflow-hidden rounded-2xl mx-auto"
+            className="relative overflow-hidden rounded-2xl mx-auto w-full max-w-[400px]"
             style={{
-              width: '400px',
-              height: '400px',
+              aspectRatio: '1 / 1',
               background: '#FFFFFF',
               fontFamily: 'system-ui, -apple-system, sans-serif',
             }}
