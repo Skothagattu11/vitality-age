@@ -110,4 +110,4 @@ export interface AssessmentResult {
   }[];
 }
 
-export const TOTAL_STEPS = 10; // Setup + 8 tests + 1 for results prep
+export const TOTAL_STEPS = 11; // Landing + Setup + 8 tests + Results

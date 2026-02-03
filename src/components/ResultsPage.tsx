@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
-import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, Info, ChevronDown } from 'lucide-react';
+import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, ChevronDown, Sparkles, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AssessmentData } from '@/types/assessment';
 import { exportResults } from '@/utils/scoring';
 import { cn } from '@/lib/utils';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { useState } from 'react';
 
 interface ResultsPageProps {
   result: AssessmentResult;
@@ -19,14 +19,15 @@ interface ResultsPageProps {
 
 export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   const { functionalAge, chronologicalAge, gap, topDrivers } = result;
+  const [showInsights, setShowInsights] = useState(false);
   
   const isYounger = gap < 0;
   const isSame = gap === 0;
   const gapText = isSame 
-    ? 'Right on track!' 
+    ? 'On track' 
     : isYounger 
-      ? `${Math.abs(gap)} years younger` 
-      : `${gap} years older`;
+      ? `${Math.abs(gap)}yr younger` 
+      : `${gap}yr older`;
 
   const handleExport = () => {
     const jsonData = exportResults(data, result);
@@ -41,230 +42,257 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
     URL.revokeObjectURL(url);
   };
 
+  const formattedDate = new Date().toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
   return (
     <div className="min-h-screen py-8 px-4">
       <motion.div
-        className="max-w-2xl mx-auto space-y-8"
+        className="max-w-md mx-auto space-y-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <motion.h1 
-            className="text-3xl font-bold"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Your Results
-          </motion.h1>
-          <p className="text-muted-foreground">
-            Based on your functional movement assessment
-          </p>
-        </div>
-
-        {/* Age comparison cards */}
+        {/* Shareable Card - Screenshot-friendly */}
         <motion.div
-          className="grid grid-cols-2 gap-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          id="results-card"
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-muted border border-border shadow-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
         >
-          {/* Chronological Age */}
-          <div className="bg-card rounded-xl border border-border p-6 text-center">
-            <p className="text-sm text-muted-foreground mb-2">Chronological Age</p>
-            <p className="text-4xl font-bold">{chronologicalAge}</p>
-            <p className="text-xs text-muted-foreground mt-1">years old</p>
+          {/* Decorative background elements */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div className={cn(
+              "absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl opacity-30",
+              isYounger ? "bg-success" : isSame ? "bg-primary" : "bg-warning"
+            )} />
+            <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-3xl opacity-20 bg-secondary" />
           </div>
 
-          {/* Functional Age */}
-          <div className={cn(
-            "rounded-xl p-6 text-center relative overflow-hidden",
-            isYounger ? "bg-success/10 border-2 border-success" : 
-            isSame ? "bg-primary/10 border-2 border-primary" :
-            "bg-warning/10 border-2 border-warning"
-          )}>
-            <div className="absolute inset-0 opacity-20">
-              <div className={cn(
-                "absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl",
-                isYounger ? "bg-success" : isSame ? "bg-primary" : "bg-warning"
-              )} />
+          <div className="relative p-6 space-y-6">
+            {/* Header with branding */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <span className="font-semibold gradient-text">Entropy Age</span>
+              </div>
+              <span className="text-xs text-muted-foreground">{formattedDate}</span>
             </div>
-            <p className="text-sm text-muted-foreground mb-2 relative">Functional Age</p>
-            <motion.p 
-              className="text-5xl font-bold relative"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
-            >
-              {functionalAge}
-            </motion.p>
-            <p className="text-xs text-muted-foreground mt-1 relative">years old</p>
+
+            {/* Main age display */}
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground mb-2">Your Functional Biological Age</p>
+              <motion.div
+                className="relative inline-block"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
+              >
+                <span className={cn(
+                  "text-7xl font-bold",
+                  isYounger ? "text-success" : isSame ? "text-primary" : "text-warning"
+                )}>
+                  {functionalAge}
+                </span>
+                <span className="text-2xl text-muted-foreground ml-1">yrs</span>
+              </motion.div>
+            </div>
+
+            {/* Comparison row */}
+            <div className="flex items-center justify-center gap-4">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Actual Age</p>
+                <p className="text-xl font-semibold">{chronologicalAge}</p>
+              </div>
+              
+              <div className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium",
+                isYounger ? "bg-success/15 text-success" : 
+                isSame ? "bg-primary/15 text-primary" : 
+                "bg-warning/15 text-warning"
+              )}>
+                {isYounger ? (
+                  <TrendingDown className="w-4 h-4" />
+                ) : isSame ? (
+                  <Minus className="w-4 h-4" />
+                ) : (
+                  <TrendingUp className="w-4 h-4" />
+                )}
+                {gapText}
+              </div>
+              
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Functional</p>
+                <p className="text-xl font-semibold">{functionalAge}</p>
+              </div>
+            </div>
+
+            {/* Brief message */}
+            <p className="text-center text-sm text-muted-foreground px-4">
+              {isYounger ? (
+                <>Your body is performing like someone younger. Great work!</>
+              ) : isSame ? (
+                <>Your body is on track for your age. Keep it up!</>
+              ) : (
+                <>Focus on the areas below to improve your functional age.</>
+              )}
+            </p>
+
+            {/* Footer branding */}
+            <div className="flex items-center justify-center pt-2 border-t border-border/50">
+              <span className="text-[10px] text-muted-foreground/60">
+                entropyage.app • Functional Age Assessment
+              </span>
+            </div>
           </div>
         </motion.div>
 
-        {/* Gap indicator */}
+        {/* Areas to Improve - Collapsible */}
         <motion.div
-          className={cn(
-            "flex items-center justify-center gap-3 py-4 px-6 rounded-xl",
-            isYounger ? "bg-success/10" : isSame ? "bg-muted" : "bg-warning/10"
-          )}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          {isYounger ? (
-            <TrendingDown className="w-6 h-6 text-success" />
-          ) : isSame ? (
-            <Minus className="w-6 h-6 text-muted-foreground" />
-          ) : (
-            <TrendingUp className="w-6 h-6 text-warning" />
-          )}
-          <span className={cn(
-            "text-lg font-semibold",
-            isYounger ? "text-success" : isSame ? "text-foreground" : "text-warning"
-          )}>
-            {gapText}
-          </span>
-        </motion.div>
-
-        {/* Narrative */}
-        <motion.div
-          className="bg-card rounded-xl border border-border p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.5 }}
         >
-          <p className="text-muted-foreground leading-relaxed">
-            {isYounger ? (
-              <>
-                Great news! Your body is functioning like someone <strong>{Math.abs(gap)} years younger</strong> than your chronological age. 
-                Your movement quality, recovery capacity, and physical resilience are above average for your age group.
-              </>
-            ) : isSame ? (
-              <>
-                Your functional age matches your chronological age. This means your body is performing 
-                as expected for someone your age. There's always room for improvement!
-              </>
-            ) : (
-              <>
-                Your body is showing signs of functioning like someone <strong>{gap} years older</strong> than your chronological age. 
-                The good news? With targeted work on the areas below, you can improve your functional age.
-              </>
-            )}
-          </p>
-        </motion.div>
-
-        {/* Top drivers */}
-        <motion.div
-          className="space-y-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Info className="w-5 h-5 text-primary" />
-            Key Insights
-          </h2>
-
-          <div className="space-y-3">
-            {topDrivers.map((driver, index) => (
-              <motion.div
-                key={driver.tag}
-                className={cn(
-                  "p-4 rounded-xl border-2",
-                  driver.impact === 'positive' ? "border-success/30 bg-success/5" :
-                  driver.impact === 'negative' ? "border-warning/30 bg-warning/5" :
-                  "border-border bg-muted/30"
-                )}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.9 + index * 0.1 }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                    driver.impact === 'positive' ? "bg-success/20" :
-                    driver.impact === 'negative' ? "bg-warning/20" :
-                    "bg-muted"
-                  )}>
-                    {driver.impact === 'positive' ? (
-                      <TrendingDown className="w-4 h-4 text-success" />
-                    ) : driver.impact === 'negative' ? (
-                      <TrendingUp className="w-4 h-4 text-warning" />
-                    ) : (
-                      <Minus className="w-4 h-4 text-muted-foreground" />
-                    )}
+          <Collapsible open={showInsights} onOpenChange={setShowInsights}>
+            <CollapsibleTrigger asChild>
+              <button className="w-full flex items-center justify-between p-4 bg-card rounded-xl border border-border hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-secondary" />
                   </div>
-                  <div>
-                    <h3 className="font-medium">{driver.tag}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {driver.suggestion}
+                  <div className="text-left">
+                    <h3 className="font-medium">Areas to Improve</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {topDrivers.filter(d => d.impact === 'negative').length} areas identified
                     </p>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+                <ChevronDown className={cn(
+                  "w-5 h-5 text-muted-foreground transition-transform duration-200",
+                  showInsights && "rotate-180"
+                )} />
+              </button>
+            </CollapsibleTrigger>
+            
+            <CollapsibleContent>
+              <div className="mt-3 space-y-3">
+                {topDrivers.map((driver, index) => (
+                  <motion.div
+                    key={driver.tag}
+                    className={cn(
+                      "p-4 rounded-xl border-2",
+                      driver.impact === 'positive' ? "border-success/30 bg-success/5" :
+                      driver.impact === 'negative' ? "border-warning/30 bg-warning/5" :
+                      "border-border bg-muted/30"
+                    )}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                        driver.impact === 'positive' ? "bg-success/20" :
+                        driver.impact === 'negative' ? "bg-warning/20" :
+                        "bg-muted"
+                      )}>
+                        {driver.impact === 'positive' ? (
+                          <TrendingDown className="w-4 h-4 text-success" />
+                        ) : driver.impact === 'negative' ? (
+                          <TrendingUp className="w-4 h-4 text-warning" />
+                        ) : (
+                          <Minus className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{driver.tag}</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {driver.suggestion}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </motion.div>
 
-        {/* Method accordion */}
+        {/* How it's calculated - Collapsible */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
         >
-          <Accordion type="single" collapsible className="bg-card rounded-xl border border-border">
-            <AccordionItem value="method" className="border-none">
-              <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <button className="w-full flex items-center justify-between p-4 bg-card rounded-xl border border-border hover:bg-muted/50 transition-colors">
                 <span className="text-sm font-medium">How is this calculated?</span>
-              </AccordionTrigger>
-              <AccordionContent className="px-6 pb-4">
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <p>
-                    Entropy Age uses a weighted scoring model based on your performance in 
-                    functional movement tests compared to age-adjusted benchmarks.
-                  </p>
-                  <p>
-                    Each test contributes points that can increase or decrease your functional age:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 ml-2">
-                    <li>Sit-to-Stand: Lower-body strength & power</li>
-                    <li>Wall Sit: Muscular endurance</li>
-                    <li>Balance: Proprioception & stability</li>
-                    <li>March Recovery: Cardiovascular fitness</li>
-                    <li>Mobility: Joint range of motion</li>
-                  </ul>
-                  <p className="text-xs mt-4 pt-3 border-t border-border">
-                    <strong>Note:</strong> This is an educational estimate, not a medical assessment. 
-                    For health concerns, consult a healthcare professional.
-                  </p>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 p-4 bg-muted/30 rounded-xl space-y-3 text-sm text-muted-foreground">
+                <p>
+                  Entropy Age uses a weighted scoring model based on your performance in 
+                  functional movement tests compared to age-adjusted benchmarks.
+                </p>
+                <ul className="list-disc list-inside space-y-1 ml-2">
+                  <li>Sit-to-Stand: Lower-body strength & power</li>
+                  <li>Wall Sit: Muscular endurance</li>
+                  <li>Balance: Proprioception & stability</li>
+                  <li>March Recovery: Cardiovascular fitness</li>
+                  <li>Mobility: Joint range of motion</li>
+                </ul>
+                <p className="text-xs pt-2 border-t border-border">
+                  <strong>Note:</strong> This is an educational estimate, not a medical assessment.
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </motion.div>
 
         {/* Actions */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-3 pt-4"
+          className="flex flex-col gap-3 pt-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.3 }}
+          transition={{ delay: 0.7 }}
         >
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            className="flex-1"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download Results
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="flex-1"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'My Entropy Age Results',
+                    text: `My functional biological age is ${functionalAge}! (${gapText} than my actual age of ${chronologicalAge})`,
+                    url: window.location.href,
+                  });
+                }
+              }}
+              className="flex-1"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+          </div>
           <Button
             variant="hero"
             onClick={onRetake}
-            className="flex-1"
+            className="w-full"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             Retake Assessment

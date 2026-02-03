@@ -52,8 +52,8 @@ export function Assessment() {
     setShowResetConfirm(false);
   };
 
-  // Calculate results when on the results step
-  const results = data.currentStep === TOTAL_STEPS - 1 ? calculateResults(data) : null;
+  // Calculate results when on the results step (step 10)
+  const results = data.currentStep === 10 ? calculateResults(data) : null;
 
   // Render current step
   const renderStep = () => {
@@ -202,7 +202,7 @@ export function Assessment() {
     }
   };
 
-  const showProgress = data.currentStep > 0 && data.currentStep < TOTAL_STEPS;
+  const showProgress = data.currentStep > 0 && data.currentStep < 10;
 
   return (
     <div className="min-h-screen bg-background">
