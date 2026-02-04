@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TutorialPanel } from '@/components/TutorialPanel';
 import { AnimationPlaceholder } from '@/components/AnimationPlaceholder';
 import { StepWrapper } from '@/components/StepWrapper';
+import { HowItWorksButton } from '@/components/HowItWorksButton';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { WallSitResult, WallSitDuration, WallSitStopReason, SkippedStep } from '@/types/assessment';
@@ -43,25 +44,19 @@ export function WallSitStep({ onComplete, onSkip, onBack }: WallSitStepProps) {
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 h-full">
+    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Wall Sit Hold"
-        description="This test measures your lower body muscular endurance by timing how long you can hold a seated position against a wall."
+        description="Hold a seated position against a wall as long as you can."
         steps={[
-          { instruction: 'Stand with your back against a wall' },
-          { instruction: 'Slide down until your thighs are parallel to the floor', tip: 'Knees at 90 degrees' },
-          { instruction: 'Keep your back flat against the wall' },
-          { instruction: 'Hold as long as you can, then select your time' },
-        ]}
-        commonMistakes={[
-          'Not sliding down far enough',
-          'Letting knees go past toes',
-          'Coming off the wall',
+          { instruction: 'Stand with back against wall, slide down to 90°' },
+          { instruction: 'Keep back flat against the wall' },
+          { instruction: 'Hold as long as you can' },
         ]}
         animationPlaceholder={<AnimationPlaceholder type="wall-sit" />}
       />
 
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-xl border border-border p-4 md:p-6">
         <StepWrapper
           onNext={handleNext}
           onBack={onBack}
@@ -69,12 +64,14 @@ export function WallSitStep({ onComplete, onSkip, onBack }: WallSitStepProps) {
           canProgress={canProgress}
           testName="Wall Sit"
         >
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Wall Sit Hold</h2>
-              <p className="text-muted-foreground text-sm">
-                Perform the wall sit, then answer the questions below
-              </p>
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-lg md:text-xl font-semibold">Wall Sit Hold</h2>
+              <HowItWorksButton
+                testName="Wall Sit Hold"
+                measure="Duration you can maintain a wall sit position, testing isometric leg endurance."
+                relevance="Muscular endurance indicates how well your body sustains effort. Poor endurance correlates with accelerated aging and reduced daily function."
+              />
             </div>
 
             {/* Duration */}

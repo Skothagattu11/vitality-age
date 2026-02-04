@@ -3,6 +3,7 @@ import { TutorialPanel } from '@/components/TutorialPanel';
 import { AnimationPlaceholder } from '@/components/AnimationPlaceholder';
 import { Timer } from '@/components/Timer';
 import { StepWrapper } from '@/components/StepWrapper';
+import { HowItWorksButton } from '@/components/HowItWorksButton';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -39,25 +40,19 @@ export function MarchRecoveryStep({ onComplete, onSkip, onBack }: MarchRecoveryS
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 h-full">
+    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
-        title="60-Second March + Recovery"
-        description="This test measures your cardiovascular fitness and recovery speed through high-knee marching in place."
+        title="60-Second March"
+        description="March in place with high knees for 60 seconds, then note your recovery."
         steps={[
-          { instruction: 'Stand in place with space to lift your knees' },
-          { instruction: 'When timer starts, march in place lifting knees to hip height' },
-          { instruction: 'Maintain a steady, challenging pace for 60 seconds' },
-          { instruction: 'When timer ends, note how quickly you recover' },
-        ]}
-        commonMistakes={[
-          'Not lifting knees high enough',
-          'Going too fast at the start and slowing down',
-          'Holding your breath',
+          { instruction: 'March in place lifting knees to hip height' },
+          { instruction: 'Maintain a challenging pace for 60 seconds' },
+          { instruction: 'Note how quickly your breathing returns to normal' },
         ]}
         animationPlaceholder={<AnimationPlaceholder type="march" />}
       />
 
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-xl border border-border p-4 md:p-6">
         <StepWrapper
           onNext={handleNext}
           onBack={onBack}
@@ -65,12 +60,14 @@ export function MarchRecoveryStep({ onComplete, onSkip, onBack }: MarchRecoveryS
           canProgress={canProgress}
           testName="March + Recovery Test"
         >
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">60-Second March</h2>
-              <p className="text-muted-foreground text-sm">
-                Use the timer as a guide, then answer the questions below
-              </p>
+          <div className="space-y-5">
+            <div className="text-center space-y-2">
+              <h2 className="text-lg md:text-xl font-semibold">60-Second March</h2>
+              <HowItWorksButton
+                testName="March + Recovery Test"
+                measure="Cardiovascular stress response and recovery time after 60 seconds of high-knee marching."
+                relevance="Heart rate recovery is a powerful indicator of cardiovascular health and overall fitness. Faster recovery correlates with younger biological age."
+              />
             </div>
 
             {/* Timer */}

@@ -3,6 +3,7 @@ import { TutorialPanel } from '@/components/TutorialPanel';
 import { AnimationPlaceholder } from '@/components/AnimationPlaceholder';
 import { Timer } from '@/components/Timer';
 import { StepWrapper } from '@/components/StepWrapper';
+import { HowItWorksButton } from '@/components/HowItWorksButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
@@ -31,27 +32,21 @@ export function SitToStandStep({ onComplete, onSkip, onBack }: SitToStandStepPro
   const exertionLabels = ['None', 'Very Light', 'Light', 'Moderate', 'Somewhat Hard', 'Hard', 'Very Hard', 'Very Very Hard', 'Extremely Hard', 'Maximum'];
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 h-full">
+    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       {/* Tutorial Panel */}
       <TutorialPanel
         title="Sit-to-Stand Test"
-        description="This test measures your lower body strength and endurance by counting how many times you can stand up from a seated position in 30 seconds."
+        description="Count how many times you can stand up from a chair in 30 seconds."
         steps={[
-          { instruction: 'Sit in a chair with your feet flat on the floor', tip: 'Keep your arms crossed over your chest' },
-          { instruction: 'When the timer starts, stand up fully then sit back down' },
+          { instruction: 'Sit in a chair with arms crossed over chest' },
+          { instruction: 'Stand up fully, then sit back down' },
           { instruction: 'Repeat as many times as you can in 30 seconds' },
-          { instruction: 'Count each full stand-up as one rep' },
-        ]}
-        commonMistakes={[
-          'Not standing up fully straight',
-          'Using momentum or bouncing',
-          'Not sitting all the way down',
         ]}
         animationPlaceholder={<AnimationPlaceholder type="sit-to-stand" />}
       />
 
       {/* Input Panel */}
-      <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+      <div className="bg-card rounded-xl border border-border p-4 md:p-6 space-y-4">
         <StepWrapper
           onNext={handleNext}
           onBack={onBack}
@@ -59,12 +54,14 @@ export function SitToStandStep({ onComplete, onSkip, onBack }: SitToStandStepPro
           canProgress={canProgress}
           testName="Sit-to-Stand Test"
         >
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">30-Second Chair Test</h2>
-              <p className="text-muted-foreground text-sm">
-                Use the timer as a guide, then enter your results below
-              </p>
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-lg md:text-xl font-semibold">30-Second Chair Test</h2>
+              <HowItWorksButton
+                testName="Sit-to-Stand Test"
+                measure="Number of complete sit-to-stand cycles in 30 seconds, measuring lower body strength and power."
+                relevance="Lower body strength directly correlates with mobility, fall risk, and independence. Research shows this test strongly predicts functional age and longevity."
+              />
             </div>
 
             {/* Timer */}

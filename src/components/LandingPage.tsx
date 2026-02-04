@@ -12,14 +12,14 @@ export function LandingPage({ onStart }: LandingPageProps) {
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       {/* Glow effect background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-[100px]" />
+        <div className="absolute -top-40 -right-40 w-60 md:w-80 h-60 md:h-80 bg-primary/20 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 -left-40 w-60 md:w-80 h-60 md:h-80 bg-secondary/20 rounded-full blur-[100px]" />
       </div>
 
-      <main className="flex-1 flex items-center justify-center p-6 relative z-10">
+      <main className="flex-1 flex items-center justify-center px-4 py-6 relative z-10">
         <motion.div
           className="max-w-lg w-full text-center space-y-8"
           initial={{ opacity: 0, y: 20 }}
