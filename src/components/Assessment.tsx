@@ -214,7 +214,7 @@ export function Assessment() {
       {/* Header with progress */}
       {showProgress && (
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
-          <div className="container max-w-4xl mx-auto py-4 px-4">
+          <div className="w-full max-w-4xl mx-auto py-4 px-4">
             <div className="flex items-center justify-between mb-4">
               <h1 className="font-semibold gradient-text">Entropy Age</h1>
               <Button
@@ -237,8 +237,8 @@ export function Assessment() {
 
       {/* Main content */}
       <main className={cn(
-        "container max-w-5xl mx-auto",
-        showProgress && "py-6 px-4"
+        "w-full max-w-5xl mx-auto px-4",
+        showProgress && "py-6"
       )}>
         <AnimatePresence mode="wait">
           <motion.div

@@ -48,7 +48,7 @@ export function CrossLeggedStep({ onComplete, onSkip, onBack }: CrossLeggedStepP
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
+    <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Cross-Legged Sit"
         description="Test hip mobility by sitting cross-legged on the floor."

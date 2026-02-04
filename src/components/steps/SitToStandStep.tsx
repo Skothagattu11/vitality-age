@@ -32,7 +32,7 @@ export function SitToStandStep({ onComplete, onSkip, onBack }: SitToStandStepPro
   const exertionLabels = ['None', 'Very Light', 'Light', 'Moderate', 'Somewhat Hard', 'Hard', 'Very Hard', 'Very Very Hard', 'Extremely Hard', 'Maximum'];
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
+    <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       {/* Tutorial Panel */}
       <TutorialPanel
         title="Sit-to-Stand Test"

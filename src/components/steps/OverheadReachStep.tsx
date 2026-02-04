@@ -48,7 +48,7 @@ export function OverheadReachStep({ onComplete, onSkip, onBack }: OverheadReachS
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
+    <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Overhead Reach"
         description="Test shoulder mobility by reaching overhead while keeping your back against a wall."

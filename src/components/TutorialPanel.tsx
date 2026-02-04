@@ -54,7 +54,7 @@ export function TutorialPanel({
       {/* Mobile: Collapsible sticky card */}
       <div className={cn('md:hidden', className)}>
         <motion.div
-          className="sticky top-0 z-20 bg-card border-b border-border shadow-soft"
+          className="sticky top-0 z-20 bg-card rounded-xl border border-border shadow-soft"
           layout
         >
           <button

@@ -40,7 +40,7 @@ export function MarchRecoveryStep({ onComplete, onSkip, onBack }: MarchRecoveryS
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
+    <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="60-Second March"
         description="March in place with high knees for 60 seconds, then note your recovery."

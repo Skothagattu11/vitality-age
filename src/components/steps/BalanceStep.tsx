@@ -44,7 +44,7 @@ export function BalanceStep({ onComplete, onSkip, onBack }: BalanceStepProps) {
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
+    <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Single-Leg Balance"
         description="Stand on one leg as long as you can, up to 60 seconds."

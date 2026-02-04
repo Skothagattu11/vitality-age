@@ -13,6 +13,7 @@ import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { ComingSoonCard } from './ComingSoonCard';
 import { NotifyModal } from './NotifyModal';
+import { AddToHomeScreen } from './AddToHomeScreen';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -977,6 +978,9 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
           sessionId={sessionId}
           onSuccess={handleSubscriptionSuccess}
         />
+
+        {/* Add to Home Screen Prompt */}
+        <AddToHomeScreen />
       </motion.div>
     </div>
   );

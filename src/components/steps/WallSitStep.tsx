@@ -44,7 +44,7 @@ export function WallSitStep({ onComplete, onSkip, onBack }: WallSitStepProps) {
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
+    <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Wall Sit Hold"
         description="Hold a seated position against a wall as long as you can."

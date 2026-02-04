@@ -56,7 +56,7 @@ export function SetupPage({ onComplete, onBack }: SetupPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 container max-w-lg mx-auto py-8 px-4">
+      <div className="flex-1 w-full max-w-lg mx-auto py-8 px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
