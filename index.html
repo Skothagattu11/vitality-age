@@ -30,7 +30,58 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Instant loading state - replaced when React mounts -->
+      <div id="initial-loader" style="
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: hsl(210 20% 98%);
+        font-family: system-ui, -apple-system, sans-serif;
+      ">
+        <div style="
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 24px;
+          animation: pulse 1.5s ease-in-out infinite;
+        ">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
+          </svg>
+        </div>
+        <h1 style="
+          font-size: 2rem;
+          font-weight: bold;
+          background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin: 0 0 8px 0;
+        ">Entropy Age</h1>
+        <p style="
+          color: hsl(220 10% 45%);
+          font-size: 0.875rem;
+          margin: 0;
+        ">Loading...</p>
+      </div>
+      <style>
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        @media (prefers-color-scheme: dark) {
+          #initial-loader { background: hsl(220 20% 8%); }
+          #initial-loader p { color: hsl(220 10% 60%); }
+        }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

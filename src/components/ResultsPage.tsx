@@ -456,30 +456,46 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                   {/* Header row */}
                   <div
                     style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
                       marginBottom: '16px',
-                      overflow: 'visible',
-                      minHeight: '32px',
-                      paddingBottom: '4px',
+                      height: '28px',
                     }}
                   >
-                    <span
+                    <div
                       style={{
-                        float: 'left',
-                        fontSize: '16px',
-                        fontWeight: 700,
-                        color: '#00BCD4',
-                        lineHeight: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
                       }}
                     >
-                      ✦ Entropy Age
-                    </span>
+                      <span
+                        style={{
+                          fontSize: '14px',
+                          color: '#00BCD4',
+                          lineHeight: '1',
+                        }}
+                      >
+                        ✦
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          color: '#00BCD4',
+                          lineHeight: '1',
+                        }}
+                      >
+                        Entropy Age
+                      </span>
+                    </div>
                     <span
                       style={{
-                        float: 'right',
-                        fontSize: '14px',
+                        fontSize: '13px',
                         fontWeight: 500,
                         color: '#9CA3AF',
-                        lineHeight: '32px',
+                        lineHeight: '1',
                       }}
                     >
                       {formattedDate}

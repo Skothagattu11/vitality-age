@@ -1,23 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Lightbulb, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LandingPage } from '@/components/LandingPage';
-import { SetupPage } from '@/components/SetupPage';
-import { ResultsPage } from '@/components/ResultsPage';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
-import { SitToStandStep } from '@/components/steps/SitToStandStep';
-import { WallSitStep } from '@/components/steps/WallSitStep';
-import { BalanceStep } from '@/components/steps/BalanceStep';
-import { MarchRecoveryStep } from '@/components/steps/MarchRecoveryStep';
-import { OverheadReachStep } from '@/components/steps/OverheadReachStep';
-import { CrossLeggedStep } from '@/components/steps/CrossLeggedStep';
-import { IntegrationStep } from '@/components/steps/IntegrationStep';
-import { RecoveryContextStep } from '@/components/steps/RecoveryContextStep';
 import { useAssessment } from '@/hooks/useAssessment';
 import { calculateResults } from '@/utils/scoring';
 import { TOTAL_STEPS, UserProfile } from '@/types/assessment';
 import { cn } from '@/lib/utils';
+
+// Lazy load components that aren't needed immediately
+const SetupPage = lazy(() => import('@/components/SetupPage').then(m => ({ default: m.SetupPage })));
+const ResultsPage = lazy(() => import('@/components/ResultsPage').then(m => ({ default: m.ResultsPage })));
+const SitToStandStep = lazy(() => import('@/components/steps/SitToStandStep').then(m => ({ default: m.SitToStandStep })));
+const WallSitStep = lazy(() => import('@/components/steps/WallSitStep').then(m => ({ default: m.WallSitStep })));
+const BalanceStep = lazy(() => import('@/components/steps/BalanceStep').then(m => ({ default: m.BalanceStep })));
+const MarchRecoveryStep = lazy(() => import('@/components/steps/MarchRecoveryStep').then(m => ({ default: m.MarchRecoveryStep })));
+const OverheadReachStep = lazy(() => import('@/components/steps/OverheadReachStep').then(m => ({ default: m.OverheadReachStep })));
+const CrossLeggedStep = lazy(() => import('@/components/steps/CrossLeggedStep').then(m => ({ default: m.CrossLeggedStep })));
+const IntegrationStep = lazy(() => import('@/components/steps/IntegrationStep').then(m => ({ default: m.IntegrationStep })));
+const RecoveryContextStep = lazy(() => import('@/components/steps/RecoveryContextStep').then(m => ({ default: m.RecoveryContextStep })));
+
+// Loading fallback for lazy components
+const StepLoader = () => (
+  <div className="flex items-center justify-center min-h-[400px]">
+    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 export function Assessment() {
   const {
@@ -65,143 +74,163 @@ export function Assessment() {
     switch (data.currentStep) {
       case 0:
         return <LandingPage onStart={() => goToStep(1)} />;
-      
+
       case 1:
         return (
-          <SetupPage
-            onComplete={(profile: UserProfile) => {
-              updateData('userProfile', profile);
-              nextStep();
-            }}
-            onBack={() => goToStep(0)}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <SetupPage
+              onComplete={(profile: UserProfile) => {
+                updateData('userProfile', profile);
+                nextStep();
+              }}
+              onBack={() => goToStep(0)}
+            />
+          </Suspense>
         );
-      
+
       case 2:
         return (
-          <SitToStandStep
-            onComplete={(result) => {
-              updateData('sitToStand', result);
-              nextStep();
-            }}
-            onSkip={(skipData) => {
-              updateData('sitToStand', skipData);
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <SitToStandStep
+              onComplete={(result) => {
+                updateData('sitToStand', result);
+                nextStep();
+              }}
+              onSkip={(skipData) => {
+                updateData('sitToStand', skipData);
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 3:
         return (
-          <WallSitStep
-            onComplete={(result) => {
-              updateData('wallSit', result);
-              nextStep();
-            }}
-            onSkip={(skipData) => {
-              updateData('wallSit', skipData);
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <WallSitStep
+              onComplete={(result) => {
+                updateData('wallSit', result);
+                nextStep();
+              }}
+              onSkip={(skipData) => {
+                updateData('wallSit', skipData);
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 4:
         return (
-          <BalanceStep
-            onComplete={(result) => {
-              updateData('balance', result);
-              nextStep();
-            }}
-            onSkip={(skipData) => {
-              updateData('balance', skipData);
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <BalanceStep
+              onComplete={(result) => {
+                updateData('balance', result);
+                nextStep();
+              }}
+              onSkip={(skipData) => {
+                updateData('balance', skipData);
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 5:
         return (
-          <MarchRecoveryStep
-            onComplete={(result) => {
-              updateData('marchRecovery', result);
-              nextStep();
-            }}
-            onSkip={(skipData) => {
-              updateData('marchRecovery', skipData);
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <MarchRecoveryStep
+              onComplete={(result) => {
+                updateData('marchRecovery', result);
+                nextStep();
+              }}
+              onSkip={(skipData) => {
+                updateData('marchRecovery', skipData);
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 6:
         return (
-          <OverheadReachStep
-            onComplete={(result) => {
-              updateData('overheadReach', result);
-              nextStep();
-            }}
-            onSkip={(skipData) => {
-              updateData('overheadReach', skipData);
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <OverheadReachStep
+              onComplete={(result) => {
+                updateData('overheadReach', result);
+                nextStep();
+              }}
+              onSkip={(skipData) => {
+                updateData('overheadReach', skipData);
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 7:
         return (
-          <CrossLeggedStep
-            onComplete={(result) => {
-              updateData('crossLegged', result);
-              nextStep();
-            }}
-            onSkip={(skipData) => {
-              updateData('crossLegged', skipData);
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <CrossLeggedStep
+              onComplete={(result) => {
+                updateData('crossLegged', result);
+                nextStep();
+              }}
+              onSkip={(skipData) => {
+                updateData('crossLegged', skipData);
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 8:
         return (
-          <IntegrationStep
-            onComplete={(result) => {
-              updateData('integration', result);
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <IntegrationStep
+              onComplete={(result) => {
+                updateData('integration', result);
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 9:
         return (
-          <RecoveryContextStep
-            onComplete={(result) => {
-              updateData('recoveryContext', result);
-              updateData('completedAt', new Date().toISOString());
-              nextStep();
-            }}
-            onBack={prevStep}
-          />
+          <Suspense fallback={<StepLoader />}>
+            <RecoveryContextStep
+              onComplete={(result) => {
+                updateData('recoveryContext', result);
+                updateData('completedAt', new Date().toISOString());
+                nextStep();
+              }}
+              onBack={prevStep}
+            />
+          </Suspense>
         );
-      
+
       case 10:
         if (results) {
           return (
-            <ResultsPage
-              result={results}
-              data={data}
-              onRetake={handleReset}
-            />
+            <Suspense fallback={<StepLoader />}>
+              <ResultsPage
+                result={results}
+                data={data}
+                onRetake={handleReset}
+              />
+            </Suspense>
           );
         }
         return null;
-      
+
       default:
         return <LandingPage onStart={() => goToStep(1)} />;
     }
