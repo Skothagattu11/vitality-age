@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TutorialPanel } from '@/components/TutorialPanel';
 import { AnimationPlaceholder } from '@/components/AnimationPlaceholder';
 import { StepWrapper } from '@/components/StepWrapper';
+import { HowItWorksButton } from '@/components/HowItWorksButton';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { BalanceResult, BalanceDuration, BalanceEndReason, SkippedStep } from '@/types/assessment';
@@ -43,26 +44,19 @@ export function BalanceStep({ onComplete, onSkip, onBack }: BalanceStepProps) {
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 h-full">
+    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Single-Leg Balance"
-        description="This test assesses your proprioception and balance control by timing how long you can stand on one leg with eyes open."
+        description="Stand on one leg as long as you can, up to 60 seconds."
         steps={[
-          { instruction: 'Stand on one leg (your choice)', tip: 'Near a wall for safety if needed' },
-          { instruction: 'Lift the other foot off the ground' },
-          { instruction: 'Arms can be out for balance or at your sides' },
-          { instruction: 'Hold as long as you can, up to 60 seconds' },
+          { instruction: 'Stand on one leg near a wall for safety' },
+          { instruction: 'Hold as long as you can (up to 60s)' },
           { instruction: 'Try both legs and report your best time' },
-        ]}
-        commonMistakes={[
-          'Touching the standing leg with your foot',
-          'Hopping or shifting the standing foot',
-          'Gripping the floor with your toes',
         ]}
         animationPlaceholder={<AnimationPlaceholder type="balance" />}
       />
 
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-xl border border-border p-4 md:p-6">
         <StepWrapper
           onNext={handleNext}
           onBack={onBack}
@@ -70,12 +64,14 @@ export function BalanceStep({ onComplete, onSkip, onBack }: BalanceStepProps) {
           canProgress={canProgress}
           testName="Balance Test"
         >
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Single-Leg Balance</h2>
-              <p className="text-muted-foreground text-sm">
-                Try both legs and report your best time
-              </p>
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-lg md:text-xl font-semibold">Single-Leg Balance</h2>
+              <HowItWorksButton
+                testName="Single-Leg Balance"
+                measure="Duration you can stand on one leg, assessing proprioception and vestibular function."
+                relevance="Balance ability is one of the strongest predictors of fall risk and mortality. Studies show it declines predictably with age, making it a key functional age marker."
+              />
             </div>
 
             {/* Best time */}

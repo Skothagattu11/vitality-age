@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TutorialPanel } from '@/components/TutorialPanel';
 import { AnimationPlaceholder } from '@/components/AnimationPlaceholder';
 import { StepWrapper } from '@/components/StepWrapper';
+import { HowItWorksButton } from '@/components/HowItWorksButton';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CrossLeggedResult, SkippedStep } from '@/types/assessment';
@@ -27,12 +28,12 @@ export function CrossLeggedStep({ onComplete, onSkip, onBack }: CrossLeggedStepP
     { 
       value: 'yes-relaxed', 
       label: 'Yes, relaxed', 
-      desc: 'Can sit comfortably with good posture' 
+      desc: 'Comfortable with good posture' 
     },
     { 
       value: 'yes-stiff', 
       label: 'Yes, but stiff', 
-      desc: 'Can do it but feels tight in hips' 
+      desc: 'Feels tight in hips' 
     },
     { 
       value: 'only-briefly', 
@@ -42,30 +43,24 @@ export function CrossLeggedStep({ onComplete, onSkip, onBack }: CrossLeggedStepP
     { 
       value: 'not-at-all', 
       label: 'Not really', 
-      desc: 'Cannot get into position comfortably' 
+      desc: 'Cannot get into position' 
     },
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 h-full">
+    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Cross-Legged Sit"
-        description="This test assesses your hip mobility and flexibility by checking how comfortably you can sit cross-legged on the floor."
+        description="Test hip mobility by sitting cross-legged on the floor."
         steps={[
           { instruction: 'Sit on the floor with legs crossed' },
           { instruction: 'Try to keep your back straight' },
           { instruction: 'Notice how your hips feel in this position' },
-          { instruction: 'Hold for a few seconds to assess comfort' },
-        ]}
-        commonMistakes={[
-          'Rounding the lower back too much',
-          'Forcing the position through pain',
-          'Not allowing time to settle into position',
         ]}
         animationPlaceholder={<AnimationPlaceholder type="cross-legged" />}
       />
 
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-xl border border-border p-4 md:p-6">
         <StepWrapper
           onNext={handleNext}
           onBack={onBack}
@@ -73,12 +68,14 @@ export function CrossLeggedStep({ onComplete, onSkip, onBack }: CrossLeggedStepP
           canProgress={canProgress}
           testName="Cross-Legged Sit"
         >
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Cross-Legged Sit</h2>
-              <p className="text-muted-foreground text-sm">
-                How comfortable can you sit cross-legged on the floor?
-              </p>
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-lg md:text-xl font-semibold">Cross-Legged Sit</h2>
+              <HowItWorksButton
+                testName="Cross-Legged Sit"
+                measure="Hip flexibility and ability to comfortably sit cross-legged on the floor."
+                relevance="Hip mobility affects lower back health, gait, and the ability to get up from the floor—a key predictor of longevity and independence."
+              />
             </div>
 
             <RadioGroup value={result} onValueChange={(v) => setResult(v as CrossLeggedResult)}>

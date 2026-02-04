@@ -35,6 +35,11 @@ export function Assessment() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [data.currentStep]);
+
   // Show onboarding tooltip on first visit when starting assessment
   useEffect(() => {
     if (data.currentStep === 1 && !hasSeenOnboarding) {

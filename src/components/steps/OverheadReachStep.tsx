@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TutorialPanel } from '@/components/TutorialPanel';
 import { AnimationPlaceholder } from '@/components/AnimationPlaceholder';
 import { StepWrapper } from '@/components/StepWrapper';
+import { HowItWorksButton } from '@/components/HowItWorksButton';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { OverheadReachResult, SkippedStep } from '@/types/assessment';
@@ -27,12 +28,12 @@ export function OverheadReachStep({ onComplete, onSkip, onBack }: OverheadReachS
     { 
       value: 'yes-easily', 
       label: 'Yes, easily', 
-      desc: 'Full range with no tension or compensation' 
+      desc: 'Full range with no tension' 
     },
     { 
       value: 'yes-with-effort', 
       label: 'Yes, with effort', 
-      desc: 'Can reach overhead but feels tight' 
+      desc: 'Can reach but feels tight' 
     },
     { 
       value: 'compensate', 
@@ -47,25 +48,19 @@ export function OverheadReachStep({ onComplete, onSkip, onBack }: OverheadReachS
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 h-full">
+    <div className="grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Overhead Reach"
-        description="This mobility test assesses your shoulder and thoracic spine mobility by checking how well you can raise your arms overhead."
+        description="Test shoulder mobility by reaching overhead while keeping your back against a wall."
         steps={[
-          { instruction: 'Stand with your back against a wall' },
-          { instruction: 'Keep your lower back touching the wall' },
-          { instruction: 'Raise both arms overhead, trying to touch the wall' },
-          { instruction: 'Keep elbows straight throughout' },
-        ]}
-        commonMistakes={[
-          'Arching the lower back off the wall',
-          'Bending the elbows to get higher',
-          'Shrugging shoulders up to ears',
+          { instruction: 'Stand with back against wall' },
+          { instruction: 'Keep lower back touching the wall' },
+          { instruction: 'Raise both arms overhead with straight elbows' },
         ]}
         animationPlaceholder={<AnimationPlaceholder type="overhead-reach" />}
       />
 
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-xl border border-border p-4 md:p-6">
         <StepWrapper
           onNext={handleNext}
           onBack={onBack}
@@ -73,12 +68,14 @@ export function OverheadReachStep({ onComplete, onSkip, onBack }: OverheadReachS
           canProgress={canProgress}
           testName="Overhead Reach"
         >
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold mb-2">Overhead Reach</h2>
-              <p className="text-muted-foreground text-sm">
-                Can you touch the wall overhead while keeping your back flat?
-              </p>
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-lg md:text-xl font-semibold">Overhead Reach</h2>
+              <HowItWorksButton
+                testName="Overhead Reach"
+                measure="Shoulder and thoracic spine mobility when reaching overhead against a wall."
+                relevance="Upper body mobility affects posture, breathing, and daily activities. Restricted overhead mobility is common with aging and sedentary lifestyles."
+              />
             </div>
 
             <RadioGroup value={result} onValueChange={(v) => setResult(v as OverheadReachResult)}>
