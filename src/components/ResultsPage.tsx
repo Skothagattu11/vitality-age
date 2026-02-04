@@ -189,10 +189,10 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
       const medalTextContainer = cardRef.current.querySelector('.medal-text-container') as HTMLElement;
       const medalBioText = cardRef.current.querySelector('.medal-bio-text') as HTMLElement;
       if (medalTextContainer) {
-        medalTextContainer.style.marginTop = '-15px';
+        medalTextContainer.style.marginTop = '-24px';
       }
       if (medalBioText) {
-        medalBioText.style.marginTop = '12px';
+        medalBioText.style.marginTop = '23px';
       }
 
       const canvas = await html2canvas(cardRef.current, {
@@ -215,7 +215,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         medalTextContainer.style.marginTop = '0';
       }
       if (medalBioText) {
-        medalBioText.style.marginTop = '4px';
+        medalBioText.style.marginTop = '8px';
       }
 
       // Restore original scale
@@ -227,14 +227,14 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
       // Make sure to revert even on error
       if (cardRef.current) {
         cardRef.current.style.transform = originalTransform;
-      }
-      const medalTextContainer = cardRef.current?.querySelector('.medal-text-container') as HTMLElement;
-      const medalBioText = cardRef.current?.querySelector('.medal-bio-text') as HTMLElement;
-      if (medalTextContainer) {
-        medalTextContainer.style.marginTop = '0';
-      }
-      if (medalBioText) {
-        medalBioText.style.marginTop = '4px';
+        const medalTextContainer = cardRef.current.querySelector('.medal-text-container') as HTMLElement;
+        const medalBioText = cardRef.current.querySelector('.medal-bio-text') as HTMLElement;
+        if (medalTextContainer) {
+          medalTextContainer.style.marginTop = '0';
+        }
+        if (medalBioText) {
+          medalBioText.style.marginTop = '8px';
+        }
       }
       return null;
     }
@@ -499,7 +499,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                         marginBottom: '-9px',
                       }}
                     >
-                      Functional Biological Age
+                      Functional Age
                     </div>
 
                     {/* Big number with 3D effect */}
@@ -721,10 +721,10 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                               color: '#A0522D',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
-                              marginTop: '4px',
+                              marginTop: '8px',
                             }}
                           >
-                            Biological Age
+                            Functional Age
                           </span>
                         </div>
                       </div>

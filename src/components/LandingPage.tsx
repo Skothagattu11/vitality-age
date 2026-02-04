@@ -22,9 +22,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <main className="flex-1 flex items-center justify-center px-4 py-6 relative z-10">
         <motion.div
           className="max-w-lg w-full text-center space-y-8"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
         >
           {/* Logo / Title */}
           <div className="space-y-4">
@@ -49,22 +49,12 @@ export function LandingPage({ onStart }: LandingPageProps) {
           </div>
 
           {/* Value prop */}
-          <motion.p
-            className="text-lg text-muted-foreground max-w-md mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
+          <p className="text-lg text-muted-foreground max-w-md mx-auto">
             10 minutes. 5 simple tests. See how your body recovers.
-          </motion.p>
+          </p>
 
           {/* CTAs */}
-          <motion.div
-            className="space-y-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+          <div className="space-y-4">
             <Button
               variant="hero"
               size="xl"
@@ -123,15 +113,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 </DialogContent>
               </Dialog>
             </div>
-          </motion.div>
+          </div>
 
           {/* Features */}
-          <motion.div
-            className="grid grid-cols-3 gap-4 pt-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <div className="grid grid-cols-3 gap-4 pt-4">
             {[
               { label: '10 min', subtext: 'Quick assessment' },
               { label: 'No equipment', subtext: 'Just a chair & wall' },
@@ -142,7 +127,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 <p className="text-xs text-muted-foreground">{item.subtext}</p>
               </div>
             ))}
-          </motion.div>
+          </div>
         </motion.div>
       </main>
 
