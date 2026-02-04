@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Info, X, Shield } from 'lucide-react';
+import { Sparkles, ArrowRight, Info, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -20,21 +19,12 @@ export function LandingPage({ onStart }: LandingPageProps) {
       </div>
 
       <main className="flex-1 flex items-center justify-center px-4 py-6 relative z-10">
-        <motion.div
-          className="max-w-lg w-full text-center space-y-8"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        >
+        <div className="max-w-lg w-full text-center space-y-8 animate-fade-in-up">
           {/* Logo / Title */}
           <div className="space-y-4">
-            <motion.div
-              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            >
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4 animate-float">
               <Sparkles className="w-8 h-8 text-primary" />
-            </motion.div>
+            </div>
 
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               <span className="gradient-text">Entropy Age</span>
@@ -79,7 +69,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                   </DialogHeader>
                   <div className="space-y-4 text-sm text-muted-foreground">
                     <p>
-                      Entropy Age estimates your functional biological age through 
+                      Entropy Age estimates your functional biological age through
                       5 simple at-home tests that measure:
                     </p>
                     <ul className="space-y-2 ml-4">
@@ -105,8 +95,8 @@ export function LandingPage({ onStart }: LandingPageProps) {
                       </li>
                     </ul>
                     <p>
-                      Your answers are scored against age-adjusted benchmarks to 
-                      estimate how well your body functions compared to your 
+                      Your answers are scored against age-adjusted benchmarks to
+                      estimate how well your body functions compared to your
                       chronological age.
                     </p>
                   </div>
@@ -128,14 +118,14 @@ export function LandingPage({ onStart }: LandingPageProps) {
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </main>
 
       {/* Disclaimer footer */}
       <footer className="p-6 text-center relative z-10">
         <p className="text-xs text-muted-foreground max-w-md mx-auto flex items-center justify-center gap-1">
           <Shield className="w-3 h-3" />
-          For educational purposes only. Not medical advice. 
+          For educational purposes only. Not medical advice.
           Consult a healthcare provider for health concerns.
         </p>
       </footer>
