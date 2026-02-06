@@ -3,35 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicon & Icons -->
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
     <link rel="manifest" href="/manifest.json" />
 
     <!-- iOS PWA support -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Entropy Age" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
 
-    <!-- Theme color for browser UI -->
+    <!-- Theme & Robots -->
     <meta name="theme-color" content="#00BCD4" />
+    <meta name="robots" content="index, follow" />
 
-    <title>Entropy Age - Functional Biological Age Assessment</title>
-    <meta name="description" content="Discover your functional biological age with a simple 10-minute at-home assessment. No bloodwork required." />
+    <!-- Primary Meta Tags -->
+    <title>Entropy Age – Discover Your Functional Biological Age</title>
+    <meta name="description" content="Your chronological age is just a number. Entropy Age estimates your functional biological age through 5 simple at-home tests in 10 minutes — no bloodwork, no equipment. See how your body is really aging." />
     <meta name="author" content="Entropy Age" />
 
-    <meta property="og:title" content="Entropy Age - Functional Biological Age" />
-    <meta property="og:description" content="Discover your functional biological age with a simple 10-minute at-home assessment. No bloodwork required." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <!-- Canonical -->
+    <link rel="canonical" href="https://www.entropyage.com/" />
 
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.entropyage.com/" />
+    <meta property="og:title" content="Entropy Age – Discover Your Functional Biological Age" />
+    <meta property="og:description" content="10 minutes. 5 simple tests. No bloodwork. Estimate your functional biological age and see how your body is really aging." />
+    <meta property="og:image" content="https://www.entropyage.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="640" />
+    <meta property="og:site_name" content="Entropy Age" />
+
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@EntropyAge" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:url" content="https://www.entropyage.com/" />
+    <meta name="twitter:title" content="Entropy Age – Discover Your Functional Biological Age" />
+    <meta name="twitter:description" content="10 minutes. 5 simple tests. No bloodwork. Estimate your functional biological age and see how your body is really aging." />
+    <meta name="twitter:image" content="https://www.entropyage.com/og-image.png" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Entropy Age",
+      "url": "https://www.entropyage.com",
+      "description": "A free functional biological age assessment that analyzes your physical performance through 5 simple at-home tests to estimate how fast your body is really aging.",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Entropy Age"
+      }
+    }
+    </script>
+
+    <!-- FAQ Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is functional biological age?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Functional biological age reflects how your body is actually aging based on physical performance markers like strength, balance, endurance, and mobility — rather than just your birth date."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the Entropy Age assessment work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You complete 5 simple at-home tests measuring lower-body strength, muscular endurance, balance, cardiovascular recovery, and mobility. Results are scored against age-adjusted benchmarks to estimate your functional age."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need any equipment?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No special equipment is needed — just a chair and a wall. The entire assessment takes about 10 minutes."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
 
   <body>
     <div id="root">
-      <!-- Instant loading state - replaced when React mounts -->
+      <!-- Static HTML for crawlers, bots, and no-JS users — replaced when React mounts -->
       <div id="initial-loader" style="
         min-height: 100vh;
         display: flex;
@@ -40,45 +111,177 @@
         justify-content: center;
         background: hsl(210 20% 98%);
         font-family: system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        text-align: center;
       ">
-        <div style="
-          width: 64px;
-          height: 64px;
-          border-radius: 16px;
-          background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 24px;
-          animation: pulse 1.5s ease-in-out infinite;
+        <header>
+          <div style="
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px auto;
+            animation: pulse 1.5s ease-in-out infinite;
+          ">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
+            </svg>
+          </div>
+
+          <h1 style="
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 0 8px 0;
+            line-height: 1.2;
+          ">Entropy Age</h1>
+
+          <p style="
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: hsl(220 20% 15%);
+            margin: 0 0 4px 0;
+          ">Functional Biological Age</p>
+          <p style="
+            font-size: 1rem;
+            color: hsl(220 10% 45%);
+            margin: 0 0 24px 0;
+          ">(No Bloodwork)</p>
+        </header>
+
+        <main>
+          <p style="
+            font-size: 1.125rem;
+            color: hsl(220 10% 45%);
+            max-width: 28rem;
+            margin: 0 auto 24px auto;
+            line-height: 1.6;
+          ">
+            Your chronological age is just a number. Your functional biological age reflects how your body is actually aging — influenced by strength, balance, endurance, and recovery. Entropy Age estimates whether your body is aging faster or slower than your years through 5 simple at-home tests in 10 minutes.
+          </p>
+
+          <a href="/" style="
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%));
+            color: white;
+            font-weight: 600;
+            font-size: 1.125rem;
+            border-radius: 12px;
+            text-decoration: none;
+            margin-bottom: 32px;
+          ">
+            Start Assessment →
+          </a>
+
+          <section style="margin-top: 32px;">
+            <h2 style="
+              font-size: 1.25rem;
+              font-weight: 600;
+              color: hsl(220 20% 15%);
+              margin: 0 0 16px 0;
+            ">How It Works</h2>
+            <div style="
+              display: flex;
+              gap: 16px;
+              justify-content: center;
+              flex-wrap: wrap;
+              max-width: 32rem;
+              margin: 0 auto;
+            ">
+              <div style="text-align: center; flex: 1; min-width: 80px;">
+                <p style="font-weight: 600; color: hsl(220 20% 15%); margin: 0;">10 min</p>
+                <p style="font-size: 0.75rem; color: hsl(220 10% 45%); margin: 4px 0 0 0;">Quick assessment</p>
+              </div>
+              <div style="text-align: center; flex: 1; min-width: 80px;">
+                <p style="font-weight: 600; color: hsl(220 20% 15%); margin: 0;">No equipment</p>
+                <p style="font-size: 0.75rem; color: hsl(220 10% 45%); margin: 4px 0 0 0;">Just a chair &amp; wall</p>
+              </div>
+              <div style="text-align: center; flex: 1; min-width: 80px;">
+                <p style="font-weight: 600; color: hsl(220 20% 15%); margin: 0;">Private</p>
+                <p style="font-size: 0.75rem; color: hsl(220 10% 45%); margin: 4px 0 0 0;">Data stays local</p>
+              </div>
+            </div>
+          </section>
+
+          <section style="margin-top: 32px; max-width: 28rem; margin-left: auto; margin-right: auto; text-align: left;">
+            <h2 style="
+              font-size: 1.125rem;
+              font-weight: 600;
+              color: hsl(220 20% 15%);
+              margin: 0 0 12px 0;
+              text-align: center;
+            ">What We Measure</h2>
+            <ol style="
+              color: hsl(220 10% 45%);
+              font-size: 0.875rem;
+              line-height: 1.8;
+              padding-left: 20px;
+              margin: 0;
+            ">
+              <li><strong>Lower-body strength</strong> — Chair sit-to-stand test</li>
+              <li><strong>Muscular endurance</strong> — Wall sit hold</li>
+              <li><strong>Balance &amp; proprioception</strong> — Single-leg balance</li>
+              <li><strong>Cardiovascular recovery</strong> — 60-second march</li>
+              <li><strong>Mobility</strong> — Overhead reach &amp; seated flexibility</li>
+            </ol>
+          </section>
+        </main>
+
+        <footer style="
+          margin-top: 40px;
+          font-size: 0.75rem;
+          color: hsl(220 10% 55%);
         ">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
-          </svg>
-        </div>
-        <h1 style="
-          font-size: 2rem;
-          font-weight: bold;
-          background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin: 0 0 8px 0;
-        ">Entropy Age</h1>
-        <p style="
-          color: hsl(220 10% 45%);
-          font-size: 0.875rem;
-          margin: 0;
-        ">Loading...</p>
+          <p style="margin: 0;">For educational purposes only. Not medical advice. Consult a healthcare provider for health concerns.</p>
+          <p style="margin: 8px 0 0 0;">© 2026 Entropy Age. All rights reserved.</p>
+        </footer>
       </div>
+
+      <!-- Noscript fallback -->
+      <noscript>
+        <style>
+          #initial-loader { animation: none !important; }
+          #initial-loader * { animation: none !important; }
+        </style>
+        <div style="
+          padding: 20px;
+          text-align: center;
+          background: hsl(38 92% 95%);
+          border: 1px solid hsl(38 92% 70%);
+          border-radius: 8px;
+          margin: 16px;
+          font-family: system-ui, sans-serif;
+        ">
+          <p style="margin: 0; color: hsl(38 50% 30%);">
+            <strong>JavaScript is required</strong> to take the interactive assessment.
+            Please enable JavaScript in your browser settings to use Entropy Age.
+          </p>
+        </div>
+      </noscript>
+
       <style>
         @keyframes pulse {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.05); opacity: 0.8; }
         }
         @media (prefers-color-scheme: dark) {
-          #initial-loader { background: hsl(220 20% 8%); }
-          #initial-loader p { color: hsl(220 10% 60%); }
+          #initial-loader { background: hsl(220 20% 8%) !important; }
+          #initial-loader header h1 { color: white; }
+          #initial-loader header p,
+          #initial-loader main p,
+          #initial-loader main li,
+          #initial-loader h2 { color: hsl(220 10% 70%) !important; }
+          #initial-loader footer p { color: hsl(220 10% 50%) !important; }
+          #initial-loader strong { color: hsl(220 10% 85%) !important; }
         }
       </style>
     </div>
