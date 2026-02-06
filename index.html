@@ -285,6 +285,26 @@
         }
       </style>
     </div>
+    <!-- Handle interactions before React loads -->
+    <script>
+      (function() {
+        // Store user intent if they click before React loads
+        var startBtn = document.querySelector('a[href="/"]');
+        if (startBtn) {
+          startBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.__userClickedStart = true;
+            // Show loading state
+            this.innerHTML = 'Loading... <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="60" stroke-dashoffset="20"/></svg>';
+            this.style.pointerEvents = 'none';
+            this.style.opacity = '0.8';
+          });
+        }
+      })();
+    </script>
+    <style>
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

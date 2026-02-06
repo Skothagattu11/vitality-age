@@ -119,6 +119,15 @@ export function Assessment() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  // Check if user clicked start button before React loaded
+  useEffect(() => {
+    if ((window as any).__userClickedStart && data.currentStep === 0) {
+      // User clicked start in static HTML, navigate to setup
+      goToStep(1);
+      delete (window as any).__userClickedStart;
+    }
+  }, [goToStep, data.currentStep]);
+
   // Scroll to top when step changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
