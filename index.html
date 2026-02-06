@@ -43,7 +43,22 @@
     <meta name="twitter:description" content="10 minutes. 5 simple tests. No bloodwork. Estimate your functional biological age and see how your body is really aging." />
     <meta name="twitter:image" content="https://www.entropyage.com/og-image.png" />
 
-    <!-- JSON-LD Structured Data -->
+    <!-- Organization Schema - Brand Recognition -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Entropy Age",
+      "url": "https://www.entropyage.com",
+      "logo": "https://www.entropyage.com/favicon.png",
+      "description": "Entropy Age provides free functional biological age assessments through simple at-home physical tests, helping people understand how their body is really aging.",
+      "foundingDate": "2024",
+      "areaServed": "Worldwide",
+      "slogan": "Discover how your body is really aging"
+    }
+    </script>
+
+    <!-- WebApplication Schema -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -61,11 +76,19 @@
       "creator": {
         "@type": "Organization",
         "name": "Entropy Age"
-      }
+      },
+      "featureList": [
+        "Functional biological age estimation",
+        "5 evidence-based physical tests",
+        "Age-adjusted benchmarks",
+        "Personalized improvement recommendations",
+        "No equipment required",
+        "Private - data stays on device"
+      ]
     }
     </script>
 
-    <!-- FAQ Structured Data -->
+    <!-- FAQ Structured Data - Expanded -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -76,7 +99,7 @@
           "name": "What is functional biological age?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Functional biological age reflects how your body is actually aging based on physical performance markers like strength, balance, endurance, and mobility — rather than just your birth date."
+            "text": "Functional biological age reflects how your body is actually aging based on physical performance markers like strength, balance, endurance, and mobility — rather than just your birth date. Research shows these functional markers correlate with longevity and health outcomes."
           }
         },
         {
@@ -84,16 +107,121 @@
           "name": "How does the Entropy Age assessment work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "You complete 5 simple at-home tests measuring lower-body strength, muscular endurance, balance, cardiovascular recovery, and mobility. Results are scored against age-adjusted benchmarks to estimate your functional age."
+            "text": "You complete 5 simple at-home tests measuring lower-body strength (chair sit-to-stand), muscular endurance (wall sit), balance (single-leg stand), cardiovascular recovery (60-second march), and mobility (overhead reach). Results are scored against age-adjusted benchmarks from peer-reviewed research to estimate your functional age."
           }
         },
         {
           "@type": "Question",
-          "name": "Do I need any equipment?",
+          "name": "Do I need any equipment for the assessment?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No special equipment is needed — just a chair and a wall. The entire assessment takes about 10 minutes."
+            "text": "No special equipment is needed — just a sturdy chair and a wall. The entire assessment takes about 10 minutes and can be done at home in comfortable clothing."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "How accurate is the Entropy Age assessment?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The assessment uses evidence-based tests validated in peer-reviewed research. These include the 30-second chair stand test, wall sit endurance test, and single-leg balance test — all of which have documented correlations with functional health and aging. Results provide an educational estimate, not a medical diagnosis."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data private and secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, your privacy is protected. All assessment data stays on your device and is not uploaded to any servers. You can optionally save or share your results, but this is entirely your choice."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who should take the Entropy Age assessment?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The assessment is designed for adults who want to understand their functional fitness level and how it compares to age-adjusted benchmarks. It's suitable for most healthy adults. If you have injuries, chronic conditions, or mobility limitations, consult a healthcare provider before attempting the physical tests."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What can I do to improve my functional age?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "After completing the assessment, you'll receive specific recommendations based on your results. Common areas for improvement include strength training for lower-body power, balance exercises, cardiovascular activity, and mobility work. Consistent exercise, adequate sleep, and proper nutrition all contribute to better functional age."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How often should I retake the assessment?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We recommend retaking the assessment every 3-6 months to track your progress. This gives enough time for meaningful improvements from lifestyle changes while helping you stay motivated on your health journey."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- HowTo Schema - Assessment Process -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to Complete the Entropy Age Functional Biological Age Assessment",
+      "description": "A step-by-step guide to measuring your functional biological age through 5 simple at-home tests",
+      "totalTime": "PT10M",
+      "tool": [
+        {
+          "@type": "HowToTool",
+          "name": "Sturdy chair"
+        },
+        {
+          "@type": "HowToTool",
+          "name": "Wall"
+        }
+      ],
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Enter Your Information",
+          "text": "Provide your chronological age, gender, and basic health information to establish benchmarks."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Complete Sit-to-Stand Test",
+          "text": "Measure lower-body strength by counting how many times you can stand up from a chair in 30 seconds."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Perform Wall Sit Hold",
+          "text": "Test muscular endurance by timing how long you can hold a wall sit position with thighs parallel to the floor."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 4,
+          "name": "Test Single-Leg Balance",
+          "text": "Assess balance and proprioception by standing on one leg with eyes open, then closed, and timing your hold."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 5,
+          "name": "Complete March Recovery Test",
+          "text": "Measure cardiovascular recovery by marching in place for 60 seconds, then assessing how quickly your heart rate returns to normal."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 6,
+          "name": "Perform Mobility Assessments",
+          "text": "Test flexibility with overhead reach and seated forward bend to assess joint range of motion."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 7,
+          "name": "View Your Results",
+          "text": "Receive your functional biological age estimate, see how it compares to your chronological age, and get personalized recommendations for improvement."
         }
       ]
     }
@@ -156,6 +284,32 @@
         </header>
 
         <main>
+          <!-- TL;DR Summary Block for AI extraction -->
+          <section aria-label="Summary" style="
+            background: hsl(189 100% 97%);
+            border-left: 4px solid hsl(189 100% 50%);
+            padding: 16px;
+            margin: 0 auto 24px auto;
+            max-width: 28rem;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+          ">
+            <p style="
+              font-size: 0.875rem;
+              font-weight: 600;
+              color: hsl(189 100% 30%);
+              margin: 0 0 8px 0;
+            ">TL;DR</p>
+            <p style="
+              font-size: 0.9375rem;
+              color: hsl(220 10% 35%);
+              margin: 0;
+              line-height: 1.5;
+            ">
+              Entropy Age is a free 10-minute assessment that estimates your functional biological age through 5 at-home physical tests (no bloodwork needed). It measures strength, balance, endurance, and mobility to show if your body is aging faster or slower than your chronological age.
+            </p>
+          </section>
+
           <p style="
             font-size: 1.125rem;
             color: hsl(220 10% 45%);
@@ -163,7 +317,7 @@
             margin: 0 auto 24px auto;
             line-height: 1.6;
           ">
-            Your chronological age is just a number. Your functional biological age reflects how your body is actually aging — influenced by strength, balance, endurance, and recovery. Entropy Age estimates whether your body is aging faster or slower than your years through 5 simple at-home tests in 10 minutes.
+            Your chronological age is just a number. Your functional biological age reflects how your body is actually aging — influenced by strength, balance, endurance, and recovery. Research shows these physical markers correlate with longevity and health outcomes. Entropy Age uses evidence-based tests to estimate whether your body is aging faster or slower than your years.
           </p>
 
           <a href="/" style="
@@ -227,12 +381,51 @@
               padding-left: 20px;
               margin: 0;
             ">
-              <li><strong>Lower-body strength</strong> — Chair sit-to-stand test</li>
-              <li><strong>Muscular endurance</strong> — Wall sit hold</li>
-              <li><strong>Balance &amp; proprioception</strong> — Single-leg balance</li>
-              <li><strong>Cardiovascular recovery</strong> — 60-second march</li>
-              <li><strong>Mobility</strong> — Overhead reach &amp; seated flexibility</li>
+              <li><strong>Lower-body strength</strong> — Chair sit-to-stand test (30 seconds)</li>
+              <li><strong>Muscular endurance</strong> — Wall sit hold (timed)</li>
+              <li><strong>Balance &amp; proprioception</strong> — Single-leg balance (eyes open/closed)</li>
+              <li><strong>Cardiovascular recovery</strong> — 60-second march with heart rate check</li>
+              <li><strong>Mobility</strong> — Overhead reach &amp; seated forward bend</li>
             </ol>
+          </section>
+
+          <!-- FAQ Section for AI Visibility -->
+          <section style="margin-top: 32px; max-width: 28rem; margin-left: auto; margin-right: auto; text-align: left;">
+            <h2 style="
+              font-size: 1.125rem;
+              font-weight: 600;
+              color: hsl(220 20% 15%);
+              margin: 0 0 16px 0;
+              text-align: center;
+            ">Frequently Asked Questions</h2>
+
+            <h3 style="font-size: 0.9375rem; font-weight: 600; color: hsl(220 20% 25%); margin: 0 0 8px 0;">
+              What is functional biological age?
+            </h3>
+            <p style="font-size: 0.875rem; color: hsl(220 10% 45%); margin: 0 0 16px 0; line-height: 1.6;">
+              Functional biological age reflects how your body is actually aging based on physical performance markers — strength, balance, endurance, and mobility — rather than your birth date. Research shows these markers correlate with longevity and health outcomes.
+            </p>
+
+            <h3 style="font-size: 0.9375rem; font-weight: 600; color: hsl(220 20% 25%); margin: 0 0 8px 0;">
+              How accurate is the assessment?
+            </h3>
+            <p style="font-size: 0.875rem; color: hsl(220 10% 45%); margin: 0 0 16px 0; line-height: 1.6;">
+              The assessment uses evidence-based tests validated in peer-reviewed research, including the 30-second chair stand test and single-leg balance test. Results are scored against age-adjusted benchmarks to provide an educational estimate of your functional age.
+            </p>
+
+            <h3 style="font-size: 0.9375rem; font-weight: 600; color: hsl(220 20% 25%); margin: 0 0 8px 0;">
+              Is my data private?
+            </h3>
+            <p style="font-size: 0.875rem; color: hsl(220 10% 45%); margin: 0 0 16px 0; line-height: 1.6;">
+              Yes. All assessment data stays on your device and is not uploaded to any servers. You control whether to save or share your results.
+            </p>
+
+            <h3 style="font-size: 0.9375rem; font-weight: 600; color: hsl(220 20% 25%); margin: 0 0 8px 0;">
+              Who should take this assessment?
+            </h3>
+            <p style="font-size: 0.875rem; color: hsl(220 10% 45%); margin: 0; line-height: 1.6;">
+              The assessment is designed for healthy adults who want to understand their functional fitness level. If you have injuries, chronic conditions, or mobility limitations, consult a healthcare provider before attempting the physical tests.
+            </p>
           </section>
         </main>
 

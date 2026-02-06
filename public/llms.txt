@@ -1,0 +1,63 @@
+# Entropy Age
+
+> Entropy Age is a free functional biological age assessment tool that estimates how your body is really aging through 5 simple at-home physical tests in about 10 minutes—no bloodwork or special equipment required.
+
+## Overview
+
+Entropy Age helps users understand their functional biological age, which reflects how the body is actually aging based on physical performance markers like strength, balance, endurance, and mobility—rather than just chronological age (birth date).
+
+## Key Concept
+
+- **Functional Biological Age**: An estimate of how old your body functions compared to age-adjusted benchmarks
+- **Chronological Age**: Your actual age based on birth date
+- **The Gap**: The difference between functional and chronological age shows if you're aging faster or slower than average
+
+## The Assessment
+
+The Entropy Age assessment includes 5 evidence-based physical tests:
+
+1. **Sit-to-Stand Test**: Measures lower-body strength and power by counting chair stands in 30 seconds
+2. **Wall Sit Test**: Measures muscular endurance by timing how long you can hold a wall sit position
+3. **Single-Leg Balance**: Measures balance and proprioception by timing how long you can stand on one leg
+4. **March Recovery Test**: Measures cardiovascular fitness through a 60-second marching exercise
+5. **Mobility Tests**: Measures joint range of motion through overhead reach and seated flexibility
+
+## How Results Are Calculated
+
+Results are scored against age-adjusted benchmarks from peer-reviewed research. Each test contributes to an overall functional age estimate. Users receive:
+
+- Their estimated functional biological age
+- The gap between functional and chronological age
+- Specific areas for improvement based on test performance
+
+## Key Features
+
+- **No Equipment Needed**: Just a chair and a wall
+- **10 Minutes**: Complete assessment takes about 10 minutes
+- **Private**: All data stays on your device, nothing is uploaded
+- **Free**: No cost, no subscription required
+
+## Scientific Foundation
+
+The tests are based on established protocols used in research:
+- Chair stand tests correlate with lower-body strength and functional independence
+- Wall sit duration correlates with muscular endurance
+- Single-leg balance correlates with fall risk and proprioceptive health
+- Post-exercise heart rate recovery correlates with cardiovascular fitness
+- Joint mobility correlates with functional movement capacity
+
+## Important Disclaimers
+
+- This is an educational tool, not a medical assessment
+- Results should not replace professional medical advice
+- Users should consult healthcare providers for health concerns
+- The assessment is designed for general wellness education
+
+## Contact
+
+- Website: https://www.entropyage.com
+- For questions or feedback, visit our website
+
+---
+
+*Last updated: February 2026*
