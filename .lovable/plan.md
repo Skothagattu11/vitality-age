@@ -1,171 +1,76 @@
 
 
-# Plan: Add "Coming Soon" Age Tool Cards with Email Notifications
+# Performance Optimization Plan: Instant Landing Page Load
 
-## Overview
-Add a section to the Results Page displaying 4 upcoming age assessment tools. Each card has a "Notify me" button that opens a modal for email capture. After submission, a confirmation message appears.
+## The Core Problem
 
-## Components to Create/Modify
+Right now, when a user visits your app, they see a **loading screen** (the `#initial-loader` with "Loading your assessment..." text, animated spinner, and fun facts) while React and all JavaScript bundles download, parse, and execute. Only after React fully mounts does the actual landing page appear. This creates a noticeable delay, especially on mobile or slower connections.
 
-### 1. New Component: `ComingSoonCard.tsx`
-A reusable card component for each upcoming age tool with:
-- Tool name as heading
-- One-line description
-- "Notify me" button (triggers modal)
+## Root Causes Identified
 
-### 2. New Component: `NotifyModal.tsx`
-A modal dialog using the existing Dialog component:
-- Text: "Get notified when this age tool becomes available."
-- Email input field with validation
-- "Notify me" button
-- Footer text: "We'll email only when this tool is ready."
+1. **The static HTML shows a "loading" screen, not the actual landing page.** The `index.html` contains a branded loader with a spinner and "Loading your assessment..." text instead of the real landing page UI. Users see a loading state when they should see the app.
 
-### 3. Modify: `ResultsPage.tsx`
-- Add a new section between "Areas to Improve" and the action buttons
-- Display 4 coming soon cards in a grid
-- Manage modal open/close state
-- Track which tools the user has signed up for
-- Show confirmation message after email submission
+2. **Lazy loading the Index page adds an extra round-trip.** `App.tsx` uses `lazy(() => import("./pages/Index"))`, meaning React loads, then fetches the Index chunk, then renders -- two sequential waits instead of one.
 
-## Coming Soon Tools Data
-```text
-1. Metabolic Age
-   - Energy usage and metabolic efficiency
+3. **CSS is not available until JavaScript processes it.** The full Tailwind CSS is bundled inside JS. The critical inline styles in `index.html` don't match the actual landing page design, so there's a visual "flash" when React takes over.
 
-2. Brain Age
-   - Cognitive load and nervous system resilience
+4. **Heavy dependencies block interactivity.** `framer-motion` is imported in `SetupPage.tsx` at the top level (not dynamically), and multiple Radix UI components are eagerly loaded even though they're only needed on step 2+.
 
-3. Cardiovascular Age
-   - Heart efficiency and recovery capacity
+5. **Console warning: Tailwind CDN in production.** There's a `cdn.tailwindcss.com` script being loaded somewhere, which adds unnecessary weight and generates warnings.
 
-4. Longevity Age Index
-   - Long-term resilience and aging trajectory
-```
+## The Strategy: Show the Real App Instantly
 
-## UI/UX Flow
+Instead of showing a loading screen, **render the actual landing page as static HTML** in `index.html` so users see the real UI before any JavaScript loads. Then React silently "hydrates" over it.
 
-```text
-+----------------------------------+
-|          Results Page            |
-|                                  |
-|  [Entropy Age Card - existing]   |
-|                                  |
-|  [Areas to Improve - existing]   |
-|                                  |
-|  ====== Coming Soon ======       |
-|                                  |
-|  +------------+  +------------+  |
-|  |Metabolic   |  |Brain Age   |  |
-|  |Age         |  |            |  |
-|  |[Notify me] |  |[Notify me] |  |
-|  +------------+  +------------+  |
-|                                  |
-|  +------------+  +------------+  |
-|  |Cardio Age  |  |Longevity   |  |
-|  |            |  |Index       |  |
-|  |[Notify me] |  |[Notify me] |  |
-|  +------------+  +------------+  |
-|                                  |
-|  [Save Image] [Share]            |
-|  [Retake Assessment]             |
-+----------------------------------+
-```
+### Step-by-step changes:
 
-## Email Submission Flow
+### 1. Replace the loader with the actual landing page HTML
 
-1. User clicks "Notify me" on any card
-2. Modal opens with email input
-3. User enters email and submits
-4. Modal closes
-5. Confirmation toast appears: "You'll be notified when this tool becomes available."
-6. Button on that card changes to show subscribed state (optional visual feedback)
+Replace the entire `#initial-loader` content in `index.html` with a static version of the real `LandingPage` component -- the star icon, "Entropy Age" title, "Functional Biological Age (No Bloodwork)" subtitle, description text, "Start Assessment" button, feature badges, and footer. Style it with inline CSS that matches your Tailwind design tokens.
 
-## Data Storage
-For now, emails will be stored in localStorage as a simple solution. This can be later connected to a backend/Supabase when available.
+This means users see the **finished landing page** the instant the HTML arrives -- zero wait.
 
----
+### 2. Make the static "Start Assessment" button work before React loads
+
+Add a small inline script that attaches a click handler to the static button. When clicked, it sets `window.__userClickedStart = true` (which your code already checks) and shows a brief transition state. When React mounts, it picks up this flag and navigates to step 1.
+
+### 3. Stop lazy-loading the Index/Landing page
+
+Change `App.tsx` to directly import `Index` instead of using `lazy()`. The landing page is the critical path -- it should be in the main bundle, not a separate chunk. Keep lazy loading for `NotFound` and everything else.
+
+### 4. Simplify the React mount transition
+
+Instead of a fade-out animation on the loader, React simply replaces the static HTML instantly (it already does this). Remove the `removeInitialLoader` logic and the opacity transition -- they add unnecessary delay.
+
+### 5. Remove the Tailwind CDN script
+
+Find and remove any reference to `cdn.tailwindcss.com` that's causing the console warning and adding load time.
+
+### 6. Optimize font loading
+
+Add `<link rel="preload">` for the Inter font (referenced in Tailwind config) or switch to system fonts to eliminate the font-loading delay.
 
 ## Technical Details
 
-### State Management in ResultsPage
-```typescript
-// New state variables
-const [notifyModalOpen, setNotifyModalOpen] = useState(false);
-const [selectedTool, setSelectedTool] = useState<string | null>(null);
-const [subscribedTools, setSubscribedTools] = useState<string[]>([]);
-```
+### Files to modify:
 
-### Coming Soon Data Structure
-```typescript
-const COMING_SOON_TOOLS = [
-  {
-    id: 'metabolic',
-    name: 'Metabolic Age',
-    description: 'Energy usage and metabolic efficiency',
-  },
-  {
-    id: 'brain',
-    name: 'Brain Age',
-    description: 'Cognitive load and nervous system resilience',
-  },
-  {
-    id: 'cardiovascular',
-    name: 'Cardiovascular Age',
-    description: 'Heart efficiency and recovery capacity',
-  },
-  {
-    id: 'longevity',
-    name: 'Longevity Age Index',
-    description: 'Long-term resilience and aging trajectory',
-  },
-];
-```
+| File | Change |
+|---|---|
+| `index.html` | Replace `#initial-loader` with static landing page HTML matching `LandingPage.tsx` design. Add click handler for CTA button. Remove fun-facts script. |
+| `src/App.tsx` | Direct import `Index` instead of `lazy()`. Remove `removeInitialLoader()`, `PageLoader`, and `ContentReady` wrapper complexity. Keep lazy loading for `NotFound` only. |
+| `src/main.tsx` | Simplify to standard React mount (remove loader transition logic). |
+| `src/components/LandingPage.tsx` | No changes needed -- React will render over the static HTML seamlessly. |
 
-### Card Styling
-- Use existing Card component with subtle border
-- Non-clickable (only button triggers action)
-- Clean, minimal design matching existing aesthetic
-- Grid layout: 2 columns on desktop, 1 column on mobile
+### What stays the same:
+- All lazy loading for assessment steps (2-10) stays as-is -- those are correctly deferred
+- Predictive prefetching in `Assessment.tsx` stays
+- All SEO metadata, JSON-LD, OG tags stay
+- The Vite chunk splitting config stays
 
-### Modal Implementation
-- Use existing Dialog component from `@/components/ui/dialog`
-- Email validation using zod schema
-- Accessible with proper ARIA labels
-- Close on successful submission
+### Expected Result
 
-### Email Validation
-```typescript
-const emailSchema = z.object({
-  email: z.string()
-    .trim()
-    .email({ message: "Please enter a valid email" })
-    .max(255, { message: "Email is too long" })
-});
-```
-
-### Confirmation Feedback
-Using the existing `sonner` toast system:
-```typescript
-import { toast } from 'sonner';
-
-// After successful submission
-toast.success("You'll be notified when this tool becomes available.");
-```
-
-## Files to Create
-1. `src/components/ComingSoonCard.tsx` - Reusable card component
-2. `src/components/NotifyModal.tsx` - Email capture modal
-
-## Files to Modify
-1. `src/components/ResultsPage.tsx` - Add coming soon section and modal integration
-
-## Implementation Steps
-1. Create `ComingSoonCard.tsx` with tool name, description, and notify button
-2. Create `NotifyModal.tsx` with email form using Dialog component
-3. Update `ResultsPage.tsx` to:
-   - Import new components
-   - Add coming soon section with 2x2 grid
-   - Add state for modal and subscribed tools
-   - Handle email submission and show confirmation toast
-   - Persist subscribed state in localStorage
+- **First Contentful Paint**: Near-instant (just HTML + inline CSS)
+- **Time to Interactive**: As soon as JS loads (button works even before React)
+- **No loading screen**: Users see the actual app immediately
+- **No layout shift**: Static HTML matches React output exactly
 
