@@ -19,32 +19,58 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    // Target modern browsers for smaller bundles
+    target: 'es2020',
+    // Enable minification
+    minify: 'esbuild',
+    // Generate sourcemaps for debugging but keep them external
+    sourcemap: false,
     // Optimize chunk splitting for faster initial load
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React - loads first
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          // Heavy libraries - lazy loaded
-          'framer': ['framer-motion'],
-          'charts': ['recharts'],
-          'canvas': ['html2canvas'],
-          // Radix UI components
-          'radix': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-progress',
-            '@radix-ui/react-radio-group',
-          ],
+        // Use hashed names for better caching
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks: (id) => {
+          // Core React - absolutely critical, loads first
+          if (id.includes('node_modules/react-dom') ||
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/scheduler')) {
+            return 'react-core';
+          }
+          // Router - needed for initial navigation
+          if (id.includes('react-router')) {
+            return 'router';
+          }
+          // Heavy libraries - lazy loaded only when needed
+          if (id.includes('framer-motion')) {
+            return 'framer';
+          }
+          if (id.includes('recharts') || id.includes('d3-')) {
+            return 'charts';
+          }
+          if (id.includes('html2canvas')) {
+            return 'canvas';
+          }
+          // Radix UI - used throughout but can be deferred
+          if (id.includes('@radix-ui')) {
+            return 'radix';
+          }
+          // Tanstack query - deferred
+          if (id.includes('@tanstack')) {
+            return 'query';
+          }
         },
       },
     },
     // Reduce chunk size warnings threshold
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],
+    // Exclude heavy deps from pre-bundling
+    exclude: ['html2canvas'],
   },
 }));
