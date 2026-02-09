@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, useLayoutEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -12,40 +12,21 @@ const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default:
 
 const queryClient = new QueryClient();
 
-// Remove static HTML loader once React is ready
-function useRemoveInitialLoader() {
-  useLayoutEffect(() => {
-    const loader = document.getElementById("initial-loader");
-    if (loader) {
-      // Add fade-out animation
-      loader.style.transition = "opacity 0.3s ease-out";
-      loader.style.opacity = "0";
-      // Remove from DOM after animation
-      setTimeout(() => {
-        loader.remove();
-      }, 300);
-    }
-  }, []);
+// Global function to remove loader - called when content is ready
+function removeInitialLoader() {
+  const loader = document.getElementById("initial-loader");
+  if (loader && loader.style.opacity !== "0") {
+    loader.style.transition = "opacity 0.3s ease-out";
+    loader.style.opacity = "0";
+    setTimeout(() => loader.remove(), 300);
+  }
 }
 
-// Minimal loading fallback that matches static HTML styling
+// PageLoader that keeps static HTML visible
 const PageLoader = () => {
-  // Don't show spinner if static HTML is still visible
-  const [showSpinner, setShowSpinner] = useState(false);
-
-  useEffect(() => {
-    // Only show spinner if loading takes longer than expected
-    const timer = setTimeout(() => setShowSpinner(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!showSpinner) return null;
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  // Static HTML in index.html stays visible - don't show anything here
+  // This prevents a flash of empty content
+  return null;
 };
 
 // Deferred UI components - load after main content
@@ -71,17 +52,25 @@ function DeferredProviders({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Wrapper to handle initial loader removal
-function AppContent() {
-  useRemoveInitialLoader();
+// Wrapper that removes loader only after content mounts
+function ContentReady({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Content has mounted - now safe to remove static HTML
+    removeInitialLoader();
+  }, []);
 
+  return <>{children}</>;
+}
+
+// Main app content
+function AppContent() {
   return (
     <DeferredProviders>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<ContentReady><Index /></ContentReady>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="*" element={<ContentReady><NotFound /></ContentReady>} />
         </Routes>
       </Suspense>
     </DeferredProviders>
