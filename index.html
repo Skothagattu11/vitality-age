@@ -171,96 +171,97 @@
   </head>
 
   <body>
-    <div id="root">
-      <!-- Static landing page — visible instantly, replaced by React on mount -->
-      <div id="static-landing" class="static-landing">
-        <div class="static-bg-glow" aria-hidden="true">
-          <div class="static-glow-1"></div>
-          <div class="static-glow-2"></div>
-        </div>
+    <!-- Static landing page — visible instantly, sits OUTSIDE #root so React never wipes it -->
+    <div id="static-landing" class="static-landing">
+      <div class="static-bg-glow" aria-hidden="true">
+        <div class="static-glow-1"></div>
+        <div class="static-glow-2"></div>
+      </div>
 
-        <main class="static-main">
-          <div class="static-content">
-            <div class="static-icon-wrap" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
-              </svg>
-            </div>
+      <main class="static-main">
+        <div class="static-content">
+          <div class="static-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
+            </svg>
+          </div>
 
-            <h1 class="static-h1">Entropy Age</h1>
+          <h1 class="static-h1">Entropy Age</h1>
 
-            <p class="static-subtitle">
-              Functional Biological Age
-              <span class="static-subtitle-small">(No Bloodwork)</span>
-            </p>
+          <p class="static-subtitle">
+            Functional Biological Age
+            <span class="static-subtitle-small">(No Bloodwork)</span>
+          </p>
 
-            <p class="static-desc">
-              Your chronological age is just a number. Entropy Age estimates your functional biological age through 5 simple at-home tests in 10 minutes — see how your body is really aging.
-            </p>
+          <p class="static-desc">
+            Your chronological age is just a number. Entropy Age estimates your functional biological age through 5 simple at-home tests in 10 minutes — see how your body is really aging.
+          </p>
+
+          <div>
+            <button id="static-start-btn" class="static-cta" aria-label="Start the functional biological age assessment">
+              Start Assessment
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
 
             <div>
-              <button id="static-start-btn" class="static-cta" aria-label="Start the functional biological age assessment">
-                Start Assessment
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <button class="static-how-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                How it works
               </button>
-
-              <div>
-                <button class="static-how-link">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                  How it works
-                </button>
-              </div>
-            </div>
-
-            <div class="static-features">
-              <div style="text-align:center">
-                <p class="static-feature-label">10 min</p>
-                <p class="static-feature-sub">Quick assessment</p>
-              </div>
-              <div style="text-align:center">
-                <p class="static-feature-label">No equipment</p>
-                <p class="static-feature-sub">Just a chair & wall</p>
-              </div>
-              <div style="text-align:center">
-                <p class="static-feature-label">Private</p>
-                <p class="static-feature-sub">Data stays local</p>
-              </div>
             </div>
           </div>
-        </main>
 
-        <footer class="static-footer">
-          <p>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
-            For educational purposes only. Not medical advice. Consult a healthcare provider for health concerns.
-          </p>
-          <p class="static-copy">© 2026 Entropy Age. All rights reserved.</p>
-        </footer>
-      </div>
-
-      <!-- SEO Content for crawlers -->
-      <div id="seo-content" style="position:absolute;left:-9999px;top:-9999px">
-        <h2>What We Measure</h2>
-        <ul>
-          <li>Lower-body strength — Chair sit-to-stand test</li>
-          <li>Muscular endurance — Wall sit hold</li>
-          <li>Balance — Single-leg balance test</li>
-          <li>Cardiovascular recovery — March test</li>
-          <li>Mobility — Overhead reach</li>
-        </ul>
-      </div>
-
-      <noscript>
-        <style>#static-landing { display: none !important; }</style>
-        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;text-align:center">
-          <div>
-            <h1 style="font-size:2rem;margin:0 0 16px">Entropy Age</h1>
-            <p style="color:#666;margin:0 0 24px">JavaScript is required to take the interactive assessment.</p>
-            <p style="color:#888;font-size:0.875rem">Please enable JavaScript in your browser settings.</p>
+          <div class="static-features">
+            <div style="text-align:center">
+              <p class="static-feature-label">10 min</p>
+              <p class="static-feature-sub">Quick assessment</p>
+            </div>
+            <div style="text-align:center">
+              <p class="static-feature-label">No equipment</p>
+              <p class="static-feature-sub">Just a chair & wall</p>
+            </div>
+            <div style="text-align:center">
+              <p class="static-feature-label">Private</p>
+              <p class="static-feature-sub">Data stays local</p>
+            </div>
           </div>
         </div>
-      </noscript>
+      </main>
+
+      <footer class="static-footer">
+        <p>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+          For educational purposes only. Not medical advice. Consult a healthcare provider for health concerns.
+        </p>
+        <p class="static-copy">© 2026 Entropy Age. All rights reserved.</p>
+      </footer>
     </div>
+
+    <!-- React mount point — empty until JS loads -->
+    <div id="root"></div>
+
+    <!-- SEO Content for crawlers -->
+    <div id="seo-content" style="position:absolute;left:-9999px;top:-9999px">
+      <h2>What We Measure</h2>
+      <ul>
+        <li>Lower-body strength — Chair sit-to-stand test</li>
+        <li>Muscular endurance — Wall sit hold</li>
+        <li>Balance — Single-leg balance test</li>
+        <li>Cardiovascular recovery — March test</li>
+        <li>Mobility — Overhead reach</li>
+      </ul>
+    </div>
+
+    <noscript>
+      <style>#static-landing { display: none !important; }</style>
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;text-align:center">
+        <div>
+          <h1 style="font-size:2rem;margin:0 0 16px">Entropy Age</h1>
+          <p style="color:#666;margin:0 0 24px">JavaScript is required to take the interactive assessment.</p>
+          <p style="color:#888;font-size:0.875rem">Please enable JavaScript in your browser settings.</p>
+        </div>
+      </div>
+    </noscript>
 
     <!-- Pre-hydration: make Start button work before React loads -->
     <script>
