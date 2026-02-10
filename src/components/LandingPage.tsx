@@ -1,5 +1,3 @@
-import { Sparkles, ArrowRight, Info, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { lazy, Suspense } from 'react';
 
 // Lazy load the Dialog - not needed for initial render
@@ -8,6 +6,31 @@ const LandingHowItWorks = lazy(() => import('@/components/LandingHowItWorks'));
 interface LandingPageProps {
   onStart: () => void;
 }
+
+// Inline SVG icons to avoid lucide-react bundle
+const SparklesIcon = () => (
+  <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
+  </svg>
+);
+
+const ArrowRightIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+  </svg>
+);
+
+const InfoIcon = () => (
+  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+  </svg>
+);
+
+const ShieldIcon = () => (
+  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+  </svg>
+);
 
 export function LandingPage({ onStart }: LandingPageProps) {
   return (
@@ -23,7 +46,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           {/* Logo / Title */}
           <header className="space-y-4">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4 animate-float" aria-hidden="true">
-              <Sparkles className="w-8 h-8 text-primary" />
+              <SparklesIcon />
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
@@ -45,24 +68,22 @@ export function LandingPage({ onStart }: LandingPageProps) {
             </p>
           </section>
 
-          {/* CTAs */}
+          {/* CTAs - Native button, no Radix dependency */}
           <nav className="space-y-4" aria-label="Get started">
-            <Button
-              variant="hero"
-              size="xl"
+            <button
               onClick={onStart}
-              className="w-full sm:w-auto animate-glow-pulse"
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto h-14 px-10 text-lg font-semibold text-primary-foreground bg-primary rounded-xl shadow-glow hover:shadow-lg hover:brightness-110 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.98] animate-glow-pulse"
               aria-label="Start the functional biological age assessment"
             >
               Start Assessment
-              <ArrowRight className="w-5 h-5" />
-            </Button>
+              <ArrowRightIcon />
+            </button>
 
             <Suspense fallback={
-              <Button variant="link" className="text-muted-foreground">
-                <Info className="w-4 h-4 mr-1" />
+              <button className="inline-flex items-center text-muted-foreground hover:underline">
+                <InfoIcon />
                 How it works
-              </Button>
+              </button>
             }>
               <LandingHowItWorks />
             </Suspense>
@@ -70,16 +91,18 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
           {/* Features */}
           <section aria-label="Key features" className="grid grid-cols-3 gap-4 pt-4">
-            {[
-              { label: '10 min', subtext: 'Quick assessment' },
-              { label: 'No equipment', subtext: 'Just a chair & wall' },
-              { label: 'Private', subtext: 'Data stays local' },
-            ].map((item, i) => (
-              <div key={i} className="text-center">
-                <p className="font-semibold text-foreground">{item.label}</p>
-                <p className="text-xs text-muted-foreground">{item.subtext}</p>
-              </div>
-            ))}
+            <div className="text-center">
+              <p className="font-semibold text-foreground">10 min</p>
+              <p className="text-xs text-muted-foreground">Quick assessment</p>
+            </div>
+            <div className="text-center">
+              <p className="font-semibold text-foreground">No equipment</p>
+              <p className="text-xs text-muted-foreground">Just a chair & wall</p>
+            </div>
+            <div className="text-center">
+              <p className="font-semibold text-foreground">Private</p>
+              <p className="text-xs text-muted-foreground">Data stays local</p>
+            </div>
           </section>
         </article>
       </main>
@@ -87,7 +110,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       {/* Disclaimer footer */}
       <footer className="p-6 text-center relative z-10">
         <p className="text-xs text-muted-foreground max-w-md mx-auto flex items-center justify-center gap-1">
-          <Shield className="w-3 h-3" aria-hidden="true" />
+          <ShieldIcon />
           For educational purposes only. Not medical advice.
           Consult a healthcare provider for health concerns.
         </p>
