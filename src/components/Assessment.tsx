@@ -1,12 +1,12 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { LandingPage } from '@/components/LandingPage';
-import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { useAssessment } from '@/hooks/useAssessment';
 import { calculateResults } from '@/utils/scoring';
 import { TOTAL_STEPS, UserProfile } from '@/types/assessment';
 import { cn } from '@/lib/utils';
+
+// Lazy load components that use Radix/heavy deps - not needed for landing
+const ProgressHeader = lazy(() => import('@/components/ProgressHeader'));
 
 // Lazy load framer-motion wrapped components
 const AnimatedStepWrapper = lazy(() => import('@/components/AnimatedStepWrapper'));
@@ -56,7 +56,7 @@ const StepLoader = () => (
   </div>
 );
 
-// Simple CSS-based modals for when framer-motion isn't loaded yet
+// Simple CSS-based modals - no Radix dependencies
 function SimpleOnboardingTooltip({ show, onDismiss }: { show: boolean; onDismiss: () => void }) {
   if (!show) return null;
   return (
@@ -72,12 +72,17 @@ function SimpleOnboardingTooltip({ show, onDismiss }: { show: boolean; onDismiss
               On desktop, you'll see tutorial instructions on the left. On mobile, tap
               the tutorial card at the top to expand instructions for each test.
             </p>
-            <Button variant="ghost" size="sm" onClick={onDismiss} className="mt-2 -ml-2">
+            <button
+              onClick={onDismiss}
+              className="mt-2 -ml-2 px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground rounded-lg transition-colors"
+            >
               Got it →
-            </Button>
+            </button>
           </div>
-          <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground">
-            <X className="w-4 h-4" />
+          <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -95,8 +100,18 @@ function SimpleResetDialog({ show, onCancel, onConfirm }: { show: boolean; onCan
           This will clear all your progress and start over. Your previous results will be lost.
         </p>
         <div className="flex gap-3">
-          <Button variant="ghost" onClick={onCancel} className="flex-1">Cancel</Button>
-          <Button variant="destructive" onClick={onConfirm} className="flex-1">Reset</Button>
+          <button
+            onClick={onCancel}
+            className="flex-1 h-10 px-4 text-sm font-medium rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 h-10 px-4 text-sm font-medium rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+          >
+            Reset
+          </button>
         </div>
       </div>
     </div>
@@ -328,28 +343,14 @@ export function Assessment() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with progress */}
+      {/* Header with progress - lazy loaded */}
       {showProgress && (
-        <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border">
-          <div className="w-full max-w-4xl mx-auto py-4 px-4">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="font-semibold gradient-text">Entropy Age</h1>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowResetConfirm(true)}
-                className="text-muted-foreground"
-              >
-                <X className="w-4 h-4 mr-1" />
-                Reset
-              </Button>
-            </div>
-            <ProgressIndicator
-              currentStep={data.currentStep}
-              totalSteps={TOTAL_STEPS}
-            />
-          </div>
-        </header>
+        <Suspense fallback={null}>
+          <ProgressHeader
+            currentStep={data.currentStep}
+            onResetClick={() => setShowResetConfirm(true)}
+          />
+        </Suspense>
       )}
 
       {/* Main content */}
