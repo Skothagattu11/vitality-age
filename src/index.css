@@ -133,6 +133,8 @@
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
+    /* Prevent tap highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -148,6 +150,18 @@
     width: 100%;
     margin: 0;
     padding: 0;
+  }
+
+  /* Mobile-optimized buttons and interactive elements */
+  button, [role="button"], a, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Prevent sticky hover states on touch devices */
+  @media (hover: none) {
+    button:hover, [role="button"]:hover {
+      background-color: inherit;
+    }
   }
 }
 

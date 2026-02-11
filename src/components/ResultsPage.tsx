@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { track } from '@vercel/analytics';
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AssessmentData } from '@/types/assessment';
 import { cn } from '@/lib/utils';
@@ -84,11 +85,19 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   });
   const [responseSaved, setResponseSaved] = useState(false);
 
-  // Save assessment response to database on mount
+  // Track assessment completion and save to database on mount
   useEffect(() => {
+    // Track assessment completion
+    track('assessment_complete', {
+      functional_age: functionalAge,
+      chronological_age: chronologicalAge,
+      gap: gap,
+      is_younger: chronologicalAge > functionalAge,
+    });
+
     const saveResponse = async () => {
       if (responseSaved) return;
-      
+
       try {
         const { data: insertedData, error } = await supabase
           .from('assessment_responses')
@@ -101,12 +110,12 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
           })
           .select('session_id')
           .single();
-        
+
         if (error) {
           console.error('Failed to save assessment response:', error);
           return;
         }
-        
+
         if (insertedData?.session_id) {
           setSessionId(insertedData.session_id);
           localStorage.setItem('entropy-session-id', insertedData.session_id);
@@ -116,7 +125,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         console.error('Failed to save assessment response:', err);
       }
     };
-    
+
     saveResponse();
   }, [functionalAge, chronologicalAge, gap, topDrivers, data, responseSaved]);
 
@@ -241,6 +250,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   };
 
   const handleExport = async () => {
+    track('button_click', { button: 'save_image', page: 'results', functional_age: functionalAge });
     setIsExporting(true);
     try {
       const imageData = await captureCard();
@@ -249,6 +259,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         link.download = `entropy-age-${functionalAge}-${new Date().toISOString().split('T')[0]}.png`;
         link.href = imageData;
         link.click();
+        track('action_complete', { action: 'export_image', functional_age: functionalAge });
       }
     } finally {
       setIsExporting(false);
@@ -256,6 +267,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   };
 
   const handleShare = async () => {
+    track('button_click', { button: 'share', page: 'results', functional_age: functionalAge });
     setIsExporting(true);
     try {
       const imageData = await captureCard();
@@ -264,12 +276,13 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         const response = await fetch(imageData);
         const blob = await response.blob();
         const file = new File([blob], 'entropy-age-results.png', { type: 'image/png' });
-        
+
         await navigator.share({
           title: 'My Entropy Age Results',
           text: `My functional biological age is ${functionalAge}! (${gapText} than my actual age of ${chronologicalAge})`,
           files: [file],
         });
+        track('action_complete', { action: 'share', functional_age: functionalAge });
       } else if (imageData) {
         // Fallback: download the image
         handleExport();

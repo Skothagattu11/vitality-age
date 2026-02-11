@@ -1,9 +1,25 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { track } from '@vercel/analytics';
 import { LandingPage } from '@/components/LandingPage';
 import { useAssessment } from '@/hooks/useAssessment';
 import { calculateResults } from '@/utils/scoring';
 import { TOTAL_STEPS, UserProfile } from '@/types/assessment';
 import { cn } from '@/lib/utils';
+
+// Step names for analytics
+const STEP_NAMES = [
+  'landing',
+  'setup',
+  'sit-to-stand',
+  'wall-sit',
+  'balance',
+  'march-recovery',
+  'overhead-reach',
+  'cross-legged',
+  'integration',
+  'recovery-context',
+  'results',
+];
 
 // Lazy load components that use Radix/heavy deps - not needed for landing
 const ProgressHeader = lazy(() => import('@/components/ProgressHeader'));
@@ -143,9 +159,16 @@ export function Assessment() {
     }
   }, [goToStep, data.currentStep]);
 
-  // Scroll to top when step changes
+  // Track step changes and scroll to top
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Track page/step view
+    const stepName = STEP_NAMES[data.currentStep] || `step-${data.currentStep}`;
+    track('step_view', {
+      step: data.currentStep,
+      step_name: stepName,
+    });
   }, [data.currentStep]);
 
   // Predictive prefetching - load next components while user is on current step
