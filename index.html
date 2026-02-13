@@ -324,6 +324,22 @@
 
     <!-- Pre-hydration: make Start button work before React loads -->
     <script>
+      // Hide loader once static landing is visible (DOM ready)
+      (function() {
+        var loader = document.getElementById('initial-loader');
+        if (loader) {
+          // Small delay to ensure paint has happened
+          setTimeout(function() {
+            loader.classList.add('hidden');
+            // Remove from DOM after fade out
+            setTimeout(function() {
+              loader.remove();
+            }, 300);
+          }, 100);
+        }
+      })();
+
+      // Make Start button work before React loads
       document.getElementById('static-start-btn').addEventListener('click', function() {
         this.classList.add('clicked');
         this.textContent = 'Loading assessment...';
