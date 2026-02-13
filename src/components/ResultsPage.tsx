@@ -194,6 +194,16 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
       // Reset scale to 1 for capturing
       cardRef.current.style.transform = 'scale(1)';
 
+      // Apply export-only adjustments for certificate design
+      const certNumberContainer = cardRef.current.querySelector('.cert-number-container') as HTMLElement;
+      const certBadgeContainer = cardRef.current.querySelector('.cert-badge-container') as HTMLElement;
+      if (certNumberContainer) {
+        certNumberContainer.style.marginBottom = '36px';
+      }
+      if (certBadgeContainer) {
+        certBadgeContainer.style.marginTop = '8px';
+      }
+
       // Apply export-only adjustments for medal design
       const medalTextContainer = cardRef.current.querySelector('.medal-text-container') as HTMLElement;
       const medalBioText = cardRef.current.querySelector('.medal-bio-text') as HTMLElement;
@@ -219,7 +229,15 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         windowHeight: 400,
       });
 
-      // Revert the adjustments
+      // Revert the certificate adjustments
+      if (certNumberContainer) {
+        certNumberContainer.style.marginBottom = '28px';
+      }
+      if (certBadgeContainer) {
+        certBadgeContainer.style.marginTop = '0';
+      }
+
+      // Revert the medal adjustments
       if (medalTextContainer) {
         medalTextContainer.style.marginTop = '0';
       }
@@ -236,6 +254,14 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
       // Make sure to revert even on error
       if (cardRef.current) {
         cardRef.current.style.transform = originalTransform;
+        const certNumberContainer = cardRef.current.querySelector('.cert-number-container') as HTMLElement;
+        const certBadgeContainer = cardRef.current.querySelector('.cert-badge-container') as HTMLElement;
+        if (certNumberContainer) {
+          certNumberContainer.style.marginBottom = '28px';
+        }
+        if (certBadgeContainer) {
+          certBadgeContainer.style.marginTop = '0';
+        }
         const medalTextContainer = cardRef.current.querySelector('.medal-text-container') as HTMLElement;
         const medalBioText = cardRef.current.querySelector('.medal-bio-text') as HTMLElement;
         if (medalTextContainer) {
@@ -531,7 +557,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                     </div>
 
                     {/* Big number with 3D effect */}
-                    <div style={{ marginBottom: '28px', paddingBottom: '4px' }}>
+                    <div className="cert-number-container" style={{ marginBottom: '28px', paddingBottom: '4px' }}>
                       <span
                         style={{
                           fontSize: '100px',
@@ -552,7 +578,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                     </div>
 
                     {/* Gap badge - polished pill with proper alignment */}
-                    <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+                    <div className="cert-badge-container" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
                       <div
                         style={{
                           display: 'inline-flex',
