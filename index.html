@@ -9,7 +9,8 @@
     <link rel="apple-touch-icon" href="/favicon.png" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- iOS PWA support -->
+    <!-- PWA support -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Entropy Age" />
@@ -324,6 +325,22 @@
 
     <!-- Pre-hydration: make Start button work before React loads -->
     <script>
+      // Hide loader once static landing is visible (DOM ready)
+      (function() {
+        var loader = document.getElementById('initial-loader');
+        if (loader) {
+          // Small delay to ensure paint has happened
+          setTimeout(function() {
+            loader.classList.add('hidden');
+            // Remove from DOM after fade out
+            setTimeout(function() {
+              loader.remove();
+            }, 300);
+          }, 100);
+        }
+      })();
+
+      // Make Start button work before React loads
       document.getElementById('static-start-btn').addEventListener('click', function() {
         this.classList.add('clicked');
         this.textContent = 'Loading assessment...';
