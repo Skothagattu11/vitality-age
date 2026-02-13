@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, ChevronDown, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { track } from '@vercel/analytics';
 import { Button } from '@/components/ui/button';
 import { AssessmentResult, AssessmentData } from '@/types/assessment';
 import { cn } from '@/lib/utils';
@@ -84,11 +85,19 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   });
   const [responseSaved, setResponseSaved] = useState(false);
 
-  // Save assessment response to database on mount
+  // Track assessment completion and save to database on mount
   useEffect(() => {
+    // Track assessment completion
+    track('assessment_complete', {
+      functional_age: functionalAge,
+      chronological_age: chronologicalAge,
+      gap: gap,
+      is_younger: chronologicalAge > functionalAge,
+    });
+
     const saveResponse = async () => {
       if (responseSaved) return;
-      
+
       try {
         const { data: insertedData, error } = await supabase
           .from('assessment_responses')
@@ -101,12 +110,12 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
           })
           .select('session_id')
           .single();
-        
+
         if (error) {
           console.error('Failed to save assessment response:', error);
           return;
         }
-        
+
         if (insertedData?.session_id) {
           setSessionId(insertedData.session_id);
           localStorage.setItem('entropy-session-id', insertedData.session_id);
@@ -116,7 +125,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         console.error('Failed to save assessment response:', err);
       }
     };
-    
+
     saveResponse();
   }, [functionalAge, chronologicalAge, gap, topDrivers, data, responseSaved]);
 
@@ -241,6 +250,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   };
 
   const handleExport = async () => {
+    track('button_click', { button: 'save_image', page: 'results', functional_age: functionalAge });
     setIsExporting(true);
     try {
       const imageData = await captureCard();
@@ -249,6 +259,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         link.download = `entropy-age-${functionalAge}-${new Date().toISOString().split('T')[0]}.png`;
         link.href = imageData;
         link.click();
+        track('action_complete', { action: 'export_image', functional_age: functionalAge });
       }
     } finally {
       setIsExporting(false);
@@ -256,6 +267,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
   };
 
   const handleShare = async () => {
+    track('button_click', { button: 'share', page: 'results', functional_age: functionalAge });
     setIsExporting(true);
     try {
       const imageData = await captureCard();
@@ -264,12 +276,13 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
         const response = await fetch(imageData);
         const blob = await response.blob();
         const file = new File([blob], 'entropy-age-results.png', { type: 'image/png' });
-        
+
         await navigator.share({
           title: 'My Entropy Age Results',
           text: `My functional biological age is ${functionalAge}! (${gapText} than my actual age of ${chronologicalAge})`,
           files: [file],
         });
+        track('action_complete', { action: 'share', functional_age: functionalAge });
       } else if (imageData) {
         // Fallback: download the image
         handleExport();
@@ -447,7 +460,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                   style={{
                     position: 'relative',
                     height: '100%',
-                    padding: '36px 40px',
+                    padding: '32px 36px',
                     boxSizing: 'border-box',
                     display: 'flex',
                     flexDirection: 'column',
@@ -459,32 +472,32 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      marginBottom: '16px',
-                      height: '28px',
+                      marginBottom: '8px',
                     }}
                   >
                     <div
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
+                        gap: '8px',
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: '14px',
-                          color: '#00BCD4',
-                          lineHeight: '1',
-                        }}
+                      {/* SVG sparkle icon for perfect alignment */}
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="#00BCD4"
+                        style={{ flexShrink: 0 }}
                       >
-                        ✦
-                      </span>
+                        <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+                      </svg>
                       <span
                         style={{
-                          fontSize: '16px',
+                          fontSize: '17px',
                           fontWeight: 700,
                           color: '#00BCD4',
-                          lineHeight: '1',
+                          letterSpacing: '-0.01em',
                         }}
                       >
                         Entropy Age
@@ -495,7 +508,6 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                         fontSize: '13px',
                         fontWeight: 500,
                         color: '#9CA3AF',
-                        lineHeight: '1',
                       }}
                     >
                       {formattedDate}
@@ -503,7 +515,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                   </div>
 
                   {/* Main content */}
-                  <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', marginTop: '-8px' }}>
                     {/* Label */}
                     <div
                       style={{
@@ -512,14 +524,14 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                         color: '#9CA3AF',
                         textTransform: 'uppercase',
                         letterSpacing: '0.15em',
-                        marginBottom: '-9px',
+                        marginBottom: '0px',
                       }}
                     >
                       Functional Age
                     </div>
 
                     {/* Big number with 3D effect */}
-                    <div style={{ marginBottom: '32px', paddingBottom: '8px' }}>
+                    <div style={{ marginBottom: '16px' }}>
                       <span
                         style={{
                           fontSize: '110px',
@@ -539,45 +551,84 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                       </span>
                     </div>
 
-                    {/* Gap text - no background */}
-                    <div style={{ marginBottom: '20px' }}>
-                      <span
+                    {/* Gap badge - polished pill with proper alignment */}
+                    <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+                      <div
                         style={{
-                          fontSize: '20px',
-                          fontWeight: 700,
-                          color: isYounger ? '#16A34A' : isSame ? '#0891B2' : '#D97706',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          backgroundColor: isYounger ? 'rgba(34, 197, 94, 0.12)' : isSame ? 'rgba(0, 188, 212, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                          border: `1.5px solid ${isYounger ? 'rgba(34, 197, 94, 0.3)' : isSame ? 'rgba(0, 188, 212, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
                         }}
                       >
-                        {isYounger ? '↓ ' : isSame ? '→ ' : '↑ '}{gapText}
-                      </span>
+                        {/* Arrow icon SVG for perfect alignment */}
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke={isYounger ? '#16A34A' : isSame ? '#0891B2' : '#D97706'}
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ flexShrink: 0 }}
+                        >
+                          {isYounger ? (
+                            /* Down arrow for younger (lower functional age) */
+                            <path d="M12 5v14M5 12l7 7 7-7" />
+                          ) : isSame ? (
+                            /* Right arrow for same */
+                            <path d="M5 12h14M13 5l7 7-7 7" />
+                          ) : (
+                            /* Up arrow for older (higher functional age) */
+                            <path d="M12 19V5M5 12l7-7 7 7" />
+                          )}
+                        </svg>
+                        <span
+                          style={{
+                            fontSize: '16px',
+                            fontWeight: 700,
+                            color: isYounger ? '#16A34A' : isSame ? '#0891B2' : '#D97706',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {gapText}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Divider line */}
-                    <div
-                      style={{
-                        width: '60%',
-                        height: '1px',
-                        backgroundColor: '#E5E7EB',
-                        margin: '0 auto 12px auto',
-                      }}
-                    />
-
-                    {/* Actual age */}
-                    <div
-                      style={{
-                        fontSize: '16px',
-                        color: '#6B7280',
-                      }}
-                    >
-                      Actual age: <span style={{ fontWeight: 700, color: '#374151' }}>{chronologicalAge}</span>
+                    {/* Actual age with divider */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {/* Centered divider line */}
+                      <div
+                        style={{
+                          width: '140px',
+                          height: '1px',
+                          backgroundColor: '#E5E7EB',
+                          marginBottom: '12px',
+                        }}
+                      />
+                      {/* Actual age text */}
+                      <div
+                        style={{
+                          fontSize: '16px',
+                          color: '#6B7280',
+                        }}
+                      >
+                        Actual age: <span style={{ fontWeight: 700, color: '#374151' }}>{chronologicalAge}</span>
+                      </div>
                     </div>
                   </div>
 
                   {/* Footer */}
                   <div
                     style={{
-                      paddingTop: '12px',
                       textAlign: 'center',
+                      marginTop: '8px',
                     }}
                   >
                     <span
@@ -585,6 +636,7 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                         fontSize: '13px',
                         fontWeight: 600,
                         color: '#9CA3AF',
+                        letterSpacing: '0.02em',
                       }}
                     >
                       EntropyAge.com

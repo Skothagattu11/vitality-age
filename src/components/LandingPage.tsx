@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { track } from '@vercel/analytics';
 
 // Lazy load the Dialog - not needed for initial render
 const LandingHowItWorks = lazy(() => import('@/components/LandingHowItWorks'));
@@ -71,8 +72,12 @@ export function LandingPage({ onStart }: LandingPageProps) {
           {/* CTAs - Native button, no Radix dependency */}
           <nav className="space-y-4" aria-label="Get started">
             <button
-              onClick={onStart}
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto h-14 px-10 text-lg font-semibold text-primary-foreground bg-primary rounded-xl shadow-glow hover:shadow-lg hover:brightness-110 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.98] animate-glow-pulse"
+              type="button"
+              onClick={() => {
+                track('button_click', { button: 'start_assessment', page: 'landing' });
+                onStart();
+              }}
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto h-14 px-10 text-lg font-semibold text-primary-foreground bg-primary rounded-xl shadow-glow hover:shadow-lg hover:brightness-110 hover:-translate-y-0.5 transition-all duration-200 active:scale-[0.98] animate-glow-pulse touch-manipulation"
               aria-label="Start the functional biological age assessment"
             >
               Start Assessment
