@@ -531,10 +531,10 @@ export function ResultsPage({ result, data, onRetake }: ResultsPageProps) {
                     </div>
 
                     {/* Big number with 3D effect */}
-                    <div style={{ marginBottom: '16px' }}>
+                    <div style={{ marginBottom: '28px', paddingBottom: '4px' }}>
                       <span
                         style={{
-                          fontSize: '110px',
+                          fontSize: '100px',
                           fontWeight: 800,
                           color: isYounger ? '#22C55E' : isSame ? '#00BCD4' : '#F59E0B',
                           lineHeight: '1',
