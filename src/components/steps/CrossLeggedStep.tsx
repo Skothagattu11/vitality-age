@@ -51,11 +51,11 @@ export function CrossLeggedStep({ onComplete, onSkip, onBack }: CrossLeggedStepP
     <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-4 md:gap-6 h-full">
       <TutorialPanel
         title="Cross-Legged Sit"
-        description="Test hip mobility by sitting cross-legged on the floor."
+        description="Sit on the floor with your legs crossed — one shin in front of the other, ankles tucked under opposite knees."
         steps={[
-          { instruction: 'Sit on the floor with legs crossed' },
-          { instruction: 'Try to keep your back straight' },
-          { instruction: 'Notice how your hips feel in this position' },
+          { instruction: 'Sit on the floor and cross your legs (one shin in front of the other)' },
+          { instruction: 'Keep your back straight — avoid slouching' },
+          { instruction: 'Hold for a few seconds and notice any tightness in your hips' },
         ]}
         animationPlaceholder={<AnimationPlaceholder type="cross-legged" />}
       />
@@ -73,7 +73,7 @@ export function CrossLeggedStep({ onComplete, onSkip, onBack }: CrossLeggedStepP
               <h2 className="text-lg md:text-xl font-semibold">Cross-Legged Sit</h2>
               <HowItWorksButton
                 testName="Cross-Legged Sit"
-                measure="Hip flexibility and ability to comfortably sit cross-legged on the floor."
+                measure="Hip internal rotation and adductor flexibility — your ability to sit comfortably with legs crossed on the floor."
                 relevance="Hip mobility affects lower back health, gait, and the ability to get up from the floor—a key predictor of longevity and independence."
               />
             </div>

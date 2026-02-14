@@ -606,7 +606,7 @@ function OverheadReachAnimation() {
   );
 }
 
-// Cross-Legged Animation - Front view, simple and clear
+// Cross-Legged Animation - Front view with legs actually crossing
 function CrossLeggedAnimation() {
   return (
     <svg viewBox="0 0 200 150" className="w-full h-full">
@@ -648,9 +648,9 @@ function CrossLeggedAnimation() {
           strokeLinecap="round"
         />
 
-        {/* Left arm - resting on knee */}
+        {/* Left arm - resting on left knee */}
         <path
-          d="M82 58 L70 75 L65 95"
+          d="M82 58 L70 75 L68 95"
           stroke="hsl(var(--primary))"
           strokeWidth="4"
           strokeLinecap="round"
@@ -658,9 +658,9 @@ function CrossLeggedAnimation() {
           fill="none"
         />
 
-        {/* Right arm - resting on knee */}
+        {/* Right arm - resting on right knee */}
         <path
-          d="M118 58 L130 75 L135 95"
+          d="M118 58 L130 75 L132 95"
           stroke="hsl(var(--primary))"
           strokeWidth="4"
           strokeLinecap="round"
@@ -668,9 +668,9 @@ function CrossLeggedAnimation() {
           fill="none"
         />
 
-        {/* Left leg - cross-legged */}
+        {/* Left leg (underneath) - thigh goes right, shin tucks under right knee, foot near right hip */}
         <path
-          d="M100 88 L75 100 L55 108 L50 118"
+          d="M95 88 L110 100 L125 108 L135 112"
           stroke="hsl(var(--primary))"
           strokeWidth="5"
           strokeLinecap="round"
@@ -678,9 +678,12 @@ function CrossLeggedAnimation() {
           fill="none"
         />
 
-        {/* Right leg - cross-legged (in front) */}
+        {/* Left foot tucked near right hip */}
+        <ellipse cx="137" cy="114" rx="7" ry="4" fill="hsl(var(--primary))" />
+
+        {/* Right leg (on top) - thigh goes left, shin crosses over left, foot near left hip */}
         <path
-          d="M100 88 L125 100 L145 108 L150 118"
+          d="M105 88 L90 100 L75 108 L65 112"
           stroke="hsl(var(--primary))"
           strokeWidth="5"
           strokeLinecap="round"
@@ -688,11 +691,8 @@ function CrossLeggedAnimation() {
           fill="none"
         />
 
-        {/* Left foot */}
-        <ellipse cx="90" cy="120" rx="8" ry="4" fill="hsl(var(--primary))" />
-
-        {/* Right foot (slightly in front) */}
-        <ellipse cx="110" cy="118" rx="8" ry="4" fill="hsl(var(--primary))" />
+        {/* Right foot tucked near left hip */}
+        <ellipse cx="63" cy="114" rx="7" ry="4" fill="hsl(var(--primary))" />
       </motion.g>
 
       {/* Spine alignment indicator */}
@@ -725,7 +725,7 @@ export function AnimationPlaceholder({ type, className }: AnimationPlaceholderPr
     'balance': 'Stand on one leg, arms out for balance',
     'march': 'Lift knees to hip height',
     'overhead-reach': 'Reach overhead with back flat',
-    'cross-legged': 'Sit with straight spine',
+    'cross-legged': 'Cross legs, sit tall with straight spine',
   };
 
   return (
