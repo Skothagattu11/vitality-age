@@ -1,85 +1,56 @@
 
 
-# Fix: Eliminate the Blank Flash on Page Load
+# Fix: Cross-Legged Sit — Sync Animation with Description
 
-## The Problem
+## What's Wrong
 
-The static landing page HTML is placed **inside** `<div id="root">`. When React calls `createRoot(root).render(<App />)`, it **wipes everything inside `#root`** and replaces it with React's output. But React takes a moment to initialize, parse components, and render -- during that moment, the screen goes completely blank.
+The cross-legged animation currently draws both legs going **outward** from the hips (left leg to x=50, right leg to x=150). This looks like a wide-legged or butterfly sit, not a cross-legged position. The legs never actually cross each other.
 
-The sequence users see:
-1. Browser loads HTML -- static landing page appears (good)
-2. JavaScript bundle downloads and executes
-3. `createRoot` wipes `#root` content -- **screen goes blank** (bad)
-4. React finishes rendering -- landing page reappears (delayed)
-5. If user refreshes during step 2-3, they see blank again
+Meanwhile, the description correctly says "Sit on the floor with legs crossed" and the test measures hip mobility for cross-legged sitting.
+
+## What "Cross-Legged Sit" Actually Is
+
+This is the classic "criss-cross applesauce" position — sitting on the floor with each shin crossing in front of the other, ankles tucked under opposite knees. Back straight, hands on knees. It tests hip internal rotation and adductor flexibility.
 
 ## The Fix
 
-Move the static HTML **outside** of `#root` so React never touches it. Then hide the static HTML only **after** React has finished its first render.
+### 1. Redraw the Cross-Legged Animation (AnimationPlaceholder.tsx)
 
-### Changes
+Replace the `CrossLeggedAnimation` SVG with legs that **actually cross**:
+- Left thigh goes from hip toward the right, left shin tucks under the right knee
+- Right thigh goes from hip toward the left, right shin sits on top of the left
+- Feet are tucked near opposite hips (not splayed outward)
+- Keep the subtle breathing motion (gentle y-axis bob)
+- Keep the spine alignment indicator
 
-**1. `index.html` -- Move static content outside `#root`**
+### 2. Refine the Tutorial Description (CrossLeggedStep.tsx)
 
-- Move the entire `<div id="static-landing">` block to be a **sibling** of `#root`, not a child
-- Keep `#root` as an empty div (React's mount point)
-- The static landing sits on top visually and is removed once React is ready
+Update the description and steps to be clearer:
+- Description: "Sit on the floor with your legs crossed — one shin in front of the other, ankles tucked under opposite knees."
+- Step 1: "Sit on the floor and cross your legs (one shin in front of the other)"
+- Step 2: "Keep your back straight — avoid slouching"  
+- Step 3: "Hold for a few seconds and notice any tightness in your hips"
 
-Structure becomes:
-```
-<body>
-  <div id="static-landing" class="static-landing">
-    <!-- all the static HTML stays exactly as-is -->
-  </div>
-  <div id="root"></div>
-  <!-- scripts -->
-</body>
-```
+### 3. Update the "How it works" text
 
-**2. `src/main.tsx` -- Remove static HTML after React renders**
+Refine the measure description to be more specific:
+- Measure: "Hip internal rotation and adductor flexibility — your ability to sit comfortably with legs crossed on the floor."
 
-After React mounts, remove `#static-landing`:
-```typescript
-createRoot(document.getElementById("root")!).render(<App />);
+### 4. Update the animation label
 
-// Remove static HTML now that React has rendered
-const staticEl = document.getElementById("static-landing");
-if (staticEl) staticEl.remove();
-```
+Change the label under the animation from "Sit with straight spine" to "Cross legs, sit tall with straight spine"
 
-**3. `index.html` -- Add CSS to layer them correctly**
+## Files to Change
 
-Add to the inline styles:
-```css
-#static-landing { position: relative; z-index: 100; }
-#root:empty { display: none; }
-#root:not(:empty) ~ #static-landing { display: none; }
-```
-
-Wait -- since `#static-landing` comes before `#root` in the new layout, the CSS sibling selector won't work backwards. Instead, we handle removal purely in JS (step 2 above), and position them so `#static-landing` covers the screen until removed.
-
-**4. Move `<noscript>` and SEO content blocks outside `#root` too**
-
-These should not be inside React's mount point.
-
-### Files to modify
-
-| File | What changes |
+| File | Change |
 |---|---|
-| `index.html` | Move `#static-landing`, `#seo-content`, and `<noscript>` outside of `#root`. Keep `#root` empty. |
-| `src/main.tsx` | After `render()`, remove `#static-landing` from DOM. |
+| `src/components/AnimationPlaceholder.tsx` | Redraw the `CrossLeggedAnimation` SVG so legs actually cross in front of each other. Update the label text. |
+| `src/components/steps/CrossLeggedStep.tsx` | Update tutorial description, steps, and "How it works" measure text for clarity. |
 
-### What stays the same
-- All the static HTML content (no changes to the landing page markup)
-- All inline CSS styles
-- All SEO metadata, JSON-LD, OG tags
-- All React components (LandingPage, Assessment, etc.)
-- The pre-hydration click handler script
-- The `window.__userClickedStart` logic in Assessment.tsx
+## What Stays the Same
 
-### Expected result
-- User types URL -- static landing page appears **instantly** from HTML
-- JavaScript loads in background -- static page remains visible the entire time
-- React mounts inside the empty `#root` -- no blank flash because static HTML is untouched
-- After React renders, the static HTML is removed and React takes over seamlessly
-- No more blank screen at any point in the loading sequence
+- The 4 answer options (yes-relaxed, yes-stiff, only-briefly, not-at-all) — these are correct
+- The scoring logic — unchanged
+- The type definitions — unchanged
+- All other animations — unchanged
+
