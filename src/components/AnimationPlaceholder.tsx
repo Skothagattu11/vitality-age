@@ -606,104 +606,161 @@ function OverheadReachAnimation() {
   );
 }
 
-// Cross-Legged Animation - Front view with legs actually crossing
+// Cross-Legged Animation - Animated transition from standing to cross-legged sit
 function CrossLeggedAnimation() {
+  const dur = 3;
+  const ease = "easeInOut";
+  const times = [0, 0.35, 0.65, 1]; // stand → lower → seated → stand
+
   return (
     <svg viewBox="0 0 200 150" className="w-full h-full">
-      {/* Yoga mat */}
-      <ellipse cx="100" cy="130" rx="60" ry="8" fill="hsl(var(--muted))" />
+      {/* Floor / mat */}
+      <ellipse cx="100" cy="138" rx="55" ry="6" fill="hsl(var(--muted))" />
 
-      {/* Person sitting cross-legged - front view */}
-      <motion.g
-        animate={{ y: [0, -1.5, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-      >
-        {/* Head */}
-        <circle cx="100" cy="35" r="11" fill="hsl(var(--primary))" />
+      {/* Head */}
+      <motion.circle
+        r="10"
+        fill="hsl(var(--primary))"
+        animate={{
+          cx: [100, 100, 100, 100],
+          cy: [18, 30, 40, 18],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
 
-        {/* Neck */}
-        <line
-          x1="100" y1="46"
-          x2="100" y2="52"
-          stroke="hsl(var(--primary))"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-
-        {/* Torso - straight spine */}
-        <line
-          x1="100" y1="52"
-          x2="100" y2="88"
-          stroke="hsl(var(--primary))"
-          strokeWidth="6"
-          strokeLinecap="round"
-        />
-
-        {/* Shoulders */}
-        <line
-          x1="82" y1="58"
-          x2="118" y2="58"
-          stroke="hsl(var(--primary))"
-          strokeWidth="5"
-          strokeLinecap="round"
-        />
-
-        {/* Left arm - resting on left knee */}
-        <path
-          d="M82 58 L70 75 L68 95"
-          stroke="hsl(var(--primary))"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-
-        {/* Right arm - resting on right knee */}
-        <path
-          d="M118 58 L130 75 L132 95"
-          stroke="hsl(var(--primary))"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-
-        {/* Left leg (underneath) - thigh goes right, shin tucks under right knee, foot near right hip */}
-        <path
-          d="M95 88 L110 100 L125 108 L135 112"
-          stroke="hsl(var(--primary))"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-
-        {/* Left foot tucked near right hip */}
-        <ellipse cx="137" cy="114" rx="7" ry="4" fill="hsl(var(--primary))" />
-
-        {/* Right leg (on top) - thigh goes left, shin crosses over left, foot near left hip */}
-        <path
-          d="M105 88 L90 100 L75 108 L65 112"
-          stroke="hsl(var(--primary))"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-
-        {/* Right foot tucked near left hip */}
-        <ellipse cx="63" cy="114" rx="7" ry="4" fill="hsl(var(--primary))" />
-      </motion.g>
-
-      {/* Spine alignment indicator */}
+      {/* Torso */}
       <motion.line
-        x1="100" y1="33"
-        x2="100" y2="88"
+        stroke="hsl(var(--primary))"
+        strokeWidth="6"
+        strokeLinecap="round"
+        animate={{
+          x1: [100, 100, 100, 100],
+          y1: [30, 42, 52, 30],
+          x2: [100, 100, 100, 100],
+          y2: [70, 82, 90, 70],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Shoulders */}
+      <motion.line
+        stroke="hsl(var(--primary))"
+        strokeWidth="4"
+        strokeLinecap="round"
+        animate={{
+          x1: [85, 85, 83, 85],
+          y1: [36, 48, 58, 36],
+          x2: [115, 115, 117, 115],
+          y2: [36, 48, 58, 36],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Left arm */}
+      <motion.path
+        stroke="hsl(var(--primary))"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        animate={{
+          d: [
+            "M85 36 L78 52 L78 65",      // standing: arms at sides
+            "M85 48 L75 62 L70 78",       // lowering
+            "M83 58 L72 74 L68 92",       // seated: hand on knee
+            "M85 36 L78 52 L78 65",       // back to standing
+          ],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Right arm */}
+      <motion.path
+        stroke="hsl(var(--primary))"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        animate={{
+          d: [
+            "M115 36 L122 52 L122 65",
+            "M115 48 L125 62 L130 78",
+            "M117 58 L128 74 L132 92",
+            "M115 36 L122 52 L122 65",
+          ],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Left leg — goes from straight standing to crossing right */}
+      <motion.path
+        stroke="hsl(var(--primary))"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        animate={{
+          d: [
+            "M96 70 L96 105 L96 132",           // standing straight
+            "M96 82 L108 100 L122 110",          // bending & crossing
+            "M96 90 L112 102 L130 110",          // seated: shin crosses to right, foot near right hip
+            "M96 70 L96 105 L96 132",            // back to standing
+          ],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Right leg — crosses to left */}
+      <motion.path
+        stroke="hsl(var(--primary))"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        animate={{
+          d: [
+            "M104 70 L104 105 L104 132",         // standing straight
+            "M104 82 L92 100 L78 110",            // bending & crossing
+            "M104 90 L88 102 L70 110",            // seated: shin crosses to left, foot near left hip
+            "M104 70 L104 105 L104 132",          // back to standing
+          ],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Left foot */}
+      <motion.ellipse
+        fill="hsl(var(--primary))"
+        animate={{
+          cx: [96, 124, 133, 96],
+          cy: [134, 113, 113, 134],
+          rx: [5, 6, 7, 5],
+          ry: [3, 4, 4, 3],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Right foot */}
+      <motion.ellipse
+        fill="hsl(var(--primary))"
+        animate={{
+          cx: [104, 76, 67, 104],
+          cy: [134, 113, 113, 134],
+          rx: [5, 6, 7, 5],
+          ry: [3, 4, 4, 3],
+        }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
+      />
+
+      {/* Spine alignment indicator - visible when seated */}
+      <motion.line
+        x1="100" y1="38"
+        x2="100" y2="90"
         stroke="hsl(var(--success))"
         strokeWidth="2"
         strokeDasharray="4 3"
-        animate={{ opacity: [0.2, 0.6, 0.2] }}
-        transition={{ duration: 3, repeat: Infinity }}
+        animate={{ opacity: [0, 0, 0.6, 0] }}
+        transition={{ duration: dur, repeat: Infinity, ease, times }}
       />
     </svg>
   );
