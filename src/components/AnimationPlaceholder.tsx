@@ -692,7 +692,7 @@ function CrossLeggedAnimation() {
         transition={{ duration: dur, repeat: Infinity, ease, times }}
       />
 
-      {/* Left leg — goes from straight standing to crossing right */}
+      {/* Left leg — thigh→knee→shin with bent knee when seated */}
       <motion.path
         stroke="hsl(var(--primary))"
         strokeWidth="5"
@@ -701,16 +701,16 @@ function CrossLeggedAnimation() {
         fill="none"
         animate={{
           d: [
-            "M96 70 L96 105 L96 132",           // standing straight
-            "M96 82 L108 100 L122 110",          // bending & crossing
-            "M96 90 L112 102 L130 110",          // seated: shin crosses to right, foot near right hip
-            "M96 70 L96 105 L96 132",            // back to standing
+            "M96 70 L96 100 L96 118 L96 132",              // standing: straight leg
+            "M96 82 L110 95 L120 105 L128 112",             // lowering: knee bending outward
+            "M96 90 L115 98 L125 108 L132 118",             // seated: thigh out, knee bent, shin tucked under
+            "M96 70 L96 100 L96 118 L96 132",               // back to standing
           ],
         }}
         transition={{ duration: dur, repeat: Infinity, ease, times }}
       />
 
-      {/* Right leg — crosses to left */}
+      {/* Right leg — thigh→knee→shin with bent knee when seated */}
       <motion.path
         stroke="hsl(var(--primary))"
         strokeWidth="5"
@@ -719,10 +719,10 @@ function CrossLeggedAnimation() {
         fill="none"
         animate={{
           d: [
-            "M104 70 L104 105 L104 132",         // standing straight
-            "M104 82 L92 100 L78 110",            // bending & crossing
-            "M104 90 L88 102 L70 110",            // seated: shin crosses to left, foot near left hip
-            "M104 70 L104 105 L104 132",          // back to standing
+            "M104 70 L104 100 L104 118 L104 132",           // standing: straight leg
+            "M104 82 L90 95 L80 105 L72 112",               // lowering: knee bending outward
+            "M104 90 L85 98 L75 108 L68 118",               // seated: thigh out, knee bent, shin crosses over
+            "M104 70 L104 100 L104 118 L104 132",            // back to standing
           ],
         }}
         transition={{ duration: dur, repeat: Infinity, ease, times }}
