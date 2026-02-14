@@ -606,163 +606,17 @@ function OverheadReachAnimation() {
   );
 }
 
-// Cross-Legged Animation - Animated transition from standing to cross-legged sit
+// Cross-Legged Animation - Video tutorial
 function CrossLeggedAnimation() {
-  const dur = 3;
-  const ease = "easeInOut";
-  const times = [0, 0.35, 0.65, 1]; // stand → lower → seated → stand
-
   return (
-    <svg viewBox="0 0 200 150" className="w-full h-full">
-      {/* Floor / mat */}
-      <ellipse cx="100" cy="138" rx="55" ry="6" fill="hsl(var(--muted))" />
-
-      {/* Head */}
-      <motion.circle
-        r="10"
-        fill="hsl(var(--primary))"
-        animate={{
-          cx: [100, 100, 100, 100],
-          cy: [18, 30, 40, 18],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Torso */}
-      <motion.line
-        stroke="hsl(var(--primary))"
-        strokeWidth="6"
-        strokeLinecap="round"
-        animate={{
-          x1: [100, 100, 100, 100],
-          y1: [30, 42, 52, 30],
-          x2: [100, 100, 100, 100],
-          y2: [70, 82, 90, 70],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Shoulders */}
-      <motion.line
-        stroke="hsl(var(--primary))"
-        strokeWidth="4"
-        strokeLinecap="round"
-        animate={{
-          x1: [85, 85, 83, 85],
-          y1: [36, 48, 58, 36],
-          x2: [115, 115, 117, 115],
-          y2: [36, 48, 58, 36],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Left arm */}
-      <motion.path
-        stroke="hsl(var(--primary))"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        animate={{
-          d: [
-            "M85 36 L78 52 L78 65",      // standing: arms at sides
-            "M85 48 L75 62 L70 78",       // lowering
-            "M83 58 L72 74 L68 92",       // seated: hand on knee
-            "M85 36 L78 52 L78 65",       // back to standing
-          ],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Right arm */}
-      <motion.path
-        stroke="hsl(var(--primary))"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        animate={{
-          d: [
-            "M115 36 L122 52 L122 65",
-            "M115 48 L125 62 L130 78",
-            "M117 58 L128 74 L132 92",
-            "M115 36 L122 52 L122 65",
-          ],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Left leg — thigh→knee→shin with bent knee when seated */}
-      <motion.path
-        stroke="hsl(var(--primary))"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        animate={{
-          d: [
-            "M96 70 L96 100 L96 118 L96 132",              // standing: straight leg
-            "M96 82 L110 95 L120 105 L128 112",             // lowering: knee bending outward
-            "M96 90 L115 98 L125 108 L132 118",             // seated: thigh out, knee bent, shin tucked under
-            "M96 70 L96 100 L96 118 L96 132",               // back to standing
-          ],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Right leg — thigh→knee→shin with bent knee when seated */}
-      <motion.path
-        stroke="hsl(var(--primary))"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-        animate={{
-          d: [
-            "M104 70 L104 100 L104 118 L104 132",           // standing: straight leg
-            "M104 82 L90 95 L80 105 L72 112",               // lowering: knee bending outward
-            "M104 90 L85 98 L75 108 L68 118",               // seated: thigh out, knee bent, shin crosses over
-            "M104 70 L104 100 L104 118 L104 132",            // back to standing
-          ],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Left foot */}
-      <motion.ellipse
-        fill="hsl(var(--primary))"
-        animate={{
-          cx: [96, 124, 133, 96],
-          cy: [134, 113, 113, 134],
-          rx: [5, 6, 7, 5],
-          ry: [3, 4, 4, 3],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Right foot */}
-      <motion.ellipse
-        fill="hsl(var(--primary))"
-        animate={{
-          cx: [104, 76, 67, 104],
-          cy: [134, 113, 113, 134],
-          rx: [5, 6, 7, 5],
-          ry: [3, 4, 4, 3],
-        }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-
-      {/* Spine alignment indicator - visible when seated */}
-      <motion.line
-        x1="100" y1="38"
-        x2="100" y2="90"
-        stroke="hsl(var(--success))"
-        strokeWidth="2"
-        strokeDasharray="4 3"
-        animate={{ opacity: [0, 0, 0.6, 0] }}
-        transition={{ duration: dur, repeat: Infinity, ease, times }}
-      />
-    </svg>
+    <video
+      src="/videos/cross-legged.mp4"
+      autoPlay
+      loop
+      muted
+      playsInline
+      className="w-full h-full object-contain rounded-lg"
+    />
   );
 }
 
