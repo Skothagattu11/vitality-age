@@ -1,7 +1,7 @@
-import { Assessment } from '@/components/Assessment';
+import { HubPage } from '@/components/HubPage';
 
 const Index = () => {
-  return <Assessment />;
+  return <HubPage />;
 };
 
 export default Index;

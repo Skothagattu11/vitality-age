@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { track } from '@vercel/analytics';
 import { LandingPage } from '@/components/LandingPage';
 import { useAssessment } from '@/hooks/useAssessment';
@@ -147,13 +148,13 @@ export function Assessment() {
     markOnboardingSeen,
   } = useAssessment();
 
+  const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Check if user clicked start button before React loaded
   useEffect(() => {
     if ((window as any).__userClickedStart && data.currentStep === 0) {
-      // User clicked start in static HTML, navigate to setup
       goToStep(1);
       delete (window as any).__userClickedStart;
     }
@@ -213,6 +214,7 @@ export function Assessment() {
   const handleReset = () => {
     reset();
     setShowResetConfirm(false);
+    navigate('/');
   };
 
   // Calculate results when on the results step (step 10)
@@ -228,7 +230,7 @@ export function Assessment() {
               updateData('userProfile', profile);
               nextStep();
             }}
-            onBack={() => goToStep(0)}
+            onBack={() => navigate('/')}
           />
         );
 
