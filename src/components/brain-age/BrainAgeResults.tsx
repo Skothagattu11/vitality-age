@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Download, RotateCcw, TrendingUp, TrendingDown, Minus, ChevronDown, Share2 } from 'lucide-react';
 import { track } from '@vercel/analytics';
@@ -28,14 +28,18 @@ interface BrainAgeResultsProps {
   onRetake: () => void;
 }
 
+const CARD_DESIGNS = ['Certificate', 'Passport'] as const;
+
 export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps) {
   const navigate = useNavigate();
   const { brainAge, chronologicalAge, gap, domainScores, topDrivers, contextualNote } = result;
   const [showInsights, setShowInsights] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedDesign, setSelectedDesign] = useState<number>(0);
   const [cardScale, setCardScale] = useState(1);
-  const cardRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Offscreen capture ref — plain div, NO Framer Motion, always 400x400
+  const captureRef = useRef<HTMLDivElement>(null);
 
   const actualGap = chronologicalAge - brainAge;
   const isYounger = actualGap > 0;
@@ -77,12 +81,256 @@ export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps
     fullMark: 100,
   }));
 
+  // Domain short labels for passport stamps
+  const domainShortLabels: Record<string, string> = {
+    'Processing Speed': 'Speed',
+    'Executive Function': 'Exec',
+    'Working Memory': 'Memory',
+    'Attention': 'Attn',
+    'Cognitive Flexibility': 'Flex',
+  };
+
+  const formattedDate = new Date().toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+
+  const serialNo = `EA-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${String(brainAge).padStart(2, '0')}${String(chronologicalAge).padStart(2, '0')}`;
+
+  const clearanceLevel = actualGap >= 5 ? 'Superior' : actualGap >= 2 ? 'Advanced' : actualGap >= 0 ? 'Standard' : actualGap >= -3 ? 'Monitor' : 'Alert';
+
+  // ═══════════════════════════════════════════════════════════════
+  // Card content renderer — shared between visible card & offscreen capture
+  // Uses ONLY absolute positioning, NO flex centering, NO transforms
+  // ═══════════════════════════════════════════════════════════════
+
+  const renderCertificate = (): ReactNode => (
+    <>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, #1a1030 0%, #2d1b69 50%, #1a1030 100%)', borderRadius: '16px' }} />
+      <div style={{ position: 'absolute', top: '8px', left: '8px', right: '8px', bottom: '8px', background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #7C3AED 100%)', borderRadius: '12px', opacity: 0.3 }} />
+      <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', bottom: '12px', background: '#0f0a1e', borderRadius: '10px' }} />
+      <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', bottom: '20px', background: '#FFFEF9', borderRadius: '6px' }} />
+
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '400px', height: '400px' }}>
+        {/* Header row */}
+        <div style={{ position: 'absolute', top: '32px', left: '36px' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#7C3AED" style={{ position: 'absolute', left: 0, top: '2px' }}>
+            <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
+          </svg>
+          <span style={{ position: 'absolute', left: '24px', top: 0, fontSize: '17px', fontWeight: 700, color: '#7C3AED', whiteSpace: 'nowrap' }}>Brain Age</span>
+        </div>
+        <div style={{ position: 'absolute', top: '34px', right: '36px', fontSize: '13px', fontWeight: 500, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
+          {formattedDate}
+        </div>
+
+        {/* "BRAIN AGE" label */}
+        <div style={{ position: 'absolute', top: '72px', left: 0, width: '400px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+          Brain Age
+        </div>
+
+        {/* Big number */}
+        <div style={{ position: 'absolute', top: '92px', left: 0, width: '400px', textAlign: 'center', lineHeight: '1' }}>
+          <span style={{
+            fontSize: '100px', fontWeight: 800, letterSpacing: '-0.04em',
+            color: isYounger ? '#22C55E' : isSame ? '#7C3AED' : '#F59E0B',
+            textShadow: isYounger
+              ? '0 2px 0 #1DA34B, 0 4px 0 #188A3F, 0 5px 6px rgba(34, 197, 94, 0.25)'
+              : isSame
+                ? '0 2px 0 #6D28D9, 0 4px 0 #5B21B6, 0 5px 6px rgba(124, 58, 237, 0.25)'
+                : '0 2px 0 #E08A0A, 0 4px 0 #C77808, 0 5px 6px rgba(245, 158, 11, 0.25)',
+          }}>
+            {brainAge}
+          </span>
+        </div>
+
+        {/* Gap text — no background, just colored text */}
+        <div style={{
+          position: 'absolute', top: '222px', left: 0, width: '400px', textAlign: 'center',
+          fontSize: '18px', fontWeight: 700,
+          color: isYounger ? '#16A34A' : isSame ? '#7C3AED' : '#D97706',
+        }}>
+          {gapText}
+        </div>
+
+        {/* Divider */}
+        <div style={{ position: 'absolute', top: '280px', left: '130px', width: '140px', height: '1px', backgroundColor: '#E5E7EB' }} />
+
+        {/* Actual age */}
+        <div style={{ position: 'absolute', top: '296px', left: 0, width: '400px', textAlign: 'center', fontSize: '16px', color: '#6B7280' }}>
+          Actual age: <span style={{ fontWeight: 700, color: '#374151' }}>{chronologicalAge}</span>
+        </div>
+
+        {/* Brand footer */}
+        <div style={{ position: 'absolute', top: '348px', left: 0, width: '400px', textAlign: 'center' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#9CA3AF' }}>EntropyAge.com</span>
+        </div>
+      </div>
+    </>
+  );
+
+  // forExport: nudges stamp text up by 6px to compensate for html2canvas
+  // rendering fonts lower than the browser does
+  const renderPassport = (forExport = false): ReactNode => {
+    const stampOffset = forExport ? -6 : 0;
+    return (
+    <>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#F5F0E8', borderRadius: '16px' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(ellipse at 20% 50%, rgba(139,90,43,0.04) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(139,90,43,0.03) 0%, transparent 50%)' }} />
+      <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', bottom: '12px', border: '2px dashed rgba(139,90,43,0.2)', borderRadius: '4px' }} />
+      <div style={{ position: 'absolute', top: '18px', left: '18px', right: '18px', bottom: '18px', border: '1px solid rgba(139,90,43,0.1)' }} />
+
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '400px', height: '400px' }}>
+        {/* Header */}
+        <div style={{ position: 'absolute', top: '28px', left: 0, width: '400px', textAlign: 'center' }}>
+          <div style={{
+            fontSize: '20px', fontWeight: 700, color: '#5C3A1E',
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            fontFamily: '"Courier New", Courier, monospace',
+          }}>
+            Cognitive Clearance
+          </div>
+          <div style={{
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '9px', color: 'rgba(92,58,30,0.35)',
+            letterSpacing: '0.3em', marginTop: '3px',
+          }}>
+            NO. {serialNo}
+          </div>
+        </div>
+
+        {/* Divider below header */}
+        <div style={{ position: 'absolute', top: '66px', left: '24px', right: '24px', height: '2px', backgroundColor: 'rgba(139,90,43,0.15)' }} />
+
+        {/* Stamp circle — shifted left to keep info within borders */}
+        <div style={{
+          position: 'absolute', left: '24px', top: '86px',
+          width: '160px', height: '160px',
+          border: '4px solid #8B2500', borderRadius: '50%',
+          background: 'rgba(139,37,0,0.03)',
+          boxSizing: 'border-box',
+        }}>
+          <div style={{
+            position: 'absolute', top: '7px', left: '7px', right: '7px', bottom: '7px',
+            border: '2px solid rgba(139,37,0,0.3)', borderRadius: '50%',
+          }} />
+          {/* "Brain Age" label inside stamp */}
+          <div style={{
+            position: 'absolute', top: `${24 + stampOffset}px`, left: 0, right: 0, textAlign: 'center',
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '9px', fontWeight: 700, color: '#8B2500',
+            letterSpacing: '0.15em', textTransform: 'uppercase',
+          }}>
+            Brain Age
+          </div>
+          {/* Number */}
+          <div style={{
+            position: 'absolute', top: `${39 + stampOffset}px`, left: 0, right: 0, textAlign: 'center',
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '54px', fontWeight: 800, color: '#8B2500',
+            lineHeight: '1',
+          }}>
+            {brainAge}
+          </div>
+          {/* "Years" label */}
+          <div style={{
+            position: 'absolute', top: `${97 + stampOffset}px`, left: 0, right: 0, textAlign: 'center',
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: '12px', fontWeight: 700,
+            color: 'rgba(139,37,0,0.7)',
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+          }}>
+            Years
+          </div>
+        </div>
+
+        {/* Info panel — within right dotted border (388px max) */}
+        <div style={{ position: 'absolute', left: '202px', top: '100px' }}>
+          {[
+            { label: 'Actual', value: `${chronologicalAge} yrs` },
+            { label: 'Status', value: gapText, color: isYounger ? '#16A34A' : isSame ? '#5C3A1E' : '#D97706' },
+            { label: 'Date', value: formattedDate },
+            { label: 'Class', value: clearanceLevel },
+          ].map(row => (
+            <div key={row.label} style={{ marginBottom: '10px' }}>
+              <span style={{
+                fontFamily: '"Courier New", Courier, monospace',
+                fontSize: '9px', fontWeight: 700,
+                color: 'rgba(92,58,30,0.5)',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                display: 'inline-block', width: '56px',
+                verticalAlign: 'baseline',
+              }}>
+                {row.label}
+              </span>
+              <span style={{
+                fontFamily: '"Courier New", Courier, monospace',
+                fontSize: '14px', fontWeight: 700,
+                color: row.color || '#5C3A1E',
+                verticalAlign: 'baseline',
+              }}>
+                {row.value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Divider above domain stamps */}
+        <div style={{ position: 'absolute', top: '268px', left: '24px', width: '352px', height: '1px', backgroundColor: 'rgba(139,90,43,0.15)' }} />
+
+        {/* Domain stamps row — within dotted borders */}
+        <div style={{ position: 'absolute', top: '282px', left: '16px', width: '368px', textAlign: 'center' }}>
+          {domainScores.map((d) => (
+            <div key={d.domain} style={{
+              display: 'inline-block',
+              padding: '6px 11px',
+              border: '1.5px solid rgba(139,37,0,0.3)',
+              borderRadius: '4px',
+              background: 'rgba(139,37,0,0.02)',
+              margin: '0 3px 5px',
+              textAlign: 'center',
+              verticalAlign: 'top',
+            }}>
+              <div style={{
+                fontFamily: '"Courier New", Courier, monospace',
+                fontSize: '8px', fontWeight: 700, color: 'rgba(139,37,0,0.6)',
+                textTransform: 'uppercase', letterSpacing: '0.05em',
+              }}>
+                {domainShortLabels[d.domain] || d.domain}
+              </div>
+              <div style={{
+                fontFamily: '"Courier New", Courier, monospace',
+                fontSize: '17px', fontWeight: 700, color: '#8B2500',
+              }}>
+                {d.percentile}%
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Brand footer — inside dotted border, bright */}
+        <div style={{
+          position: 'absolute', top: '362px', left: 0, width: '400px', textAlign: 'center',
+          fontFamily: '"Courier New", Courier, monospace',
+          fontSize: '12px', fontWeight: 700, color: '#8B5A2B', letterSpacing: '0.12em',
+        }}>
+          EntropyAge.com
+        </div>
+      </div>
+    </>
+    );
+  };
+
+  const renderCardContent = (design: number, forExport = false): ReactNode => {
+    return design === 0 ? renderCertificate() : renderPassport(forExport);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // Capture from the OFFSCREEN plain div — zero Framer Motion interference
+  // ═══════════════════════════════════════════════════════════════
+
   const captureCard = async (): Promise<string | null> => {
-    if (!cardRef.current) return null;
-    const originalTransform = cardRef.current.style.transform;
+    if (!captureRef.current) return null;
     try {
-      cardRef.current.style.transform = 'scale(1)';
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(captureRef.current, {
         backgroundColor: null,
         scale: 2.5,
         useCORS: true,
@@ -90,11 +338,9 @@ export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps
         width: 400,
         height: 400,
       });
-      cardRef.current.style.transform = originalTransform;
       return canvas.toDataURL('image/png');
     } catch (error) {
       console.error('Failed to capture card:', error);
-      if (cardRef.current) cardRef.current.style.transform = originalTransform;
       return null;
     }
   };
@@ -139,28 +385,59 @@ export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps
     }
   };
 
-  const formattedDate = new Date().toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
-
   return (
     <div className="min-h-screen py-8 px-4">
+      {/* ═══ OFFSCREEN CAPTURE TARGET ═══
+          Plain div, always 400x400, no transforms, no Framer Motion.
+          html2canvas captures from HERE — pixel-perfect every time. */}
+      <div
+        ref={captureRef}
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          left: '-9999px',
+          top: 0,
+          width: '400px',
+          height: '400px',
+          overflow: 'hidden',
+          borderRadius: '16px',
+          background: '#FFFFFF',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          // No transform, no scale, no Framer Motion
+        }}
+      >
+        {renderCardContent(selectedDesign, true)}
+      </div>
+
       <motion.div
         className="max-w-md mx-auto space-y-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Share Card */}
-        <div ref={containerRef} className="relative w-full overflow-hidden flex flex-col items-center">
-          <div
+        {/* Card Design Carousel with Swipe */}
+        <div
+          ref={containerRef}
+          className="relative w-full overflow-hidden touch-pan-y flex flex-col items-center"
+        >
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (info.offset.x > 50) {
+                setSelectedDesign(prev => (prev - 1 + CARD_DESIGNS.length) % CARD_DESIGNS.length);
+              } else if (info.offset.x < -50) {
+                setSelectedDesign(prev => (prev + 1) % CARD_DESIGNS.length);
+              }
+            }}
+            className="cursor-grab active:cursor-grabbing"
             style={{
               width: `${400 * cardScale}px`,
               height: `${400 * cardScale}px`,
             }}
           >
             <motion.div
-              ref={cardRef}
               className="relative overflow-hidden rounded-2xl"
               style={{
                 width: '400px',
@@ -172,72 +449,32 @@ export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps
               }}
               initial={{ opacity: 0, scale: 0.95 * cardScale }}
               animate={{ opacity: 1, scale: cardScale }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              key={selectedDesign}
             >
-              {/* Violet-themed card */}
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, #1a1030 0%, #2d1b69 50%, #1a1030 100%)', borderRadius: '16px' }} />
-              <div style={{ position: 'absolute', top: '8px', left: '8px', right: '8px', bottom: '8px', background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #7C3AED 100%)', borderRadius: '12px', opacity: 0.3 }} />
-              <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', bottom: '12px', background: '#0f0a1e', borderRadius: '10px' }} />
-              <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', bottom: '20px', background: '#FFFEF9', borderRadius: '6px' }} />
-
-              <div style={{ position: 'relative', height: '100%', padding: '32px 36px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-                {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#7C3AED">
-                      <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z" />
-                    </svg>
-                    <span style={{ fontSize: '17px', fontWeight: 700, color: '#7C3AED' }}>Brain Age</span>
-                  </div>
-                  <span style={{ fontSize: '13px', fontWeight: 500, color: '#9CA3AF' }}>{formattedDate}</span>
-                </div>
-
-                {/* Number */}
-                <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', marginTop: '-8px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-                    Brain Age
-                  </div>
-                  <div style={{ marginBottom: '28px', paddingBottom: '4px' }}>
-                    <span style={{
-                      fontSize: '100px', fontWeight: 800, lineHeight: '1', letterSpacing: '-0.04em', display: 'block',
-                      color: isYounger ? '#22C55E' : isSame ? '#7C3AED' : '#F59E0B',
-                      textShadow: isYounger
-                        ? '0 2px 0 #1DA34B, 0 4px 0 #188A3F, 0 6px 0 #147234, 0 8px 8px rgba(34, 197, 94, 0.3)'
-                        : isSame
-                          ? '0 2px 0 #6D28D9, 0 4px 0 #5B21B6, 0 6px 0 #4C1D95, 0 8px 8px rgba(124, 58, 237, 0.3)'
-                          : '0 2px 0 #E08A0A, 0 4px 0 #C77808, 0 6px 0 #AE6707, 0 8px 8px rgba(245, 158, 11, 0.3)',
-                    }}>
-                      {brainAge}
-                    </span>
-                  </div>
-
-                  {/* Gap badge */}
-                  <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-                    <div style={{
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 16px', borderRadius: '20px',
-                      backgroundColor: isYounger ? 'rgba(34, 197, 94, 0.12)' : isSame ? 'rgba(124, 58, 237, 0.12)' : 'rgba(245, 158, 11, 0.12)',
-                      border: `1.5px solid ${isYounger ? 'rgba(34, 197, 94, 0.3)' : isSame ? 'rgba(124, 58, 237, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
-                    }}>
-                      <span style={{ fontSize: '16px', fontWeight: 700, color: isYounger ? '#16A34A' : isSame ? '#7C3AED' : '#D97706' }}>
-                        {gapText}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <div style={{ width: '140px', height: '1px', backgroundColor: '#E5E7EB', marginBottom: '12px' }} />
-                    <div style={{ fontSize: '16px', color: '#6B7280' }}>
-                      Actual age: <span style={{ fontWeight: 700, color: '#374151' }}>{chronologicalAge}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center', marginTop: '8px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#9CA3AF' }}>EntropyAge.com</span>
-                </div>
-              </div>
+              {renderCardContent(selectedDesign)}
             </motion.div>
+          </motion.div>
+
+          {/* Design selector dots */}
+          <div className="flex justify-center gap-2 mt-4">
+            {CARD_DESIGNS.map((design, index) => (
+              <button
+                key={design}
+                onClick={() => setSelectedDesign(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all",
+                  selectedDesign === index
+                    ? "bg-secondary w-6"
+                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                )}
+                aria-label={`Select ${design} design`}
+              />
+            ))}
           </div>
+          <p className="text-center text-sm text-muted-foreground mt-2">
+            {CARD_DESIGNS[selectedDesign]} Style
+          </p>
         </div>
 
         {/* Radar Chart */}

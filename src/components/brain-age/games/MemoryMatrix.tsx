@@ -11,6 +11,16 @@ interface MemoryMatrixProps {
   onBack: () => void;
 }
 
+// Game caps — bounds the game to ~2-3 minutes
+const MAX_FORWARD_SPAN = 7;
+const MAX_BACKWARD_SPAN = 5;
+// Timing (ms)
+const CELL_SHOW_MS = 500;
+const CELL_GAP_MS = 200;
+const INITIAL_DELAY_MS = 400;
+const CORRECT_DELAY_MS = 600;
+const ANSWER_REVEAL_MS = 1500;
+
 function generateSequence(len: number, gridSize: number): number[] {
   const cells: number[] = [];
   const total = gridSize * gridSize;
@@ -95,8 +105,8 @@ export function MemoryMatrix({ onComplete, onSkip, onBack }: MemoryMatrixProps) 
         showTimerRef.current = window.setTimeout(() => {
           setHighlightedCell(null);
           i++;
-          showTimerRef.current = window.setTimeout(show, 300);
-        }, 600);
+          showTimerRef.current = window.setTimeout(show, CELL_GAP_MS);
+        }, CELL_SHOW_MS);
       } else {
         setIsShowing(false);
         setIsInputPhase(true);
@@ -105,7 +115,7 @@ export function MemoryMatrix({ onComplete, onSkip, onBack }: MemoryMatrixProps) 
         setShownCells([]);
       }
     };
-    showTimerRef.current = window.setTimeout(show, 500);
+    showTimerRef.current = window.setTimeout(show, INITIAL_DELAY_MS);
 
     return () => clearTimeout(showTimerRef.current);
   }, [roundTrigger, gamePhase]);
@@ -170,9 +180,31 @@ export function MemoryMatrix({ onComplete, onSkip, onBack }: MemoryMatrixProps) 
           backwardSpanRef.current = len;
         }
 
-        feedbackTimerRef.current = window.setTimeout(() => {
-          startNextRound(len + 1, dir);
-        }, 800);
+        // Check if we hit the cap for this direction
+        const maxSpan = dir === 'forward' ? MAX_FORWARD_SPAN : MAX_BACKWARD_SPAN;
+        if (len >= maxSpan) {
+          // Cap reached — advance to next phase or end
+          feedbackTimerRef.current = window.setTimeout(() => {
+            if (dir === 'forward') {
+              consecutiveFailuresRef.current = 0;
+              startNextRound(2, 'backward');
+            } else {
+              const fwd = forwardSpanRef.current;
+              const bwd = backwardSpanRef.current;
+              const weighted = fwd * 1.0 + bwd * 1.5;
+              setFinalResult({
+                forwardSpan: fwd,
+                backwardSpan: bwd,
+                weightedScore: Math.round(weighted * 10) / 10,
+              });
+              setGamePhase('review');
+            }
+          }, CORRECT_DELAY_MS);
+        } else {
+          feedbackTimerRef.current = window.setTimeout(() => {
+            startNextRound(len + 1, dir);
+          }, CORRECT_DELAY_MS);
+        }
       } else {
         feedbackRef.current = 'wrong';
         isInputPhaseRef.current = false;
@@ -186,7 +218,7 @@ export function MemoryMatrix({ onComplete, onSkip, onBack }: MemoryMatrixProps) 
             showCorrectAnswer(expectedSequence, () => {
               consecutiveFailuresRef.current = 0;
               startNextRound(2, 'backward');
-            }, 2500);
+            }, ANSWER_REVEAL_MS);
           } else {
             // Show answer, then end game
             const fwd = forwardSpanRef.current;
@@ -199,13 +231,13 @@ export function MemoryMatrix({ onComplete, onSkip, onBack }: MemoryMatrixProps) 
                 weightedScore: Math.round(weighted * 10) / 10,
               });
               setGamePhase('review');
-            }, 2500);
+            }, ANSWER_REVEAL_MS);
           }
         } else {
           // Show answer, then retry same length
           showCorrectAnswer(expectedSequence, () => {
             startNextRound(len, dir);
-          }, 2500);
+          }, ANSWER_REVEAL_MS);
         }
       }
     }
@@ -229,7 +261,7 @@ export function MemoryMatrix({ onComplete, onSkip, onBack }: MemoryMatrixProps) 
         'Cells in a grid will light up one at a time — watch the order carefully.',
         'Phase 1 (→ Forward): Tap them back in the SAME order they lit up.',
         'Phase 2 (← Backward): Tap them in REVERSE — last one first, first one last.',
-        'Sequences get longer as you succeed. Two failures in a row moves to the next phase.',
+        'Sequences grow up to 7 forward and 5 backward. Two misses in a row advances the phase.',
       ]}
       phase={gamePhase}
       onStart={handleStart}

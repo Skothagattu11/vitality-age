@@ -385,7 +385,7 @@ export function Assessment() {
       )}>
         {/* Landing page renders immediately without any wrapper */}
         {data.currentStep === 0 ? (
-          <LandingPage onStart={() => goToStep(1)} />
+          <LandingPage onStart={() => goToStep(1)} onBack={() => navigate('/')} />
         ) : (
           /* Other steps use lazy-loaded animated wrapper */
           <Suspense fallback={<StepLoader />}>

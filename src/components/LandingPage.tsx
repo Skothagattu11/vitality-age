@@ -6,6 +6,7 @@ const LandingHowItWorks = lazy(() => import('@/components/LandingHowItWorks'));
 
 interface LandingPageProps {
   onStart: () => void;
+  onBack?: () => void;
 }
 
 // Inline SVG icons to avoid lucide-react bundle
@@ -27,13 +28,19 @@ const InfoIcon = () => (
   </svg>
 );
 
+const ArrowLeftIcon = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+  </svg>
+);
+
 const ShieldIcon = () => (
   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
   </svg>
 );
 
-export function LandingPage({ onStart }: LandingPageProps) {
+export function LandingPage({ onStart, onBack }: LandingPageProps) {
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
       {/* Glow effect background */}
@@ -41,6 +48,20 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <div className="absolute -top-40 -right-40 w-60 md:w-80 h-60 md:h-80 bg-primary/20 rounded-full blur-[100px]" />
         <div className="absolute -bottom-40 -left-40 w-60 md:w-80 h-60 md:h-80 bg-secondary/20 rounded-full blur-[100px]" />
       </div>
+
+      {/* Back link */}
+      {onBack && (
+        <div className="relative z-10 p-4 sm:p-6">
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeftIcon />
+            Back to assessments
+          </button>
+        </div>
+      )}
 
       <main className="flex-1 flex items-center justify-center px-4 py-6 relative z-10">
         <article className="max-w-lg w-full text-center space-y-8 animate-fade-in-up">
