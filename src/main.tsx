@@ -4,6 +4,9 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
 
-// Remove static HTML now that React has rendered
-const staticEl = document.getElementById("static-landing");
-if (staticEl) staticEl.remove();
+// Hide loader now that React has rendered
+const loader = document.getElementById("initial-loader");
+if (loader) {
+  loader.classList.add("hidden");
+  setTimeout(() => loader.remove(), 300);
+}

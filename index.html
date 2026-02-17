@@ -23,45 +23,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Critical CSS matching the actual landing page design -->
+    <!-- Critical CSS — loader only -->
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { line-height: 1.5; -webkit-text-size-adjust: 100%; overflow-x: hidden; }
       body { margin: 0; font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: hsl(210 20% 98%); color: hsl(220 20% 10%); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
       #root { min-height: 100vh; width: 100%; }
 
-      /* Static landing page styles */
-      .static-landing { min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
-      .static-bg-glow { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-      .static-glow-1 { position: absolute; top: -160px; right: -160px; width: 240px; height: 240px; background: hsla(189, 100%, 50%, 0.2); border-radius: 50%; filter: blur(100px); }
-      .static-glow-2 { position: absolute; bottom: -160px; left: -160px; width: 240px; height: 240px; background: hsla(262, 83%, 58%, 0.2); border-radius: 50%; filter: blur(100px); }
-      .static-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; position: relative; z-index: 10; }
-      .static-content { max-width: 32rem; width: 100%; text-align: center; }
-      .static-icon-wrap { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: hsla(189, 100%, 50%, 0.1); margin-bottom: 16px; animation: s-float 3s ease-in-out infinite; }
-      .static-icon-wrap svg { width: 32px; height: 32px; color: hsl(189 100% 50%); }
-      .static-h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.025em; background: linear-gradient(135deg, hsl(189 100% 50%), hsl(262 83% 58%)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0 0 16px; }
-      .static-subtitle { font-size: 1.25rem; font-weight: 500; color: hsla(220, 20%, 10%, 0.9); margin: 0; }
-      .static-subtitle-small { display: block; font-size: 1.125rem; color: hsl(220 10% 45%); margin-top: 4px; }
-      .static-desc { font-size: 1.125rem; color: hsl(220 10% 45%); max-width: 28rem; margin: 32px auto; line-height: 1.6; }
-      .static-cta { display: inline-flex; align-items: center; gap: 8px; padding: 16px 32px; font-size: 1.125rem; font-weight: 600; color: hsl(220 20% 10%); background: linear-gradient(135deg, hsl(189 100% 50%), hsl(189 100% 45%)); border: none; border-radius: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 20px -4px hsla(189, 100%, 50%, 0.3); animation: s-glow 2s ease-in-out infinite; width: 100%; max-width: 320px; justify-content: center; }
-      .static-cta:hover { transform: translateY(-1px); box-shadow: 0 0 30px -2px hsla(189, 100%, 50%, 0.5); }
-      .static-cta:active { transform: translateY(0); }
-      .static-cta svg { width: 20px; height: 20px; }
-      .static-how-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 16px; padding: 8px; font-size: 0.875rem; color: hsl(220 10% 45%); background: none; border: none; cursor: pointer; text-decoration: none; }
-      .static-how-link svg { width: 16px; height: 16px; }
-      .static-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding-top: 16px; margin-top: 32px; }
-      .static-feature-label { font-weight: 600; color: hsl(220 20% 10%); margin: 0; }
-      .static-feature-sub { font-size: 0.75rem; color: hsl(220 10% 45%); margin: 4px 0 0; }
-      .static-footer { padding: 24px; text-align: center; position: relative; z-index: 10; }
-      .static-footer p { font-size: 0.75rem; color: hsl(220 10% 45%); max-width: 28rem; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 4px; }
-      .static-footer p svg { width: 12px; height: 12px; flex-shrink: 0; }
-      .static-footer .static-copy { margin-top: 8px; display: block; }
-
-      /* Transition state when button clicked before React */
-      .static-cta.clicked { opacity: 0.7; pointer-events: none; }
-      .static-cta.clicked::after { content: 'Loading...'; margin-left: 4px; }
-
-      /* Initial loading screen - shows instantly */
       .initial-loader {
         position: fixed;
         inset: 0;
@@ -91,53 +59,16 @@
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
-      .loader-message {
-        margin-top: 16px;
-        font-size: 1rem;
-        color: hsl(220 10% 45%);
-        text-align: center;
-        max-width: 280px;
-        line-height: 1.5;
-        min-height: 48px;
-      }
-      .loader-tagline {
-        margin-top: 8px;
-        font-size: 0.875rem;
-        color: hsl(220 10% 55%);
-      }
       @keyframes spin { to { transform: rotate(360deg); } }
       @media (prefers-color-scheme: dark) {
-        .initial-loader { background: hsl(220 20% 8%); }
-        .loader-message { color: hsl(220 10% 60%); }
-        .loader-tagline { color: hsl(220 10% 50%); }
-      }
-
-      @keyframes s-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-      @keyframes s-glow { 0%, 100% { box-shadow: 0 0 20px -4px hsla(189, 100%, 50%, 0.3); } 50% { box-shadow: 0 0 30px -2px hsla(189, 100%, 50%, 0.5); } }
-      @keyframes s-fade-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-      .static-content { animation: s-fade-in 0.4s ease-out; }
-
-      @media (min-width: 640px) {
-        .static-h1 { font-size: 3rem; }
-        .static-cta { width: auto; }
-        .static-glow-1, .static-glow-2 { width: 320px; height: 320px; }
-      }
-
-      @media (prefers-color-scheme: dark) {
         body { background: hsl(220 20% 8%); color: hsl(210 20% 98%); }
-        .static-subtitle { color: hsla(210, 20%, 98%, 0.9); }
-        .static-subtitle-small { color: hsl(220 10% 60%); }
-        .static-desc { color: hsl(220 10% 60%); }
-        .static-feature-label { color: hsl(210 20% 98%); }
-        .static-feature-sub { color: hsl(220 10% 60%); }
-        .static-footer p { color: hsl(220 10% 60%); }
-        .static-how-link { color: hsl(220 10% 60%); }
+        .initial-loader { background: hsl(220 20% 8%); }
       }
     </style>
 
     <!-- Primary Meta Tags -->
-    <title>Entropy Age – Discover Your Functional Biological Age</title>
-    <meta name="description" content="Your chronological age is just a number. Entropy Age estimates your functional biological age through 5 simple at-home tests in 10 minutes — no bloodwork, no equipment. See how your body is really aging." />
+    <title>Entropy Age – Discover Your Biological Age</title>
+    <meta name="description" content="Entropy Age estimates your biological age across multiple dimensions — functional fitness, cognitive sharpness, and more — through quick, science-backed assessments. No bloodwork, no equipment." />
     <meta name="author" content="Entropy Age" />
 
     <!-- Canonical -->
@@ -146,8 +77,8 @@
     <!-- Open Graph / Facebook / LinkedIn -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.entropyage.com/" />
-    <meta property="og:title" content="Entropy Age – Discover Your Functional Biological Age" />
-    <meta property="og:description" content="10 minutes. 5 simple tests. No bloodwork. Estimate your functional biological age and see how your body is really aging." />
+    <meta property="og:title" content="Entropy Age – Discover Your Biological Age" />
+    <meta property="og:description" content="Quick, science-backed assessments to estimate your functional and cognitive biological age. No bloodwork, no equipment." />
     <meta property="og:image" content="https://www.entropyage.com/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="640" />
@@ -156,8 +87,8 @@
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://www.entropyage.com/" />
-    <meta name="twitter:title" content="Entropy Age – Discover Your Functional Biological Age" />
-    <meta name="twitter:description" content="10 minutes. 5 simple tests. No bloodwork. Estimate your functional biological age and see how your body is really aging." />
+    <meta name="twitter:title" content="Entropy Age – Discover Your Biological Age" />
+    <meta name="twitter:description" content="Quick, science-backed assessments to estimate your functional and cognitive biological age. No bloodwork, no equipment." />
     <meta name="twitter:image" content="https://www.entropyage.com/og-image.png" />
 
     <!-- Organization Schema -->
@@ -168,7 +99,7 @@
       "name": "Entropy Age",
       "url": "https://www.entropyage.com",
       "logo": "https://www.entropyage.com/favicon.png",
-      "description": "Entropy Age provides free functional biological age assessments through simple at-home physical tests.",
+      "description": "Entropy Age provides free biological age assessments through simple at-home tests.",
       "foundingDate": "2024",
       "areaServed": "Worldwide"
     }
@@ -181,12 +112,12 @@
       "@type": "WebApplication",
       "name": "Entropy Age",
       "url": "https://www.entropyage.com",
-      "description": "A free functional biological age assessment that analyzes your physical performance through 5 simple at-home tests.",
+      "description": "Free biological age assessments across multiple dimensions — functional fitness, cognitive sharpness, and more.",
       "applicationCategory": "HealthApplication",
       "operatingSystem": "Web",
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
       "creator": { "@type": "Organization", "name": "Entropy Age" },
-      "featureList": ["Functional biological age estimation", "5 evidence-based physical tests", "No equipment required", "Private - data stays on device"]
+      "featureList": ["Functional biological age estimation", "Cognitive brain age assessment", "5 evidence-based physical tests", "5 cognitive games", "No equipment required", "Private - data stays on device"]
     }
     </script>
 
@@ -197,114 +128,44 @@
       "@type": "FAQPage",
       "mainEntity": [
         { "@type": "Question", "name": "What is functional biological age?", "acceptedAnswer": { "@type": "Answer", "text": "Functional biological age reflects how your body is actually aging based on physical performance markers like strength, balance, endurance, and mobility." } },
-        { "@type": "Question", "name": "How does the assessment work?", "acceptedAnswer": { "@type": "Answer", "text": "You complete 5 simple at-home tests measuring lower-body strength, muscular endurance, balance, cardiovascular recovery, and mobility. Results are scored against age-adjusted benchmarks." } },
-        { "@type": "Question", "name": "Do I need any equipment?", "acceptedAnswer": { "@type": "Answer", "text": "No special equipment is needed — just a sturdy chair and a wall. The entire assessment takes about 10 minutes." } },
+        { "@type": "Question", "name": "What is brain age?", "acceptedAnswer": { "@type": "Answer", "text": "Brain age estimates your cognitive sharpness through 5 quick games testing reaction time, executive function, working memory, attention, and cognitive flexibility." } },
+        { "@type": "Question", "name": "How does the assessment work?", "acceptedAnswer": { "@type": "Answer", "text": "You complete quick at-home tests. Functional Age uses 5 physical tests (10 min). Brain Age uses 5 cognitive games (5 min). Results are scored against age-adjusted benchmarks." } },
         { "@type": "Question", "name": "Is my data private?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. All assessment data stays on your device and is not uploaded to any servers." } }
-      ]
-    }
-    </script>
-
-    <!-- HowTo Schema -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      "name": "How to Complete the Entropy Age Assessment",
-      "description": "Measure your functional biological age through 5 simple at-home tests",
-      "totalTime": "PT10M",
-      "tool": [{ "@type": "HowToTool", "name": "Sturdy chair" }, { "@type": "HowToTool", "name": "Wall" }],
-      "step": [
-        { "@type": "HowToStep", "position": 1, "name": "Enter Your Information", "text": "Provide your age, gender, and fitness level." },
-        { "@type": "HowToStep", "position": 2, "name": "Complete Physical Tests", "text": "Perform 5 tests: sit-to-stand, wall sit, balance, march recovery, and mobility." },
-        { "@type": "HowToStep", "position": 3, "name": "View Results", "text": "See your functional biological age and personalized recommendations." }
       ]
     }
     </script>
   </head>
 
   <body>
-    <!-- Initial loader - shows immediately while everything else loads -->
+    <!-- Loader — shows instantly while React loads -->
     <div id="initial-loader" class="initial-loader">
       <div class="loader-spinner"></div>
       <div class="loader-brand">Entropy Age</div>
-      <div id="loader-message" class="loader-message">Preparing your assessment...</div>
-      <div class="loader-tagline">Discover your functional biological age</div>
     </div>
 
-    <!-- Static landing page — visible instantly until React hydrates, then removed by main.tsx -->
-    <div id="static-landing" class="static-landing">
-      <div class="static-bg-glow" aria-hidden="true">
-        <div class="static-glow-1"></div>
-        <div class="static-glow-2"></div>
-      </div>
-
-      <main class="static-main">
-        <div class="static-content">
-          <div class="static-icon-wrap" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/>
-            </svg>
-          </div>
-
-          <h1 class="static-h1">Entropy Age</h1>
-
-          <p class="static-subtitle">
-            Assessment Hub
-          </p>
-
-          <p class="static-desc">
-            Discover your functional biological age and cognitive sharpness through quick, science-backed assessments.
-          </p>
-        </div>
-      </main>
-
-      <footer class="static-footer">
-        <p>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
-          For educational purposes only. Not medical advice.
-        </p>
-        <p class="static-copy">&copy; 2026 Entropy Age. All rights reserved.</p>
-      </footer>
-    </div>
-
-    <!-- React mount point — empty until JS loads -->
+    <!-- React mount point -->
     <div id="root"></div>
 
     <!-- SEO Content for crawlers -->
     <div id="seo-content" style="position:absolute;left:-9999px;top:-9999px">
-      <h2>What We Measure</h2>
+      <h2>Assessments</h2>
       <ul>
-        <li>Lower-body strength — Chair sit-to-stand test</li>
-        <li>Muscular endurance — Wall sit hold</li>
-        <li>Balance — Single-leg balance test</li>
-        <li>Cardiovascular recovery — March test</li>
-        <li>Mobility — Overhead reach</li>
+        <li>Functional Age — Lower-body strength, muscular endurance, balance, cardiovascular recovery, mobility</li>
+        <li>Brain Age — Processing speed, executive function, working memory, attention, cognitive flexibility</li>
       </ul>
     </div>
 
     <noscript>
-      <style>#static-landing { display: none !important; }</style>
+      <style>.initial-loader { display: none !important; }</style>
       <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,sans-serif;text-align:center">
         <div>
           <h1 style="font-size:2rem;margin:0 0 16px">Entropy Age</h1>
-          <p style="color:#666;margin:0 0 24px">JavaScript is required to take the interactive assessment.</p>
+          <p style="color:#666;margin:0 0 24px">JavaScript is required to take the interactive assessments.</p>
           <p style="color:#888;font-size:0.875rem">Please enable JavaScript in your browser settings.</p>
         </div>
       </div>
     </noscript>
 
-    <!-- Pre-hydration: hide loader once static content is visible -->
-    <script>
-      (function() {
-        var loader = document.getElementById('initial-loader');
-        if (loader) {
-          setTimeout(function() {
-            loader.classList.add('hidden');
-            setTimeout(function() { loader.remove(); }, 300);
-          }, 100);
-        }
-      })();
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

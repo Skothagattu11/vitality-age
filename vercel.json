@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/((?!assets|favicon|manifest|robots|sitemap|llms|og-).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
