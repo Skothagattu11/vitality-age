@@ -231,7 +231,7 @@
       <div class="loader-tagline">Discover your functional biological age</div>
     </div>
 
-    <!-- Static landing page — visible instantly, sits OUTSIDE #root so React never wipes it -->
+    <!-- Static landing page — visible instantly until React hydrates, then removed by main.tsx -->
     <div id="static-landing" class="static-landing">
       <div class="static-bg-glow" aria-hidden="true">
         <div class="static-glow-1"></div>
@@ -249,51 +249,21 @@
           <h1 class="static-h1">Entropy Age</h1>
 
           <p class="static-subtitle">
-            Functional Biological Age
-            <span class="static-subtitle-small">(No Bloodwork)</span>
+            Assessment Hub
           </p>
 
           <p class="static-desc">
-            Your chronological age is just a number. Entropy Age estimates your functional biological age through 5 simple at-home tests in 10 minutes — see how your body is really aging.
+            Discover your functional biological age and cognitive sharpness through quick, science-backed assessments.
           </p>
-
-          <div>
-            <button id="static-start-btn" class="static-cta" aria-label="Start the functional biological age assessment">
-              Start Assessment
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </button>
-
-            <div>
-              <button class="static-how-link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                How it works
-              </button>
-            </div>
-          </div>
-
-          <div class="static-features">
-            <div style="text-align:center">
-              <p class="static-feature-label">10 min</p>
-              <p class="static-feature-sub">Quick assessment</p>
-            </div>
-            <div style="text-align:center">
-              <p class="static-feature-label">No equipment</p>
-              <p class="static-feature-sub">Just a chair & wall</p>
-            </div>
-            <div style="text-align:center">
-              <p class="static-feature-label">Private</p>
-              <p class="static-feature-sub">Data stays local</p>
-            </div>
-          </div>
         </div>
       </main>
 
       <footer class="static-footer">
         <p>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
-          For educational purposes only. Not medical advice. Consult a healthcare provider for health concerns.
+          For educational purposes only. Not medical advice.
         </p>
-        <p class="static-copy">© 2026 Entropy Age. All rights reserved.</p>
+        <p class="static-copy">&copy; 2026 Entropy Age. All rights reserved.</p>
       </footer>
     </div>
 
@@ -323,29 +293,17 @@
       </div>
     </noscript>
 
-    <!-- Pre-hydration: make Start button work before React loads -->
+    <!-- Pre-hydration: hide loader once static content is visible -->
     <script>
-      // Hide loader once static landing is visible (DOM ready)
       (function() {
         var loader = document.getElementById('initial-loader');
         if (loader) {
-          // Small delay to ensure paint has happened
           setTimeout(function() {
             loader.classList.add('hidden');
-            // Remove from DOM after fade out
-            setTimeout(function() {
-              loader.remove();
-            }, 300);
+            setTimeout(function() { loader.remove(); }, 300);
           }, 100);
         }
       })();
-
-      // Make Start button work before React loads
-      document.getElementById('static-start-btn').addEventListener('click', function() {
-        this.classList.add('clicked');
-        this.textContent = 'Loading assessment...';
-        window.__userClickedStart = true;
-      });
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
