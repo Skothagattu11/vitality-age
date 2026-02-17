@@ -47,9 +47,7 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('framer-motion')) {
             return 'framer';
           }
-          if (id.includes('recharts') || id.includes('d3-')) {
-            return 'charts';
-          }
+          // Let Vite handle recharts/d3 chunking naturally to avoid circular deps
           if (id.includes('html2canvas')) {
             return 'canvas';
           }
