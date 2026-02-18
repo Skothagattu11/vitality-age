@@ -21,6 +21,8 @@ import {
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 interface BrainAgeResultsProps {
   result: BrainAgeResult;
@@ -40,6 +42,12 @@ export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps
   const containerRef = useRef<HTMLDivElement>(null);
   // Offscreen capture ref — plain div, NO Framer Motion, always 400x400
   const captureRef = useRef<HTMLDivElement>(null);
+
+  // Session tracking for Supabase persistence
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    return localStorage.getItem('entropy-brain-session-id');
+  });
+  const [responseSaved, setResponseSaved] = useState(false);
 
   const actualGap = chronologicalAge - brainAge;
   const isYounger = actualGap > 0;
@@ -64,7 +72,7 @@ export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  // Track completion
+  // Track completion and save to Supabase on mount
   useEffect(() => {
     track('brain_age_complete', {
       brain_age: brainAge,
@@ -72,7 +80,41 @@ export function BrainAgeResults({ result, data, onRetake }: BrainAgeResultsProps
       gap,
       is_younger: isYounger,
     });
-  }, [brainAge, chronologicalAge, gap, isYounger]);
+
+    const saveResponse = async () => {
+      if (responseSaved) return;
+
+      try {
+        const { data: insertedData, error } = await supabase
+          .from('brain_age_responses')
+          .insert({
+            brain_age: brainAge,
+            chronological_age: chronologicalAge,
+            gap: gap,
+            domain_scores: JSON.parse(JSON.stringify(domainScores)) as Json,
+            top_drivers: JSON.parse(JSON.stringify(topDrivers)) as Json,
+            assessment_data: JSON.parse(JSON.stringify(data)) as Json,
+          })
+          .select('session_id')
+          .single();
+
+        if (error) {
+          console.error('Failed to save brain age response:', error);
+          return;
+        }
+
+        if (insertedData?.session_id) {
+          setSessionId(insertedData.session_id);
+          localStorage.setItem('entropy-brain-session-id', insertedData.session_id);
+        }
+        setResponseSaved(true);
+      } catch (err) {
+        console.error('Failed to save brain age response:', err);
+      }
+    };
+
+    saveResponse();
+  }, [brainAge, chronologicalAge, gap, domainScores, topDrivers, data, isYounger, responseSaved]);
 
   // Radar chart data
   const radarData = domainScores.map(d => ({

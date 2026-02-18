@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      brain_age_responses: {
+        Row: {
+          assessment_data: Json
+          brain_age: number
+          chronological_age: number
+          created_at: string
+          domain_scores: Json
+          email: string | null
+          gap: number
+          id: string
+          session_id: string
+          top_drivers: Json
+        }
+        Insert: {
+          assessment_data: Json
+          brain_age: number
+          chronological_age: number
+          created_at?: string
+          domain_scores: Json
+          email?: string | null
+          gap: number
+          id?: string
+          session_id?: string
+          top_drivers: Json
+        }
+        Update: {
+          assessment_data?: Json
+          brain_age?: number
+          chronological_age?: number
+          created_at?: string
+          domain_scores?: Json
+          email?: string | null
+          gap?: number
+          id?: string
+          session_id?: string
+          top_drivers?: Json
+        }
+        Relationships: []
+      }
       tool_subscriptions: {
         Row: {
           created_at: string
