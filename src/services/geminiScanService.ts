@@ -7,6 +7,7 @@ import type { ScanResult, NutrientEntry } from '@/types/supplementStacker';
 export type ScanMode = 'supplement' | 'food';
 
 export interface ScanApiResponse extends ScanResult {
+  _detectedType?: 'supplement' | 'food_label' | 'food_photo';
   _nutrients?: NutrientEntry[];
   _macros?: { calories: number; protein: number; carbs: number; fat: number; fiber: number };
 }
@@ -30,6 +31,9 @@ export async function scanLabel(file: File, mode: ScanMode): Promise<ScanApiResp
 
   // Normalize response to match our types
   return {
+    _detectedType: ['supplement', 'food_label', 'food_photo'].includes(parsed.detectedType as string)
+      ? parsed.detectedType as 'supplement' | 'food_label' | 'food_photo'
+      : undefined,
     productName: (parsed.productName as string) || 'Unknown Product',
     brand: (parsed.brand as string) || undefined,
     score: typeof parsed.score === 'number' ? Math.max(0, Math.min(100, parsed.score)) : 0,

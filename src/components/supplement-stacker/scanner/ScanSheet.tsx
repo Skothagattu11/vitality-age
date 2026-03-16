@@ -56,6 +56,13 @@ export function ScanSheet({ open, onClose, onAddScanResult, onAddToStack, onAddT
 
     try {
       const data = await scanLabel(file, scanMode);
+      // Auto-switch mode based on what AI actually detected
+      if (data._detectedType) {
+        const detectedMode = data._detectedType === 'supplement' ? 'supplement' : 'food';
+        if (detectedMode !== scanMode) {
+          setScanMode(detectedMode);
+        }
+      }
       // Store extended fields before stripping them
       extractedNutrients.current = data._nutrients;
       extractedMacros.current = data._macros;
