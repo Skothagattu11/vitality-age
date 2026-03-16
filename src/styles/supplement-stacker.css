@@ -1,0 +1,204 @@
+/* Supplement Stacker — Pastel Light/Dark Theme
+   Sage Green + Muted Violet palette
+   Typography: Outfit (headings), IBM Plex Mono (data/numbers) */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* ─── Light Theme (default) ─── */
+.supplement-stacker {
+  --ss-accent: 150 25% 45%;       /* #5B8A72 sage green */
+  --ss-accent-soft: 150 25% 92%;  /* light sage tint */
+  --ss-accent2: 254 30% 63%;      /* #8B7EC8 muted violet */
+  --ss-accent2-soft: 254 30% 93%; /* light violet tint */
+
+  --ss-bg: 0 0% 98%;              /* #FAFAFA */
+  --ss-surface: 0 0% 100%;        /* white cards */
+  --ss-surface-raised: 0 0% 99%;
+  --ss-border: 220 13% 91%;
+  --ss-border-soft: 220 13% 95%;
+
+  --ss-text: 220 20% 14%;
+  --ss-text-secondary: 220 10% 46%;
+  --ss-text-muted: 220 10% 64%;
+
+  --ss-good: 152 60% 40%;         /* green */
+  --ss-warn: 38 85% 52%;          /* amber */
+  --ss-danger: 0 72% 55%;         /* red */
+
+  --ss-shadow-sm: 0 1px 3px 0 hsl(220 20% 14% / 0.04);
+  --ss-shadow-md: 0 4px 12px -2px hsl(220 20% 14% / 0.06);
+  --ss-shadow-lg: 0 8px 24px -4px hsl(220 20% 14% / 0.08);
+
+  --ss-font-display: 'Outfit', system-ui, sans-serif;
+  --ss-font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+
+  font-family: var(--ss-font-display);
+  color: hsl(var(--ss-text));
+  background: hsl(var(--ss-bg));
+}
+
+/* ─── Dark Theme ─── */
+.supplement-stacker.dark,
+.dark .supplement-stacker {
+  --ss-accent: 150 30% 60%;       /* #7DB89A lighter sage */
+  --ss-accent-soft: 150 20% 16%;
+  --ss-accent2: 254 35% 72%;      /* #A99ADB lighter violet */
+  --ss-accent2-soft: 254 20% 16%;
+
+  --ss-bg: 220 20% 8%;            /* deep dark */
+  --ss-surface: 220 20% 12%;
+  --ss-surface-raised: 220 20% 15%;
+  --ss-border: 220 15% 20%;
+  --ss-border-soft: 220 15% 16%;
+
+  --ss-text: 210 20% 95%;
+  --ss-text-secondary: 220 10% 68%;
+  --ss-text-muted: 220 10% 48%;
+
+  --ss-good: 152 55% 50%;
+  --ss-warn: 38 80% 58%;
+  --ss-danger: 0 68% 60%;
+
+  --ss-shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.2);
+  --ss-shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.3);
+  --ss-shadow-lg: 0 8px 24px -4px hsl(0 0% 0% / 0.4);
+}
+
+/* ─── Utility Classes ─── */
+.ss-card {
+  background: hsl(var(--ss-surface));
+  border: 1px solid hsl(var(--ss-border-soft));
+  border-radius: 1rem;
+  box-shadow: var(--ss-shadow-sm);
+}
+
+.ss-card-raised {
+  background: hsl(var(--ss-surface));
+  border: 1px solid hsl(var(--ss-border));
+  border-radius: 1rem;
+  box-shadow: var(--ss-shadow-md);
+}
+
+.ss-accent-text {
+  color: hsl(var(--ss-accent));
+}
+
+.ss-accent2-text {
+  color: hsl(var(--ss-accent2));
+}
+
+.ss-accent-bg {
+  background: hsl(var(--ss-accent-soft));
+}
+
+.ss-accent2-bg {
+  background: hsl(var(--ss-accent2-soft));
+}
+
+.ss-font-mono {
+  font-family: var(--ss-font-mono);
+}
+
+.ss-heading {
+  font-family: var(--ss-font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: hsl(var(--ss-text));
+}
+
+/* Pill button (toggleable supplement chip) */
+.ss-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1.5px solid hsl(var(--ss-border));
+  background: hsl(var(--ss-surface));
+  color: hsl(var(--ss-text-secondary));
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.ss-pill:hover {
+  border-color: hsl(var(--ss-accent));
+  background: hsl(var(--ss-accent-soft));
+}
+
+.ss-pill.active {
+  border-color: hsl(var(--ss-accent));
+  background: hsl(var(--ss-accent-soft));
+  color: hsl(var(--ss-accent));
+  font-weight: 600;
+}
+
+/* Bottom nav */
+.ss-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 64px;
+  background: hsl(var(--ss-surface));
+  border-top: 1px solid hsl(var(--ss-border-soft));
+  box-shadow: 0 -2px 8px hsl(0 0% 0% / 0.04);
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.dark .ss-bottom-nav,
+.supplement-stacker.dark .ss-bottom-nav {
+  box-shadow: 0 -2px 8px hsl(0 0% 0% / 0.2);
+}
+
+/* FAB */
+.ss-fab {
+  position: fixed;
+  bottom: calc(64px + 1rem + env(safe-area-inset-bottom, 0));
+  right: 1rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--ss-accent));
+  color: white;
+  box-shadow: var(--ss-shadow-lg);
+  cursor: pointer;
+  z-index: 51;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ss-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ss-shadow-lg), 0 0 16px hsl(var(--ss-accent) / 0.3);
+}
+
+.ss-fab:active {
+  transform: translateY(0);
+}
+
+/* Status badge colors */
+.ss-status-good { color: hsl(var(--ss-good)); }
+.ss-status-warn { color: hsl(var(--ss-warn)); }
+.ss-status-bad { color: hsl(var(--ss-danger)); }
+
+.ss-badge-good {
+  background: hsl(var(--ss-good) / 0.12);
+  color: hsl(var(--ss-good));
+}
+.ss-badge-warn {
+  background: hsl(var(--ss-warn) / 0.12);
+  color: hsl(var(--ss-warn));
+}
+.ss-badge-bad {
+  background: hsl(var(--ss-danger) / 0.12);
+  color: hsl(var(--ss-danger));
+}

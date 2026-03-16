@@ -89,6 +89,57 @@ export type Database = {
         }
         Relationships: []
       }
+      supplement_stacker_sessions: {
+        Row: {
+          id: string
+          session_id: string
+          user_id: string | null
+          schedule: Json
+          activity: Json
+          supplements: Json
+          selected_stack_option: string
+          stack_options: Json
+          interactions: Json
+          scan_results: Json
+          reminder_method: string | null
+          onboarding_complete: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          user_id?: string | null
+          schedule?: Json
+          activity?: Json
+          supplements?: Json
+          selected_stack_option?: string
+          stack_options?: Json
+          interactions?: Json
+          scan_results?: Json
+          reminder_method?: string | null
+          onboarding_complete?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          user_id?: string | null
+          schedule?: Json
+          activity?: Json
+          supplements?: Json
+          selected_stack_option?: string
+          stack_options?: Json
+          interactions?: Json
+          scan_results?: Json
+          reminder_method?: string | null
+          onboarding_complete?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tool_subscriptions: {
         Row: {
           created_at: string

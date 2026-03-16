@@ -60,6 +60,13 @@ const StretchIcon = () => (
   </svg>
 );
 
+const PillIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m10.5 1.5 3 3L3 15l-1.5-1.5a4.243 4.243 0 0 1 0-6L7.5 1.5a4.243 4.243 0 0 1 6 0z" transform="translate(3 3) scale(0.85)"/>
+    <path d="M8 8l4 4" transform="translate(3 3) scale(0.85)"/>
+  </svg>
+);
+
 const RadarIcon = () => (
   <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/>
@@ -136,6 +143,17 @@ const assessments: AssessmentItem[] = [
     status: 'new',
     route: '/brain-age',
     accentColor: 'violet',
+  },
+  {
+    id: 'supplement-stacker',
+    title: 'Supplement Stacker',
+    subtitle: 'Stack & Schedule',
+    description: 'Build a science-backed supplement stack with optimized timing, interaction checks, and calendar reminders.',
+    duration: '3 min',
+    icon: <PillIcon />,
+    status: 'new',
+    route: '/supplement-stacker',
+    accentColor: 'cyan',
   },
   {
     id: 'cardiovascular-age',
