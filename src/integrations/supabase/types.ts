@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_secrets: {
+        Row: {
+          created_at: string | null
+          key: string
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          key: string
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       assessment_responses: {
         Row: {
           assessment_data: Json
@@ -91,52 +109,52 @@ export type Database = {
       }
       supplement_stacker_sessions: {
         Row: {
-          id: string
-          session_id: string
-          user_id: string | null
-          schedule: Json
           activity: Json
-          supplements: Json
-          selected_stack_option: string
-          stack_options: Json
-          interactions: Json
-          scan_results: Json
-          reminder_method: string | null
-          onboarding_complete: boolean
           created_at: string
+          id: string
+          interactions: Json
+          onboarding_complete: boolean
+          reminder_method: string | null
+          scan_results: Json
+          schedule: Json
+          selected_stack_option: string
+          session_id: string
+          stack_options: Json
+          supplements: Json
           updated_at: string
+          user_id: string | null
         }
         Insert: {
-          id?: string
-          session_id: string
-          user_id?: string | null
-          schedule?: Json
           activity?: Json
-          supplements?: Json
-          selected_stack_option?: string
-          stack_options?: Json
-          interactions?: Json
-          scan_results?: Json
-          reminder_method?: string | null
-          onboarding_complete?: boolean
           created_at?: string
+          id?: string
+          interactions?: Json
+          onboarding_complete?: boolean
+          reminder_method?: string | null
+          scan_results?: Json
+          schedule?: Json
+          selected_stack_option?: string
+          session_id: string
+          stack_options?: Json
+          supplements?: Json
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
-          id?: string
-          session_id?: string
-          user_id?: string | null
-          schedule?: Json
           activity?: Json
-          supplements?: Json
-          selected_stack_option?: string
-          stack_options?: Json
-          interactions?: Json
-          scan_results?: Json
-          reminder_method?: string | null
-          onboarding_complete?: boolean
           created_at?: string
+          id?: string
+          interactions?: Json
+          onboarding_complete?: boolean
+          reminder_method?: string | null
+          scan_results?: Json
+          schedule?: Json
+          selected_stack_option?: string
+          session_id?: string
+          stack_options?: Json
+          supplements?: Json
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -169,7 +187,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      scan_label: {
+        Args: { image_base64: string; mime_type?: string; scan_mode?: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
