@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CartItem } from '@/types/supplementStacker';
 import type { CartTotals, NutrientTotal } from '@/hooks/useNutritionCart';
 
@@ -11,9 +12,6 @@ interface CartDrawerProps {
   onClearCart: () => void;
 }
 
-// Key nutrients to always show in the progress bars
-const TRACKED_NUTRIENTS = ['Vitamin D', 'B12', 'Calcium', 'Zinc', 'Iron', 'Magnesium', 'Omega-3', 'Vitamin C'];
-
 function barColor(pct: number): string {
   if (pct >= 80) return 'var(--ss-good)';
   if (pct >= 40) return 'var(--ss-warn)';
@@ -21,13 +19,12 @@ function barColor(pct: number): string {
 }
 
 export function CartDrawer({ open, onClose, items, totals, gaps, onRemoveItem, onClearCart }: CartDrawerProps) {
-  // Build nutrient map for consistent ordering
-  const nutrientMap: Record<string, NutrientTotal> = {};
-  for (const n of totals.nutrients) {
-    nutrientMap[n.name] = n;
-  }
+  const [itemsExpanded, setItemsExpanded] = useState(false);
 
   if (!open) return null;
+
+  // Show ALL nutrients that have data, sorted by DV% (highest first)
+  const allNutrients = totals.nutrients.filter(n => n.totalAmount > 0);
 
   return (
     <>
@@ -41,7 +38,7 @@ export function CartDrawer({ open, onClose, items, totals, gaps, onRemoveItem, o
         onClick={onClose}
       />
 
-      {/* Drawer — constrained to app width like ScanSheet */}
+      {/* Drawer */}
       <div
         className="fixed inset-0 z-[301] flex justify-center"
         style={{ pointerEvents: 'none' }}
@@ -81,52 +78,149 @@ export function CartDrawer({ open, onClose, items, totals, gaps, onRemoveItem, o
             <EmptyCart />
           ) : (
             <>
-              {/* Macro totals */}
-              <SectionLabel>Overall Nutrition</SectionLabel>
+              {/* Items dropdown — above nutrition */}
               <div className="rounded-xl overflow-hidden mb-4"
                    style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
-                <div className="grid grid-cols-4" style={{ borderBottom: '1px solid hsl(var(--ss-border-soft))' }}>
-                  <MacroCell value={totals.calories} label="Calories" />
+                <button
+                  type="button"
+                  onClick={() => setItemsExpanded(!itemsExpanded)}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 border-none cursor-pointer"
+                  style={{ background: 'transparent' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+                      Items ({items.length})
+                    </span>
+                    {/* Show small avatars when collapsed */}
+                    {!itemsExpanded && (
+                      <div className="flex -space-x-1.5">
+                        {items.slice(0, 4).map((item) => (
+                          <div
+                            key={item.id}
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] border-2"
+                            style={{
+                              background: item.type === 'food' ? 'hsl(var(--ss-good) / 0.15)' : 'hsl(var(--ss-accent) / 0.15)',
+                              borderColor: 'hsl(var(--ss-surface))',
+                            }}
+                          >
+                            {item.type === 'food' ? '\uD83C\uDF4E' : '\uD83D\uDC8A'}
+                          </div>
+                        ))}
+                        {items.length > 4 && (
+                          <div
+                            className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold border-2"
+                            style={{
+                              background: 'hsl(var(--ss-surface-raised))',
+                              borderColor: 'hsl(var(--ss-surface))',
+                              color: 'hsl(var(--ss-text-muted))',
+                            }}
+                          >
+                            +{items.length - 4}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <svg
+                    className="w-4 h-4 transition-transform"
+                    style={{
+                      color: 'hsl(var(--ss-text-muted))',
+                      transform: itemsExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+
+                {itemsExpanded && (
+                  <div style={{ borderTop: '1px solid hsl(var(--ss-border-soft))' }}>
+                    {items.map((item, i) => (
+                      <div key={item.id}
+                           className="flex items-center gap-2.5 px-3.5 py-2.5"
+                           style={{ borderBottom: i < items.length - 1 ? '1px solid hsl(var(--ss-border-soft) / 0.5)' : 'none' }}>
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-[14px] flex-shrink-0"
+                          style={{ background: item.type === 'food' ? 'hsl(var(--ss-good) / 0.12)' : 'hsl(var(--ss-accent) / 0.12)' }}
+                        >
+                          {item.type === 'food' ? '\uD83C\uDF4E' : '\uD83D\uDC8A'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-medium truncate" style={{ color: 'hsl(var(--ss-text))' }}>
+                            {item.productName}
+                          </div>
+                          <div className="text-[9px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+                            {item.type === 'supplement'
+                              ? `Supplement${item.score ? ` \u2022 ${item.score}/100` : ''}`
+                              : `${Math.round(item.macros.calories)} cal \u2022 ${Math.round(item.macros.protein)}g protein`
+                            }
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => onRemoveItem(item.id)}
+                          className="w-[22px] h-[22px] rounded-md flex items-center justify-center text-[11px] flex-shrink-0 border-none cursor-pointer"
+                          style={{ background: 'hsl(var(--ss-danger) / 0.1)', color: 'hsl(var(--ss-danger))' }}
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    ))}
+                    <div className="px-3.5 py-2" style={{ borderTop: '1px solid hsl(var(--ss-border-soft))' }}>
+                      <button
+                        type="button"
+                        onClick={onClearCart}
+                        className="w-full py-1.5 rounded-lg text-[10px] font-semibold transition-all active:scale-[0.97] border-none cursor-pointer"
+                        style={{ background: 'hsl(var(--ss-danger) / 0.08)', color: 'hsl(var(--ss-danger))' }}
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Macro totals */}
+              <SectionLabel>Daily Totals</SectionLabel>
+              <div className="rounded-xl overflow-hidden mb-4"
+                   style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
+                <div className="grid grid-cols-5" style={{ borderBottom: '1px solid hsl(var(--ss-border-soft))' }}>
+                  <MacroCell value={totals.calories} label="Cal" />
                   <MacroCell value={`${totals.protein}g`} label="Protein" />
                   <MacroCell value={`${totals.carbs}g`} label="Carbs" />
                   <MacroCell value={`${totals.fat}g`} label="Fat" />
-                </div>
-                <div className="flex items-center justify-between px-3.5 py-2.5"
-                     style={{ borderBottom: '1px solid hsl(var(--ss-border-soft))' }}>
-                  <span className="text-[11px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>Fiber</span>
-                  <span className="ss-font-mono text-[12px] font-semibold" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
-                    {totals.fiber}g
-                  </span>
+                  <MacroCell value={`${totals.fiber}g`} label="Fiber" last />
                 </div>
 
-                {/* Vitamin / mineral bars */}
-                <div className="px-3.5 py-3 space-y-2.5">
-                  {TRACKED_NUTRIENTS.map((name) => {
-                    const n = nutrientMap[name];
-                    const pct = n?.dailyValuePct || 0;
-                    const capped = Math.min(pct, 100);
-                    const color = barColor(pct);
-                    return (
-                      <div key={name} className="flex items-center gap-2">
-                        <span className="w-[72px] text-[11px] font-medium flex-shrink-0"
-                              style={{ color: 'hsl(var(--ss-text-secondary))' }}>
-                          {name}
-                        </span>
-                        <div className="flex-1 h-[6px] rounded-[3px] overflow-hidden"
-                             style={{ background: 'hsl(var(--ss-surface-raised))' }}>
-                          <div
-                            className="h-full rounded-[3px] transition-all duration-500"
-                            style={{ width: `${capped}%`, background: `hsl(${color})` }}
-                          />
+                {/* All vitamin / mineral bars — dynamic */}
+                {allNutrients.length > 0 && (
+                  <div className="px-3.5 py-3 space-y-2">
+                    {allNutrients.map((n) => {
+                      const pct = n.dailyValuePct;
+                      const capped = Math.min(pct, 100);
+                      const color = barColor(pct);
+                      return (
+                        <div key={n.name} className="flex items-center gap-2">
+                          <span className="w-[76px] text-[10px] font-medium flex-shrink-0 truncate"
+                                style={{ color: 'hsl(var(--ss-text-secondary))' }}>
+                            {n.name}
+                          </span>
+                          <div className="flex-1 h-[5px] rounded-[3px] overflow-hidden"
+                               style={{ background: 'hsl(var(--ss-surface-raised))' }}>
+                            <div
+                              className="h-full rounded-[3px] transition-all duration-500"
+                              style={{ width: `${capped}%`, background: `hsl(${color})` }}
+                            />
+                          </div>
+                          <span className="ss-font-mono text-[10px] font-semibold w-[44px] text-right flex-shrink-0"
+                                style={{ color: `hsl(${color})` }}>
+                            {pct > 0 ? `${pct}%` : `${n.totalAmount}${n.unit}`}
+                          </span>
                         </div>
-                        <span className="ss-font-mono text-[11px] font-semibold w-[36px] text-right flex-shrink-0"
-                              style={{ color: `hsl(${color})` }}>
-                          {pct}%
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Gap alert */}
@@ -136,58 +230,12 @@ export function CartDrawer({ open, onClose, items, totals, gaps, onRemoveItem, o
                   <span className="flex-shrink-0">{'\u26A0\uFE0F'}</span>
                   <span>
                     <strong>Gaps:</strong> {gaps.map(g => `${g.name} (${g.dailyValuePct}%)`).join(', ')} below 50% DV.
-                    Consider adding foods or supplements to fill these.
                   </span>
                 </div>
               )}
 
-              {/* Item list */}
-              <SectionLabel>Items</SectionLabel>
-              <div className="rounded-xl overflow-hidden mb-4"
-                   style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
-                {items.map((item, i) => (
-                  <div key={item.id}
-                       className="flex items-center gap-2.5 px-3.5 py-2.5"
-                       style={{ borderBottom: i < items.length - 1 ? '1px solid hsl(var(--ss-border-soft))' : 'none' }}>
-                    <div
-                      className="w-9 h-9 rounded-[10px] flex items-center justify-center text-[16px] flex-shrink-0"
-                      style={{ background: item.type === 'food' ? 'hsl(var(--ss-good) / 0.12)' : 'hsl(var(--ss-accent) / 0.12)' }}
-                    >
-                      {item.type === 'food' ? '\uD83C\uDF4E' : '\uD83D\uDC8A'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[12px] font-medium truncate" style={{ color: 'hsl(var(--ss-text))' }}>
-                        {item.productName}
-                      </div>
-                      <div className="text-[10px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-                        {item.type === 'supplement'
-                          ? `Supplement${item.score ? ` \u2022 ${item.score}/100` : ''}`
-                          : 'Food \u2022 1 serving'
-                        }
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => onRemoveItem(item.id)}
-                      className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-[13px] flex-shrink-0 border-none cursor-pointer"
-                      style={{ background: 'hsl(var(--ss-danger) / 0.1)', color: 'hsl(var(--ss-danger))' }}
-                    >
-                      &times;
-                    </button>
-                  </div>
-                ))}
-              </div>
-
               {/* Actions */}
               <div className="flex gap-2 pb-4">
-                <button
-                  type="button"
-                  onClick={onClearCart}
-                  className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.97]"
-                  style={{ background: 'hsl(var(--ss-danger) / 0.08)', color: 'hsl(var(--ss-danger))', border: '1px solid hsl(var(--ss-danger) / 0.15)' }}
-                >
-                  Clear Cart
-                </button>
                 <button
                   type="button"
                   className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.97]"
@@ -214,11 +262,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MacroCell({ value, label }: { value: string | number; label: string }) {
+function MacroCell({ value, label, last }: { value: string | number; label: string; last?: boolean }) {
   return (
     <div className="text-center py-3"
-         style={{ borderRight: '1px solid hsl(var(--ss-border-soft))' }}>
-      <div className="ss-font-mono text-[16px] font-bold" style={{ color: 'hsl(var(--ss-text))' }}>{value}</div>
+         style={{ borderRight: last ? 'none' : '1px solid hsl(var(--ss-border-soft))' }}>
+      <div className="ss-font-mono text-[14px] font-bold" style={{ color: 'hsl(var(--ss-text))' }}>{value}</div>
       <div className="text-[9px] mt-0.5" style={{ color: 'hsl(var(--ss-text-muted))' }}>{label}</div>
     </div>
   );

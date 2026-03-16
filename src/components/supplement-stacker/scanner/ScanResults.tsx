@@ -1,10 +1,11 @@
-import type { ScanResult } from '@/types/supplementStacker';
+import type { ScanResult, NutrientEntry } from '@/types/supplementStacker';
 import type { ScanMode } from './ScanSheet';
 
 interface ScanResultsProps {
   result: ScanResult;
   scanMode: ScanMode;
   macros?: { calories: number; protein: number; carbs: number; fat: number; fiber: number };
+  nutrients?: NutrientEntry[];
   onAddToStack: () => void;
   onAddToCart: () => void;
 }
@@ -31,15 +32,28 @@ function scoreMessage(score: number, goodCount: number, warnCount: number, badCo
   return `Significant quality issues. Consider a better alternative.`;
 }
 
-export function ScanResults({ result, scanMode, macros, onAddToStack, onAddToCart }: ScanResultsProps) {
+function nutrientQualityColor(quality?: string): string {
+  if (quality === 'good') return 'var(--ss-good)';
+  if (quality === 'poor') return 'var(--ss-danger)';
+  return 'var(--ss-warn)';
+}
+
+function dvColor(pct: number): string {
+  if (pct >= 20) return 'var(--ss-good)';
+  if (pct >= 5) return 'var(--ss-warn)';
+  return 'var(--ss-text-muted)';
+}
+
+export function ScanResults({ result, scanMode, macros, nutrients, onAddToStack, onAddToCart }: ScanResultsProps) {
   const goodFindings = result.findings.filter(f => f.status === 'good');
   const warnFindings = result.findings.filter(f => f.status === 'warn');
   const badFindings = result.findings.filter(f => f.status === 'bad');
   const isFood = scanMode === 'food';
 
-  // Use real macros from API if available, otherwise extract from findings for food
+  // Use real macros from API if available
   const displayMacros = macros || { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
   const hasMacros = displayMacros.calories > 0 || displayMacros.protein > 0;
+  const displayNutrients = nutrients || [];
 
   return (
     <div>
@@ -101,21 +115,22 @@ export function ScanResults({ result, scanMode, macros, onAddToStack, onAddToCar
         </div>
       )}
 
-      {/* Macro grid (food mode, or supplement if macros exist) */}
+      {/* Macro grid */}
       {hasMacros && (
-        <div className="grid grid-cols-4 gap-1.5 mb-3">
+        <div className="grid grid-cols-5 gap-1.5 mb-3">
           {[
-            { val: displayMacros.calories, label: 'Calories', unit: '' },
-            { val: displayMacros.protein, label: 'Protein', unit: 'g' },
-            { val: displayMacros.carbs, label: 'Carbs', unit: 'g' },
-            { val: displayMacros.fat, label: 'Fat', unit: 'g' },
+            { val: displayMacros.calories, label: 'Cal', unit: '', decimals: 0 },
+            { val: displayMacros.protein, label: 'Protein', unit: 'g', decimals: 1 },
+            { val: displayMacros.carbs, label: 'Carbs', unit: 'g', decimals: 1 },
+            { val: displayMacros.fat, label: 'Fat', unit: 'g', decimals: 1 },
+            { val: displayMacros.fiber, label: 'Fiber', unit: 'g', decimals: 1 },
           ].map((m) => (
             <div key={m.label} className="text-center py-2.5 rounded-lg"
                  style={{ background: 'hsl(var(--ss-surface-raised))' }}>
-              <div className="ss-font-mono text-[14px] font-bold" style={{ color: 'hsl(var(--ss-text))' }}>
-                {m.val}{m.unit}
+              <div className="ss-font-mono text-[13px] font-bold" style={{ color: 'hsl(var(--ss-text))' }}>
+                {m.decimals === 0 ? Math.round(m.val) : m.val.toFixed(1)}{m.unit}
               </div>
-              <div className="text-[9px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>{m.label}</div>
+              <div className="text-[8px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>{m.label}</div>
             </div>
           ))}
         </div>
@@ -146,46 +161,93 @@ export function ScanResults({ result, scanMode, macros, onAddToStack, onAddToCar
         )}
       </div>
 
-      {/* Findings — grouped by status: bad first, then warn, then good */}
-      <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-        {isFood ? 'Nutrients' : 'Findings'} ({result.findings.length})
-      </div>
-      <div className="space-y-1.5 mb-4">
-        {[...badFindings, ...warnFindings, ...goodFindings].map((finding, i) => (
-          <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg"
-               style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
-            <span
-              className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-[6px]"
-              style={{ background: `hsl(${finding.status === 'good' ? 'var(--ss-good)' : finding.status === 'warn' ? 'var(--ss-warn)' : 'var(--ss-danger)'})` }}
-            />
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold" style={{ color: 'hsl(var(--ss-text))' }}>
-                {finding.name}
-                {finding.tag && (
+      {/* Nutrient details table (from _nutrients array) */}
+      {displayNutrients.length > 0 && (
+        <>
+          <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+            Nutrition Facts ({displayNutrients.length})
+          </div>
+          <div className="rounded-xl overflow-hidden mb-3" style={{ border: '1px solid hsl(var(--ss-border-soft))' }}>
+            {displayNutrients.map((n, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2"
+                   style={{
+                     background: i % 2 === 0 ? 'hsl(var(--ss-surface))' : 'transparent',
+                     borderBottom: i < displayNutrients.length - 1 ? '1px solid hsl(var(--ss-border-soft) / 0.5)' : 'none',
+                   }}>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
                   <span
-                    className="ml-1.5 inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold"
-                    style={{
-                      background: `hsl(${finding.status === 'good' ? 'var(--ss-good)' : finding.status === 'warn' ? 'var(--ss-warn)' : 'var(--ss-danger)'} / 0.12)`,
-                      color: `hsl(${finding.status === 'good' ? 'var(--ss-good)' : finding.status === 'warn' ? 'var(--ss-warn)' : 'var(--ss-danger)'})`,
-                    }}
-                  >
-                    {finding.tag}
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: `hsl(${nutrientQualityColor(n.quality)})` }}
+                  />
+                  <span className="text-[11px] font-medium truncate" style={{ color: 'hsl(var(--ss-text))' }}>
+                    {n.name}
+                    {n.form && (
+                      <span className="text-[9px] ml-1" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+                        ({n.form})
+                      </span>
+                    )}
                   </span>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <span className="ss-font-mono text-[11px] font-medium" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
+                    {n.amount}{n.unit}
+                  </span>
+                  {n.dailyValuePct > 0 && (
+                    <span className="ss-font-mono text-[10px] font-semibold min-w-[36px] text-right" style={{ color: `hsl(${dvColor(n.dailyValuePct)})` }}>
+                      {n.dailyValuePct}%
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Findings — grouped by status: bad first, then warn, then good */}
+      {result.findings.length > 0 && (
+        <>
+          <div className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+            {isFood ? 'Highlights' : 'Findings'} ({result.findings.length})
+          </div>
+          <div className="space-y-1.5 mb-4">
+            {[...badFindings, ...warnFindings, ...goodFindings].map((finding, i) => (
+              <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg"
+                   style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-[6px]"
+                  style={{ background: `hsl(${finding.status === 'good' ? 'var(--ss-good)' : finding.status === 'warn' ? 'var(--ss-warn)' : 'var(--ss-danger)'})` }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-semibold" style={{ color: 'hsl(var(--ss-text))' }}>
+                    {finding.name}
+                    {finding.tag && (
+                      <span
+                        className="ml-1.5 inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold"
+                        style={{
+                          background: `hsl(${finding.status === 'good' ? 'var(--ss-good)' : finding.status === 'warn' ? 'var(--ss-warn)' : 'var(--ss-danger)'} / 0.12)`,
+                          color: `hsl(${finding.status === 'good' ? 'var(--ss-good)' : finding.status === 'warn' ? 'var(--ss-warn)' : 'var(--ss-danger)'})`,
+                        }}
+                      >
+                        {finding.tag}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] mt-0.5 leading-snug" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
+                    {finding.detail}
+                  </div>
+                </div>
+                {(finding.dose || finding.absorbed) && (
+                  <div className="ss-font-mono text-[11px] text-right flex-shrink-0" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
+                    {finding.dose && <div>{finding.dose}</div>}
+                    {finding.absorbed && <div className="text-[9px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>{finding.absorbed}</div>}
+                  </div>
                 )}
               </div>
-              <div className="text-[10px] mt-0.5 leading-snug" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
-                {finding.detail}
-              </div>
-            </div>
-            {(finding.dose || finding.absorbed) && (
-              <div className="ss-font-mono text-[11px] text-right flex-shrink-0" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
-                {finding.dose && <div>{finding.dose}</div>}
-                {finding.absorbed && <div className="text-[9px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>{finding.absorbed}</div>}
-              </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
 
       {/* Action buttons */}
       <div className="flex gap-2">

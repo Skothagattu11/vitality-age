@@ -49,8 +49,8 @@ export async function scanLabel(file: File, mode: ScanMode): Promise<ScanApiResp
           tag: (f.tag as string) || undefined,
         }))
       : [],
-    _nutrients: Array.isArray(parsed.nutrients)
-      ? parsed.nutrients.map((n: Record<string, unknown>) => ({
+    _nutrients: Array.isArray(parsed._nutrients)
+      ? (parsed._nutrients as Record<string, unknown>[]).map((n: Record<string, unknown>) => ({
           name: (n.name as string) || 'Unknown',
           amount: typeof n.amount === 'number' ? n.amount : 0,
           unit: (n.unit as string) || 'mg',
@@ -60,11 +60,11 @@ export async function scanLabel(file: File, mode: ScanMode): Promise<ScanApiResp
         }))
       : [],
     _macros: {
-      calories: typeof (parsed.macros as Record<string, unknown>)?.calories === 'number' ? (parsed.macros as Record<string, number>).calories : 0,
-      protein: typeof (parsed.macros as Record<string, unknown>)?.protein === 'number' ? (parsed.macros as Record<string, number>).protein : 0,
-      carbs: typeof (parsed.macros as Record<string, unknown>)?.carbs === 'number' ? (parsed.macros as Record<string, number>).carbs : 0,
-      fat: typeof (parsed.macros as Record<string, unknown>)?.fat === 'number' ? (parsed.macros as Record<string, number>).fat : 0,
-      fiber: typeof (parsed.macros as Record<string, unknown>)?.fiber === 'number' ? (parsed.macros as Record<string, number>).fiber : 0,
+      calories: typeof (parsed._macros as Record<string, unknown>)?.calories === 'number' ? (parsed._macros as Record<string, number>).calories : 0,
+      protein: typeof (parsed._macros as Record<string, unknown>)?.protein === 'number' ? (parsed._macros as Record<string, number>).protein : 0,
+      carbs: typeof (parsed._macros as Record<string, unknown>)?.carbs === 'number' ? (parsed._macros as Record<string, number>).carbs : 0,
+      fat: typeof (parsed._macros as Record<string, unknown>)?.fat === 'number' ? (parsed._macros as Record<string, number>).fat : 0,
+      fiber: typeof (parsed._macros as Record<string, unknown>)?.fiber === 'number' ? (parsed._macros as Record<string, number>).fiber : 0,
     },
   };
 }

@@ -230,6 +230,7 @@ export function ScanSheet({ open, onClose, onAddScanResult, onAddToStack, onAddT
                 result={result}
                 scanMode={scanMode}
                 macros={extractedMacros.current}
+                nutrients={extractedNutrients.current}
                 onAddToStack={handleAddToStack}
                 onAddToCart={handleAddToCart}
               />

@@ -84,7 +84,11 @@ Return a JSON object with this EXACT structure:
   - "warn": Moderate sugar content, etc.
   - "bad": Only if genuinely concerning (e.g., very high sugar)
 
-CRITICAL: For food photos, you MUST provide real nutritional data. An apple has ~95 calories, 25g carbs, 4.4g fiber. A guava has ~37 calories per fruit, 8g carbs, 3g fiber, 228mg Vitamin C. Never return zeros for real food.
+CRITICAL RULES:
+- For food photos, you MUST provide real nutritional data. An apple has ~95 calories, 25g carbs, 4.4g fiber. A guava has ~37 calories per fruit, 8g carbs, 3g fiber, 228mg Vitamin C. Never return zeros for real food.
+- The nutrients array MUST include ALL of these when the food contains them: Vitamin A, Vitamin C, Vitamin D, Vitamin E, Vitamin K, Vitamin B6, B12, Thiamin, Riboflavin, Niacin, Folate, Biotin, Pantothenic Acid, Calcium, Iron, Magnesium, Zinc, Selenium, Copper, Potassium, Sodium, Phosphorus, Iodine, Choline, Omega-3 (as DHA+EPA combined in mg).
+- For fish (salmon, sardines, mackerel, tuna), eggs, and other Omega-3 rich foods, ALWAYS include an "Omega-3" entry in nutrients with the combined DHA+EPA amount in mg. Example: salmon has ~2000mg Omega-3 per serving.
+- Use standard USDA nutrient names. Include every nutrient where the amount is non-zero.
 
 Return ONLY valid JSON, no markdown or explanation.`;
 }

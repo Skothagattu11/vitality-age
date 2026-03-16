@@ -3,18 +3,37 @@ import type { CartItem } from '@/types/supplementStacker';
 
 const CART_KEY = 'entropy-age-nutrition-cart';
 
-// Recommended Daily Values for progress bar calculation
+// FDA Recommended Daily Values for % DV calculation
 const DAILY_VALUES: Record<string, number> = {
-  'Vitamin D': 20,       // mcg
-  'B12': 2.4,            // mcg
-  'Calcium': 1300,       // mg
-  'Zinc': 11,            // mg
-  'Iron': 18,            // mg
-  'Magnesium': 420,      // mg
-  'Omega-3': 1100,       // mg
-  'Vitamin C': 90,       // mg
-  'Potassium': 2600,     // mg
-  'Folate': 400,         // mcg
+  'Vitamin A': 900,       // mcg RAE
+  'Vitamin C': 90,        // mg
+  'Vitamin D': 20,        // mcg
+  'Vitamin E': 15,        // mg
+  'Vitamin K': 120,       // mcg
+  'Vitamin B6': 1.7,      // mg
+  'B12': 2.4,             // mcg
+  'Thiamin': 1.2,         // mg
+  'Riboflavin': 1.3,      // mg
+  'Niacin': 16,           // mg
+  'Folate': 400,          // mcg DFE
+  'Biotin': 30,           // mcg
+  'Pantothenic Acid': 5,  // mg
+  'Calcium': 1300,        // mg
+  'Iron': 18,             // mg
+  'Magnesium': 420,       // mg
+  'Zinc': 11,             // mg
+  'Selenium': 55,         // mcg
+  'Copper': 0.9,          // mg
+  'Manganese': 2.3,       // mg
+  'Chromium': 35,         // mcg
+  'Molybdenum': 45,       // mcg
+  'Potassium': 2600,      // mg
+  'Sodium': 2300,         // mg
+  'Phosphorus': 1250,     // mg
+  'Iodine': 150,          // mcg
+  'Choline': 550,         // mg
+  'Omega-3': 1100,        // mg (ALA)
+  'Boron': 150,           // mcg (no official DV, using common reference)
 };
 
 export interface NutrientTotal {
@@ -83,7 +102,6 @@ export function useNutritionCart() {
       fiber += item.macros.fiber;
 
       for (const n of item.nutrients) {
-        // Normalize nutrient name for aggregation
         const key = normalizeNutrientName(n.name);
         if (!nutrientMap[key]) {
           nutrientMap[key] = { amount: 0, unit: n.unit };
@@ -98,10 +116,22 @@ export function useNutritionCart() {
       return { name, totalAmount: Math.round(amount * 10) / 10, unit, dailyValuePct: pct };
     });
 
-    // Sort: highest DV% first
-    nutrients.sort((a, b) => b.dailyValuePct - a.dailyValuePct);
+    // Sort: nutrients with DV% first (highest first), then others alphabetically
+    nutrients.sort((a, b) => {
+      if (a.dailyValuePct > 0 && b.dailyValuePct === 0) return -1;
+      if (a.dailyValuePct === 0 && b.dailyValuePct > 0) return 1;
+      if (a.dailyValuePct !== b.dailyValuePct) return b.dailyValuePct - a.dailyValuePct;
+      return a.name.localeCompare(b.name);
+    });
 
-    return { calories, protein, carbs, fat, fiber, nutrients };
+    return {
+      calories: Math.round(calories),
+      protein: Math.round(protein * 10) / 10,
+      carbs: Math.round(carbs * 10) / 10,
+      fat: Math.round(fat * 10) / 10,
+      fiber: Math.round(fiber * 10) / 10,
+      nutrients,
+    };
   }, [items]);
 
   // Find nutrients below 50% DV
@@ -122,18 +152,38 @@ export function useNutritionCart() {
 
 function normalizeNutrientName(name: string): string {
   const n = name.toLowerCase().trim();
-  if (n.includes('vitamin d')) return 'Vitamin D';
-  if (n.includes('b12') || n.includes('cobalamin')) return 'B12';
-  if (n.includes('calcium')) return 'Calcium';
-  if (n.includes('zinc')) return 'Zinc';
-  if (n.includes('iron')) return 'Iron';
-  if (n.includes('magnesium')) return 'Magnesium';
-  if (n.includes('omega')) return 'Omega-3';
+  // Vitamins
+  if (n.includes('vitamin a') || n === 'retinol' || n.includes('beta-carotene') || n.includes('beta carotene')) return 'Vitamin A';
   if (n.includes('vitamin c') || n.includes('ascorbic')) return 'Vitamin C';
-  if (n.includes('potassium')) return 'Potassium';
+  if (n.includes('vitamin d')) return 'Vitamin D';
+  if (n.includes('vitamin e') || n.includes('tocopherol')) return 'Vitamin E';
+  if (n.includes('vitamin k') || n.includes('phylloquinone') || n.includes('menaquinone')) return 'Vitamin K';
+  if (n.includes('b12') || n.includes('cobalamin') || n.includes('cyanocobalamin')) return 'B12';
+  if (n.includes('b6') || n.includes('pyridoxine')) return 'Vitamin B6';
+  if (n.includes('thiamin') || n.includes('vitamin b1') || n === 'b1') return 'Thiamin';
+  if (n.includes('riboflavin') || n.includes('vitamin b2') || n === 'b2') return 'Riboflavin';
+  if (n.includes('niacin') || n.includes('vitamin b3') || n === 'b3') return 'Niacin';
   if (n.includes('folate') || n.includes('folic')) return 'Folate';
-  if (n.includes('vitamin k')) return 'Vitamin K';
-  if (n.includes('phosphorus')) return 'Phosphorus';
+  if (n.includes('biotin') || n.includes('vitamin b7') || n === 'b7') return 'Biotin';
+  if (n.includes('pantothenic') || n.includes('vitamin b5') || n === 'b5') return 'Pantothenic Acid';
+  // Minerals
+  if (n.includes('calcium')) return 'Calcium';
+  if (n.includes('iron') && !n.includes('environ')) return 'Iron';
+  if (n.includes('magnesium')) return 'Magnesium';
+  if (n.includes('zinc')) return 'Zinc';
+  if (n.includes('selenium')) return 'Selenium';
+  if (n.includes('copper')) return 'Copper';
+  if (n.includes('manganese')) return 'Manganese';
+  if (n.includes('chromium')) return 'Chromium';
+  if (n.includes('molybdenum')) return 'Molybdenum';
+  if (n.includes('potassium')) return 'Potassium';
+  if (n.includes('sodium')) return 'Sodium';
+  if (n.includes('phosphorus') || n.includes('phosphorous')) return 'Phosphorus';
+  if (n.includes('iodine')) return 'Iodine';
+  if (n.includes('choline')) return 'Choline';
+  if (n.includes('boron')) return 'Boron';
+  // Fatty acids
+  if (n.includes('omega') || n.includes('dha') || n.includes('epa') || n.includes('fish oil')) return 'Omega-3';
   // Return cleaned-up original
   return name.split('(')[0].trim();
 }
