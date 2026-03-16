@@ -146,7 +146,7 @@ const assessments: AssessmentItem[] = [
   },
   {
     id: 'supplement-stacker',
-    title: 'Supplement Stacker',
+    title: 'Supplements & Vitamins',
     subtitle: 'Stack & Schedule',
     description: 'Build a science-backed supplement stack with optimized timing, interaction checks, and calendar reminders.',
     duration: '3 min',

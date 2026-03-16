@@ -10,9 +10,13 @@ import type {
 } from '@/types/supplementStacker';
 import { generateStackOptions, getInteractions } from '@/utils/stackEngine';
 import { supabase } from '@/integrations/supabase/client';
-import { saveStackerState, loadStackerState, claimSession } from '@/utils/stackerSync';
+import { saveStackerState, loadStackerState, claimSession, type RemoteState } from '@/utils/stackerSync';
 
 const STORAGE_KEY = 'entropy-age-supplement-stacker';
+
+// Global flag to prevent useEffect from re-persisting state during logout
+let isLoggingOut = false;
+export function setLoggingOut() { isLoggingOut = true; }
 
 const initialSchedule: UserSchedule = {
   wakeTime: '06:30',
@@ -66,13 +70,15 @@ export function useSupplementStacker() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Persist to localStorage on every change
+  // Persist to localStorage on every change (skip during logout)
   useEffect(() => {
+    if (isLoggingOut) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
   // Debounced save to Supabase (500ms after last change)
   useEffect(() => {
+    if (isLoggingOut) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       saveStackerState(state).catch(() => {
@@ -84,18 +90,25 @@ export function useSupplementStacker() {
     };
   }, [state]);
 
+  // Callback ref for nutrition hydration (set by SupplementStackerApp)
+  const onRemoteLoad = useRef<((remote: RemoteState) => void) | null>(null);
+
+  const setOnRemoteLoad = useCallback((cb: (remote: RemoteState) => void) => {
+    onRemoteLoad.current = cb;
+  }, []);
+
   // On mount: try loading from Supabase (may have newer data from another device)
   useEffect(() => {
     loadStackerState().then((remote) => {
-      if (remote && remote.onboardingComplete) {
-        // Remote has completed onboarding — use it (merge with local UI state)
+      if (remote && remote.stacker.onboardingComplete) {
         setState(prev => ({
           ...prev,
-          ...remote,
+          ...remote.stacker,
           hasAccount: prev.hasAccount,
           currentScreen: prev.currentScreen,
           currentOnboardingStep: prev.currentOnboardingStep,
         }));
+        onRemoteLoad.current?.(remote);
       }
     }).catch(() => {});
   }, []);
@@ -127,14 +140,15 @@ export function useSupplementStacker() {
       // On sign-in, claim the anonymous session and load any existing user data
       if (event === 'SIGNED_IN' && session) {
         claimSession().then((remote) => {
-          if (remote && remote.onboardingComplete) {
+          if (remote && remote.stacker.onboardingComplete) {
             setState(prev => ({
               ...prev,
-              ...remote,
+              ...remote.stacker,
               hasAccount: true,
               currentScreen: prev.currentScreen,
               currentOnboardingStep: prev.currentOnboardingStep,
             }));
+            onRemoteLoad.current?.(remote);
           }
         }).catch(() => {});
       }
@@ -246,6 +260,7 @@ export function useSupplementStacker() {
     addScanResult,
     setHasAccount,
     setReminderMethod,
+    setOnRemoteLoad,
     reset,
   };
 }

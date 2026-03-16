@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { useSupplementStacker } from '@/hooks/useSupplementStacker';
+import { setLoggingOut } from '@/hooks/useSupplementStacker';
+import { supabase } from '@/integrations/supabase/client';
 import { SignupModal } from '../modals/SignupModal';
 
 interface ProfileScreenProps {
@@ -16,6 +18,18 @@ export function ProfileScreen({ stacker, isDark, onToggleTheme }: ProfileScreenP
   const handleSignupSuccess = () => {
     setShowSignup(false);
     setHasAccount(true);
+  };
+
+  const handleLogout = () => {
+    if (!confirm('This will sign you out and clear all local data. Continue?')) return;
+    // Prevent React useEffect from re-persisting state to localStorage
+    setLoggingOut();
+    // Fire-and-forget Supabase sign out
+    supabase.auth.signOut().catch(() => {});
+    // Nuke ALL localStorage
+    localStorage.clear();
+    // Hard navigation — full page reload bypasses React entirely
+    window.location.href = '/supplement-stacker';
   };
 
   return (
@@ -36,7 +50,16 @@ export function ProfileScreen({ stacker, isDark, onToggleTheme }: ProfileScreenP
             {userProfile?.email || (state.hasAccount ? 'Data saved to your account' : 'Data stored locally only')}
           </div>
         </div>
-        {!state.hasAccount && (
+        {state.hasAccount ? (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="px-4 py-2 rounded-lg text-[12px] font-semibold transition-all active:scale-[0.95] flex-shrink-0"
+            style={{ background: 'hsl(var(--ss-danger) / 0.1)', color: 'hsl(var(--ss-danger))', border: '1px solid hsl(var(--ss-danger) / 0.2)' }}
+          >
+            Log Out
+          </button>
+        ) : (
           <button
             type="button"
             onClick={() => setShowSignup(true)}
@@ -130,23 +153,29 @@ export function ProfileScreen({ stacker, isDark, onToggleTheme }: ProfileScreenP
         </div>
       </div>
 
-      {/* Reset */}
-      <button
-        type="button"
-        onClick={() => {
-          if (confirm('This will clear your entire stack and settings. Continue?')) {
-            reset();
-          }
-        }}
-        className="w-full py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.97] mb-4"
-        style={{ background: 'hsl(var(--ss-danger) / 0.08)', color: 'hsl(var(--ss-danger))', border: '1px solid hsl(var(--ss-danger) / 0.15)' }}
-      >
-        Reset Everything
-      </button>
+      {/* Reset — only for guest mode */}
+      {!state.hasAccount && (
+        <button
+          type="button"
+          onClick={() => {
+            if (confirm('This will clear your entire stack and settings. Continue?')) {
+              setLoggingOut();
+              localStorage.clear();
+              window.location.href = '/supplement-stacker';
+            }
+          }}
+          className="w-full py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.97] mb-4"
+          style={{ background: 'hsl(var(--ss-danger) / 0.08)', color: 'hsl(var(--ss-danger))', border: '1px solid hsl(var(--ss-danger) / 0.15)' }}
+        >
+          Reset Everything
+        </button>
+      )}
 
       {/* Footer note */}
       <p className="text-[10px] text-center leading-relaxed py-4" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-        Your data is stored locally on this device.
+        {state.hasAccount
+          ? 'Your data is synced to your account.'
+          : 'Your data is stored locally on this device.'}
         <br />
         Not medical advice — consult a healthcare provider.
       </p>

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { useSupplementStacker } from '@/hooks/useSupplementStacker';
 import { useNutritionCart } from '@/hooks/useNutritionCart';
+import { useNutritionPlans } from '@/hooks/useNutritionPlans';
+import { saveStackerState } from '@/utils/stackerSync';
 import { BottomNav } from './BottomNav';
 import { ScanFAB } from './ScanFAB';
 import { ThemeToggle } from './ThemeToggle';
@@ -20,12 +22,37 @@ interface SupplementStackerAppProps {
 
 export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: SupplementStackerAppProps) {
   const navigate = useNavigate();
-  const { state, setScreen, addScanResult, addSupplement } = stacker;
+  const { state, setScreen, addScanResult, addSupplement, setOnRemoteLoad } = stacker;
   const [scanOpen, setScanOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const cart = useNutritionCart();
+  const nutritionPlans = useNutritionPlans();
+
+  // Register callback to hydrate nutrition data when remote state loads (login / mount)
+  useEffect(() => {
+    setOnRemoteLoad((remote) => {
+      if (remote.nutritionCart.length > 0) cart.hydrateCart(remote.nutritionCart);
+      if (Object.keys(remote.nutritionPlans).length > 0) nutritionPlans.hydratePlans(remote.nutritionPlans);
+    });
+  }, [setOnRemoteLoad]);
+
+  // Debounced save of nutrition data to Supabase when cart or plans change
+  useEffect(() => {
+    if (!state.hasAccount) return;
+    const t = setTimeout(() => {
+      saveStackerState(state, cart.items, nutritionPlans.plans).catch(() => {});
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [cart.items, nutritionPlans.plans, state.hasAccount]);
+
+  const handleSavePlan = () => {
+    if (cart.items.length === 0) return;
+    const dateKey = nutritionPlans.savePlan(cart.items, cart.totals);
+    setCartOpen(false);
+    setToast(`Plan saved for ${dateKey}`);
+  };
 
   // Toast auto-dismiss
   useEffect(() => {
@@ -54,13 +81,13 @@ export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: Supplem
   const renderScreen = () => {
     switch (state.currentScreen) {
       case 'home':
-        return <HomeScreen stacker={stacker} />;
+        return <HomeScreen stacker={stacker} nutritionPlans={nutritionPlans} />;
       case 'stack':
         return <StackScreen stacker={stacker} />;
       case 'profile':
         return <ProfileScreen stacker={stacker} isDark={isDark} onToggleTheme={onToggleTheme} />;
       default:
-        return <HomeScreen stacker={stacker} />;
+        return <HomeScreen stacker={stacker} nutritionPlans={nutritionPlans} />;
     }
   };
 
@@ -68,7 +95,7 @@ export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: Supplem
     <div className="relative min-h-dvh">
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-4 pb-3">
-        <h1 className="ss-heading text-[22px]">Supplement Stacker</h1>
+        <h1 className="ss-heading text-[22px]">Supplements & Vitamins</h1>
         <div className="flex items-center gap-2">
           {/* Cart icon */}
           <button
@@ -161,6 +188,7 @@ export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: Supplem
         gaps={cart.gaps}
         onRemoveItem={cart.removeItem}
         onClearCart={cart.clearCart}
+        onSavePlan={cart.items.length > 0 ? handleSavePlan : undefined}
       />
 
       {/* Toast notification */}

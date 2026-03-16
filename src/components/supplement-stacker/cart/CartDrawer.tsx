@@ -10,6 +10,7 @@ interface CartDrawerProps {
   gaps: NutrientTotal[];
   onRemoveItem: (id: string) => void;
   onClearCart: () => void;
+  onSavePlan?: () => void;
 }
 
 function barColor(pct: number): string {
@@ -18,7 +19,7 @@ function barColor(pct: number): string {
   return 'var(--ss-danger)';
 }
 
-export function CartDrawer({ open, onClose, items, totals, gaps, onRemoveItem, onClearCart }: CartDrawerProps) {
+export function CartDrawer({ open, onClose, items, totals, gaps, onRemoveItem, onClearCart, onSavePlan }: CartDrawerProps) {
   const [itemsExpanded, setItemsExpanded] = useState(false);
 
   if (!open) return null;
@@ -238,8 +239,10 @@ export function CartDrawer({ open, onClose, items, totals, gaps, onRemoveItem, o
               <div className="flex gap-2 pb-4">
                 <button
                   type="button"
+                  onClick={onSavePlan}
+                  disabled={!onSavePlan}
                   className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.97]"
-                  style={{ background: 'hsl(var(--ss-good))', color: '#fff' }}
+                  style={{ background: 'hsl(var(--ss-good))', color: '#fff', opacity: onSavePlan ? 1 : 0.5 }}
                 >
                   Save as Plan
                 </button>

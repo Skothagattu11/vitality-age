@@ -1,12 +1,20 @@
 // src/utils/stackerSync.ts
-// Syncs supplement stacker state to/from Supabase.
+// Syncs supplement stacker state + nutrition data to/from Supabase.
 // Guest users get a session_id stored in localStorage.
-// On login, the anonymous session is claimed by setting user_id.
+// On sign-in, the anonymous session is claimed by setting user_id.
 
 import { supabase } from '@/integrations/supabase/client';
 import type { SupplementStackerState } from '@/types/supplementStacker';
+import type { CartItem } from '@/types/supplementStacker';
+import type { NutritionPlan } from '@/hooks/useNutritionPlans';
 
 const SESSION_KEY = 'entropy-age-stacker-session-id';
+
+export interface RemoteState {
+  stacker: Partial<SupplementStackerState>;
+  nutritionCart: CartItem[];
+  nutritionPlans: Record<string, NutritionPlan>;
+}
 
 /** Get or create a persistent anonymous session ID */
 export function getSessionId(): string {
@@ -18,13 +26,17 @@ export function getSessionId(): string {
   return id;
 }
 
-/** Save the current stacker state to Supabase */
-export async function saveStackerState(state: SupplementStackerState): Promise<void> {
+/** Save the current stacker state + nutrition data to Supabase */
+export async function saveStackerState(
+  state: SupplementStackerState,
+  nutritionCart?: CartItem[],
+  nutritionPlans?: Record<string, NutritionPlan>,
+): Promise<void> {
   const sessionId = getSessionId();
   const session = await supabase.auth.getSession();
   const userId = session.data.session?.user?.id || null;
 
-  const row = {
+  const row: Record<string, unknown> = {
     session_id: sessionId,
     user_id: userId,
     schedule: state.schedule as any,
@@ -38,14 +50,21 @@ export async function saveStackerState(state: SupplementStackerState): Promise<v
     onboarding_complete: state.onboardingComplete,
   };
 
+  if (nutritionCart !== undefined) {
+    row.nutrition_cart = nutritionCart as any;
+  }
+  if (nutritionPlans !== undefined) {
+    row.nutrition_plans = nutritionPlans as any;
+  }
+
   await supabase
     .from('supplement_stacker_sessions')
     .upsert(row, { onConflict: 'session_id' });
 }
 
-/** Load stacker state from Supabase for the current user or session */
-export async function loadStackerState(): Promise<Partial<SupplementStackerState> | null> {
-  // First try loading by authenticated user_id (may have data from a previous session)
+/** Load stacker state + nutrition data from Supabase */
+export async function loadStackerState(): Promise<RemoteState | null> {
+  // First try loading by authenticated user_id
   const session = await supabase.auth.getSession();
   const userId = session.data.session?.user?.id;
 
@@ -58,7 +77,7 @@ export async function loadStackerState(): Promise<Partial<SupplementStackerState
       .limit(1)
       .single();
 
-    if (data) return mapRowToState(data);
+    if (data) return mapRowToRemoteState(data);
   }
 
   // Fall back to anonymous session_id
@@ -69,12 +88,12 @@ export async function loadStackerState(): Promise<Partial<SupplementStackerState
     .eq('session_id', sessionId)
     .single();
 
-  if (data) return mapRowToState(data);
+  if (data) return mapRowToRemoteState(data);
   return null;
 }
 
 /** Claim an anonymous session for the newly authenticated user */
-export async function claimSession(): Promise<Partial<SupplementStackerState> | null> {
+export async function claimSession(): Promise<RemoteState | null> {
   const session = await supabase.auth.getSession();
   const userId = session.data.session?.user?.id;
   if (!userId) return null;
@@ -87,7 +106,7 @@ export async function claimSession(): Promise<Partial<SupplementStackerState> | 
     .update({ user_id: userId })
     .eq('session_id', sessionId);
 
-  // Check if the user has an older saved session (from a previous device/browser)
+  // Check if the user has an older saved session
   const { data } = await supabase
     .from('supplement_stacker_sessions')
     .select('*')
@@ -96,20 +115,26 @@ export async function claimSession(): Promise<Partial<SupplementStackerState> | 
     .limit(1)
     .single();
 
-  if (data) return mapRowToState(data);
+  if (data) return mapRowToRemoteState(data);
   return null;
 }
 
-function mapRowToState(row: any): Partial<SupplementStackerState> {
+function mapRowToRemoteState(row: any): RemoteState {
   return {
-    schedule: row.schedule,
-    activity: row.activity,
-    supplements: row.supplements,
-    selectedStackOption: row.selected_stack_option,
-    stackOptions: row.stack_options,
-    interactions: row.interactions,
-    scanResults: row.scan_results,
-    reminderMethod: row.reminder_method || undefined,
-    onboardingComplete: row.onboarding_complete,
+    stacker: {
+      schedule: row.schedule,
+      activity: row.activity,
+      supplements: row.supplements,
+      selectedStackOption: row.selected_stack_option,
+      stackOptions: row.stack_options,
+      interactions: row.interactions,
+      scanResults: row.scan_results,
+      reminderMethod: row.reminder_method || undefined,
+      onboardingComplete: row.onboarding_complete,
+    },
+    nutritionCart: Array.isArray(row.nutrition_cart) ? row.nutrition_cart : [],
+    nutritionPlans: row.nutrition_plans && typeof row.nutrition_plans === 'object' && !Array.isArray(row.nutrition_plans)
+      ? row.nutrition_plans
+      : {},
   };
 }

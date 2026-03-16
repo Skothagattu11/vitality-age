@@ -89,6 +89,13 @@ export function useNutritionCart() {
     persist([]);
   }, []);
 
+  // Hydrate cart from remote (Supabase) data on login
+  const hydrateCart = useCallback((remoteItems: CartItem[]) => {
+    if (remoteItems.length > 0) {
+      persist(remoteItems);
+    }
+  }, []);
+
   // Aggregate all nutrition data
   const totals = useMemo<CartTotals>(() => {
     let calories = 0, protein = 0, carbs = 0, fat = 0, fiber = 0;
@@ -147,6 +154,7 @@ export function useNutritionCart() {
     addItem,
     removeItem,
     clearCart,
+    hydrateCart,
   };
 }
 

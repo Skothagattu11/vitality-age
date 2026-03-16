@@ -1,18 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { useSupplementStacker } from '@/hooks/useSupplementStacker';
+import type { useNutritionPlans, NutritionPlan } from '@/hooks/useNutritionPlans';
 import { generateICS, downloadICS } from '@/utils/icsGenerator';
 
 interface HomeScreenProps {
   stacker: ReturnType<typeof useSupplementStacker>;
+  nutritionPlans: ReturnType<typeof useNutritionPlans>;
 }
 
-export function HomeScreen({ stacker }: HomeScreenProps) {
+function barColor(pct: number): string {
+  if (pct >= 80) return 'var(--ss-good)';
+  if (pct >= 40) return 'var(--ss-warn)';
+  return 'var(--ss-danger)';
+}
+
+export function HomeScreen({ stacker, nutritionPlans }: HomeScreenProps) {
   const { state } = stacker;
   const selectedStack = state.stackOptions.find(o => o.id === state.selectedStackOption);
   const slots = selectedStack?.slots ?? [];
 
-  // Track which reminders are "checked off" for today (ephemeral, resets on reload)
   const [checkedSlots, setCheckedSlots] = useState<Set<number>>(new Set());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [itemsExpanded, setItemsExpanded] = useState(false);
+  const [nutritionExpanded, setNutritionExpanded] = useState(false);
 
   const toggleCheck = (index: number) => {
     setCheckedSlots(prev => {
@@ -28,6 +38,32 @@ export function HomeScreen({ stacker }: HomeScreenProps) {
     const ics = generateICS(selectedStack, state.schedule);
     downloadICS(ics, `supplement-stack-${state.selectedStackOption}.ics`);
   };
+
+  // Date navigation
+  const navigateDate = (offset: number) => {
+    setSelectedDate(prev => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + offset);
+      return d;
+    });
+    setItemsExpanded(false);
+    setNutritionExpanded(false);
+  };
+
+  const isToday = useMemo(() => {
+    const now = new Date();
+    return selectedDate.toDateString() === now.toDateString();
+  }, [selectedDate]);
+
+  const dateLabel = useMemo(() => {
+    if (isToday) return 'Today';
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (selectedDate.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }, [selectedDate, isToday]);
+
+  const currentPlan = nutritionPlans.getPlan(selectedDate);
 
   const completedCount = checkedSlots.size;
   const totalSlots = slots.length;
@@ -46,8 +82,74 @@ export function HomeScreen({ stacker }: HomeScreenProps) {
         <StatCard value={`${completedCount}/${totalSlots}`} label="Today" />
       </div>
 
-      {/* Today's schedule */}
+      {/* ── Nutrition Plan Section ── */}
       <div className="text-[11px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+        Nutrition Plan
+      </div>
+
+      {/* Date navigator */}
+      <div className="flex items-center justify-between mb-3 rounded-xl px-3 py-2"
+           style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
+        <button
+          type="button"
+          onClick={() => navigateDate(-1)}
+          className="w-8 h-8 rounded-lg flex items-center justify-center border-none cursor-pointer"
+          style={{ background: 'hsl(var(--ss-surface-raised))', color: 'hsl(var(--ss-text-secondary))' }}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+        </button>
+        <div className="text-center">
+          <div className="text-[13px] font-semibold" style={{ color: 'hsl(var(--ss-text))' }}>{dateLabel}</div>
+          <div className="ss-font-mono text-[10px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+            {nutritionPlans.toDateKey(selectedDate)}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigateDate(1)}
+          disabled={isToday}
+          className="w-8 h-8 rounded-lg flex items-center justify-center border-none cursor-pointer"
+          style={{
+            background: 'hsl(var(--ss-surface-raised))',
+            color: 'hsl(var(--ss-text-secondary))',
+            opacity: isToday ? 0.3 : 1,
+          }}
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Saved plan display */}
+      {currentPlan ? (
+        <SavedPlanCard
+          plan={currentPlan}
+          itemsExpanded={itemsExpanded}
+          nutritionExpanded={nutritionExpanded}
+          onToggleItems={() => setItemsExpanded(!itemsExpanded)}
+          onToggleNutrition={() => setNutritionExpanded(!nutritionExpanded)}
+          onDelete={() => nutritionPlans.deletePlan(selectedDate)}
+        />
+      ) : (
+        <div className="rounded-xl p-5 text-center mb-4"
+             style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
+          <svg className="w-8 h-8 mx-auto mb-2" style={{ color: 'hsl(var(--ss-text-muted))' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          <p className="text-[12px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+            No nutrition plan saved for this date.
+          </p>
+          <p className="text-[10px] mt-1" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+            Scan items, add to cart, then save as plan.
+          </p>
+        </div>
+      )}
+
+      {/* ── Supplement Schedule Section ── */}
+      <div className="text-[11px] font-semibold uppercase tracking-wider mb-2.5 mt-5" style={{ color: 'hsl(var(--ss-text-muted))' }}>
         Today's Schedule
       </div>
 
@@ -74,21 +176,16 @@ export function HomeScreen({ stacker }: HomeScreenProps) {
                   boxShadow: 'var(--ss-shadow-sm)',
                 }}
               >
-                {/* Left accent bar */}
                 <div
                   className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r"
                   style={{ background: isPM ? 'hsl(var(--ss-accent2))' : 'hsl(var(--ss-accent))' }}
                 />
-
-                {/* Time */}
                 <span
                   className="ss-font-mono text-[13px] font-semibold min-w-[48px] text-center"
                   style={{ color: isPM ? 'hsl(var(--ss-accent2))' : 'hsl(var(--ss-accent))' }}
                 >
                   {slot.time.replace(':00', '')}
                 </span>
-
-                {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-semibold" style={{ color: 'hsl(var(--ss-text))' }}>
                     {slot.label.charAt(0).toUpperCase() + slot.label.slice(1)}
@@ -97,8 +194,6 @@ export function HomeScreen({ stacker }: HomeScreenProps) {
                     {slot.supplements.join(', ')}
                   </div>
                 </div>
-
-                {/* Checkbox */}
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
                   style={{
@@ -118,7 +213,7 @@ export function HomeScreen({ stacker }: HomeScreenProps) {
         </div>
       )}
 
-      {/* Export to Calendar — only when active stack exists */}
+      {/* Export to Calendar */}
       {selectedStack && slots.length > 0 && (
         <>
           <div className="text-[11px] font-semibold uppercase tracking-wider mt-5 mb-2" style={{ color: 'hsl(var(--ss-text-muted))' }}>
@@ -161,6 +256,172 @@ export function HomeScreen({ stacker }: HomeScreenProps) {
           <span>Tap each reminder when you take your supplements to track your daily progress.</span>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Saved Plan Card ── */
+
+function SavedPlanCard({
+  plan,
+  itemsExpanded,
+  nutritionExpanded,
+  onToggleItems,
+  onToggleNutrition,
+  onDelete,
+}: {
+  plan: NutritionPlan;
+  itemsExpanded: boolean;
+  nutritionExpanded: boolean;
+  onToggleItems: () => void;
+  onToggleNutrition: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="space-y-2 mb-4">
+      {/* Items dropdown */}
+      <div className="rounded-xl overflow-hidden"
+           style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
+        <button
+          type="button"
+          onClick={onToggleItems}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 border-none cursor-pointer"
+          style={{ background: 'transparent' }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+              Items ({plan.items.length})
+            </span>
+            {!itemsExpanded && (
+              <div className="flex -space-x-1.5">
+                {plan.items.slice(0, 4).map((item) => (
+                  <div
+                    key={item.id}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] border-2"
+                    style={{
+                      background: item.type === 'food' ? 'hsl(var(--ss-good) / 0.15)' : 'hsl(var(--ss-accent) / 0.15)',
+                      borderColor: 'hsl(var(--ss-surface))',
+                    }}
+                  >
+                    {item.type === 'food' ? '\uD83C\uDF4E' : '\uD83D\uDC8A'}
+                  </div>
+                ))}
+                {plan.items.length > 4 && (
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold border-2"
+                    style={{
+                      background: 'hsl(var(--ss-surface-raised))',
+                      borderColor: 'hsl(var(--ss-surface))',
+                      color: 'hsl(var(--ss-text-muted))',
+                    }}
+                  >
+                    +{plan.items.length - 4}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <svg
+            className="w-4 h-4 transition-transform"
+            style={{ color: 'hsl(var(--ss-text-muted))', transform: itemsExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        {itemsExpanded && (
+          <div style={{ borderTop: '1px solid hsl(var(--ss-border-soft))' }}>
+            {plan.items.map((item, i) => (
+              <div key={item.id}
+                   className="flex items-center gap-2.5 px-3.5 py-2.5"
+                   style={{ borderBottom: i < plan.items.length - 1 ? '1px solid hsl(var(--ss-border-soft) / 0.5)' : 'none' }}>
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[14px] flex-shrink-0"
+                  style={{ background: item.type === 'food' ? 'hsl(var(--ss-good) / 0.12)' : 'hsl(var(--ss-accent) / 0.12)' }}
+                >
+                  {item.type === 'food' ? '\uD83C\uDF4E' : '\uD83D\uDC8A'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] font-medium truncate" style={{ color: 'hsl(var(--ss-text))' }}>
+                    {item.productName}
+                  </div>
+                  <div className="text-[9px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+                    {item.type === 'supplement'
+                      ? `Supplement${item.score ? ` \u2022 ${item.score}/100` : ''}`
+                      : `${Math.round(item.macros.calories)} cal \u2022 ${Math.round(item.macros.protein)}g protein`
+                    }
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Nutrition dropdown */}
+      <div className="rounded-xl overflow-hidden"
+           style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border-soft))' }}>
+        <button
+          type="button"
+          onClick={onToggleNutrition}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 border-none cursor-pointer"
+          style={{ background: 'transparent' }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+              Nutrition
+            </span>
+            {!nutritionExpanded && (
+              <span className="ss-font-mono text-[10px] font-medium" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
+                {plan.totals.calories} cal &middot; {plan.totals.protein}g protein
+              </span>
+            )}
+          </div>
+          <svg
+            className="w-4 h-4 transition-transform"
+            style={{ color: 'hsl(var(--ss-text-muted))', transform: nutritionExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+
+        {nutritionExpanded && (
+          <div style={{ borderTop: '1px solid hsl(var(--ss-border-soft))' }}>
+            {/* Macro grid */}
+            <div className="grid grid-cols-5" style={{ borderBottom: '1px solid hsl(var(--ss-border-soft))' }}>
+              <MacroCell value={plan.totals.calories} label="Cal" />
+              <MacroCell value={`${plan.totals.protein}g`} label="Protein" />
+              <MacroCell value={`${plan.totals.carbs}g`} label="Carbs" />
+              <MacroCell value={`${plan.totals.fat}g`} label="Fat" />
+              <MacroCell value={`${plan.totals.fiber}g`} label="Fiber" last />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Delete plan */}
+      <button
+        type="button"
+        onClick={onDelete}
+        className="w-full py-2 rounded-xl text-[10px] font-semibold transition-all active:scale-[0.97] border-none cursor-pointer"
+        style={{ background: 'hsl(var(--ss-danger) / 0.08)', color: 'hsl(var(--ss-danger))' }}
+      >
+        Delete Plan
+      </button>
+    </div>
+  );
+}
+
+/* ── Helper Components ── */
+
+function MacroCell({ value, label, last }: { value: string | number; label: string; last?: boolean }) {
+  return (
+    <div className="text-center py-3"
+         style={{ borderRight: last ? 'none' : '1px solid hsl(var(--ss-border-soft))' }}>
+      <div className="ss-font-mono text-[14px] font-bold" style={{ color: 'hsl(var(--ss-text))' }}>{value}</div>
+      <div className="text-[9px] mt-0.5" style={{ color: 'hsl(var(--ss-text-muted))' }}>{label}</div>
     </div>
   );
 }

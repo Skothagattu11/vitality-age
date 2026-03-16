@@ -113,6 +113,8 @@ export type Database = {
           created_at: string
           id: string
           interactions: Json
+          nutrition_cart: Json
+          nutrition_plans: Json
           onboarding_complete: boolean
           reminder_method: string | null
           scan_results: Json
@@ -129,6 +131,8 @@ export type Database = {
           created_at?: string
           id?: string
           interactions?: Json
+          nutrition_cart?: Json
+          nutrition_plans?: Json
           onboarding_complete?: boolean
           reminder_method?: string | null
           scan_results?: Json
@@ -145,6 +149,8 @@ export type Database = {
           created_at?: string
           id?: string
           interactions?: Json
+          nutrition_cart?: Json
+          nutrition_plans?: Json
           onboarding_complete?: boolean
           reminder_method?: string | null
           scan_results?: Json
