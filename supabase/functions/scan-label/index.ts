@@ -291,13 +291,16 @@ serve(async (req: Request) => {
             quality: ["good", "moderate", "poor"].includes(n.quality as string) ? n.quality : undefined,
           }))
         : [],
-      _macros: {
-        calories: typeof parsed.macros?.calories === "number" ? parsed.macros.calories : 0,
-        protein: typeof parsed.macros?.protein === "number" ? parsed.macros.protein : 0,
-        carbs: typeof parsed.macros?.carbs === "number" ? parsed.macros.carbs : 0,
-        fat: typeof parsed.macros?.fat === "number" ? parsed.macros.fat : 0,
-        fiber: typeof parsed.macros?.fiber === "number" ? parsed.macros.fiber : 0,
-      },
+      _macros: (() => {
+        const m = (parsed.macros || {}) as Record<string, unknown>;
+        return {
+          calories: typeof m.calories === "number" ? m.calories : 0,
+          protein: typeof m.protein === "number" ? m.protein : 0,
+          carbs: typeof m.carbs === "number" ? m.carbs : 0,
+          fat: typeof m.fat === "number" ? m.fat : 0,
+          fiber: typeof m.fiber === "number" ? m.fiber : 0,
+        };
+      })(),
     };
 
     return new Response(JSON.stringify(scanResult), {
