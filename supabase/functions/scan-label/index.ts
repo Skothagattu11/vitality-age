@@ -12,85 +12,20 @@ const corsHeaders = {
 // ── Single smart prompt that auto-detects image content ──
 
 function buildPrompt(modeHint: string): string {
-  return `You are an expert nutritionist and supplement analyst. Analyze this image and auto-detect what it contains:
+  return `Analyze this image. Auto-detect: A) Supplement Facts label, B) Nutrition Facts label, C) Food photo. Mode hint: "${modeHint}" — override if image differs.
 
-A) **Supplement Facts label** — analyze ingredient quality, forms, doses, bioavailability
-B) **Nutrition Facts label** — extract exact nutritional values from the panel
-C) **Photo of food** (fruit, vegetables, meal, snack, etc.) — identify the food and provide USDA-based nutrition estimates per standard serving
+Return JSON:
+{"detectedType":"supplement"|"food_label"|"food_photo","productName":"string","brand":"string|null","score":number,"verdict":"string","servingAlert":"string|null","findings":[{"name":"string","status":"good"|"warn"|"bad","detail":"string","dose":"string|null","absorbed":"string|null","tag":"string|null"}],"nutrients":[{"name":"string","amount":number,"unit":"mg"|"mcg"|"IU"|"g","dailyValuePct":number,"form":"string|null","quality":"good"|"moderate"|"poor"}],"macros":{"calories":number,"protein":number,"carbs":number,"fat":number,"fiber":number}}
 
-The user's mode hint is "${modeHint}" but ALWAYS analyze what you actually see in the image. If the user selected "supplement" but the image shows an apple, treat it as food.
+Rules:
+- Supplements: score 0-100 (start 50, ±quality/forms/doses/fillers). Analyze every ingredient. tags: "Quality Form","Low Bioavail","Filler","Underdosed","Overdosed",null
+- Food labels: score=0. Extract exact values from panel.
+- Food photos: score=0. Use USDA data per standard serving. NEVER return zero macros for real food.
+- nutrients MUST include all non-zero: Vitamin A,C,D,E,K,B6,B12,Thiamin,Riboflavin,Niacin,Folate,Biotin,Pantothenic Acid,Calcium,Iron,Magnesium,Zinc,Selenium,Copper,Potassium,Sodium,Phosphorus,Iodine,Choline,Omega-3(DHA+EPA mg).
+- Fish/eggs: always include Omega-3.
+- findings: "good"=quality/≥15%DV, "warn"=suboptimal/5-14%DV, "bad"=filler/high sugar/sodium.
 
-Return a JSON object with this EXACT structure:
-
-{
-  "detectedType": "supplement" | "food_label" | "food_photo",
-  "productName": "Name of product or food",
-  "brand": "Brand name or null",
-  "score": number,
-  "verdict": "One sentence summary",
-  "servingAlert": "Serving note or null",
-  "findings": [
-    {
-      "name": "Ingredient or Nutrient Name",
-      "status": "good" | "warn" | "bad",
-      "detail": "Brief explanation",
-      "dose": "Amount with unit or null",
-      "absorbed": "Absorption info or null",
-      "tag": "Tag or null"
-    }
-  ],
-  "nutrients": [
-    {
-      "name": "Nutrient Name",
-      "amount": number,
-      "unit": "mg" | "mcg" | "IU" | "g",
-      "dailyValuePct": number,
-      "form": "Form name or null",
-      "quality": "good" | "moderate" | "poor"
-    }
-  ],
-  "macros": {
-    "calories": number,
-    "protein": number,
-    "carbs": number,
-    "fat": number,
-    "fiber": number
-  }
-}
-
-=== RULES BY TYPE ===
-
-**For SUPPLEMENT FACTS labels (type A):**
-- Score 0-100: Start at 50. +5 quality forms, +3 good doses, +5 clean label. -5 poor forms, -8 fillers, -3 underdosing.
-- Analyze EVERY ingredient on the label
-- findings status: "good" = quality form/proper dose, "warn" = suboptimal form, "bad" = filler/underdosed
-- tag values: "Quality Form", "Low Bioavail", "Filler", "Underdosed", "Overdosed", or null
-- Extract all vitamins/minerals into nutrients array with dailyValuePct
-
-**For NUTRITION FACTS labels (type B):**
-- score: 0 (not applicable for food labels)
-- Extract exact values from the panel into macros and nutrients
-- findings: highlight notable nutrients ("good" >= 15% DV, "warn" 5-14% DV, "bad" high sugar/sodium/trans fat)
-
-**For FOOD PHOTOS (type C):**
-- score: 0 (not applicable)
-- Identify the food item(s) visible in the image
-- productName: descriptive name like "Guava (Fresh)" or "Red Apple (Medium)"
-- verdict: serving description like "1 medium guava (55g)" or "1 medium apple (182g)"
-- macros: MUST have real non-zero values from USDA data. NEVER return all zeros.
-- nutrients: include key vitamins/minerals the food is known for (e.g., guava is high in Vitamin C, fiber)
-- findings: highlight what makes this food nutritionally notable
-  - "good": Rich in vitamins, minerals, fiber, antioxidants
-  - "warn": Moderate sugar content, etc.
-  - "bad": Only if genuinely concerning (e.g., very high sugar)
-
-CRITICAL RULES:
-- For food photos, you MUST provide real nutritional data. An apple has ~95 calories, 25g carbs, 4.4g fiber. A guava has ~37 calories per fruit, 8g carbs, 3g fiber, 228mg Vitamin C. Never return zeros for real food.
-- The nutrients array MUST include ALL of these when the food contains them: Vitamin A, Vitamin C, Vitamin D, Vitamin E, Vitamin K, Vitamin B6, B12, Thiamin, Riboflavin, Niacin, Folate, Biotin, Pantothenic Acid, Calcium, Iron, Magnesium, Zinc, Selenium, Copper, Potassium, Sodium, Phosphorus, Iodine, Choline, Omega-3 (as DHA+EPA combined in mg).
-- For fish (salmon, sardines, mackerel, tuna), eggs, and other Omega-3 rich foods, ALWAYS include an "Omega-3" entry in nutrients with the combined DHA+EPA amount in mg. Example: salmon has ~2000mg Omega-3 per serving.
-- Use standard USDA nutrient names. Include every nutrient where the amount is non-zero.
-
-Return ONLY valid JSON, no markdown or explanation.`;
+JSON only, no markdown.`;
 }
 
 // ── Helper: Convert image File to base64 ──
@@ -225,8 +160,8 @@ serve(async (req: Request) => {
           },
         ],
         generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 8192,
+          temperature: 0,
+          maxOutputTokens: 4096,
           responseMimeType: "application/json",
           thinkingConfig: { thinkingBudget: 0 },
         },

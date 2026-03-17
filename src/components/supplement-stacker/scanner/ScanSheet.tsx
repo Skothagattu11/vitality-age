@@ -1,8 +1,15 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import type { ScanResult, CartItem, NutrientEntry } from '@/types/supplementStacker';
 import { scanLabel, type ScanApiResponse } from '@/services/geminiScanService';
 import { ImageUpload } from './ImageUpload';
 import { ScanResults } from './ScanResults';
+
+const SCAN_START_MESSAGES = [
+  'Analyzing label...',
+  'Reading nutrition info...',
+  'Identifying ingredients...',
+  'Detecting food item...',
+];
 
 export type ScanMode = 'supplement' | 'food';
 
@@ -187,10 +194,18 @@ export function ScanSheet({ open, onClose, onAddScanResult, onAddToStack, onAddT
 
           {/* Analyzing */}
           {scanState === 'analyzing' && (
-            <div className="flex flex-col items-center py-12 text-center">
-              <div className="w-10 h-10 border-2 rounded-full animate-spin mb-4"
-                   style={{ borderColor: 'hsl(var(--ss-border))', borderTopColor: 'hsl(var(--ss-accent))' }} />
-              <p className="text-sm font-medium" style={{ color: 'hsl(var(--ss-text))' }}>Analyzing label...</p>
+            <div className="flex flex-col items-center py-10 text-center">
+              {/* Pulsing scan icon */}
+              <div className="relative w-16 h-16 mb-4">
+                <div className="absolute inset-0 rounded-full animate-ping opacity-20"
+                     style={{ background: 'hsl(var(--ss-accent))' }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="w-8 h-8" style={{ color: 'hsl(var(--ss-accent))' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/>
+                  </svg>
+                </div>
+              </div>
+              <p className="text-sm font-medium" style={{ color: 'hsl(var(--ss-text))' }}>Scanning...</p>
               <p className="text-[11px] mt-1" style={{ color: 'hsl(var(--ss-text-muted))' }}>
                 {scanMode === 'supplement'
                   ? 'Checking ingredients, forms, and doses'
