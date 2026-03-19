@@ -64,12 +64,12 @@ async function testGuestSave() {
 async function testGuestLoad() {
   try {
     const loaded = await loadStackerState();
-    const hasSups = loaded?.supplements && (loaded.supplements as any[]).length === 2;
-    const isComplete = loaded?.onboardingComplete === true;
+    const hasSups = loaded?.stacker.supplements && (loaded.stacker.supplements as any[]).length === 2;
+    const isComplete = loaded?.stacker.onboardingComplete === true;
     log(
       '3. Guest load from Supabase',
       !!(hasSups && isComplete),
-      `onboardingComplete=${loaded?.onboardingComplete}, supplements=${JSON.stringify(loaded?.supplements)}`
+      `onboardingComplete=${loaded?.stacker.onboardingComplete}, supplements=${JSON.stringify(loaded?.stacker.supplements)}`
     );
   } catch (err: any) {
     log('3. Guest load from Supabase', false, err.message);
@@ -119,8 +119,8 @@ async function testClaimSession() {
     const remote = await claimSession();
     log(
       '6. Claim session on login',
-      !!remote && remote.onboardingComplete === true,
-      `Got back onboardingComplete=${remote?.onboardingComplete}, supplements=${(remote?.supplements as any[])?.length || 0}`
+      !!remote && remote.stacker.onboardingComplete === true,
+      `Got back onboardingComplete=${remote?.stacker.onboardingComplete}, supplements=${(remote?.stacker.supplements as any[])?.length || 0}`
     );
   } catch (err: any) {
     log('6. Claim session on login', false, err.message);
@@ -170,11 +170,11 @@ async function testAuthenticatedUpdate() {
   try {
     await saveStackerState(testState);
     const loaded = await loadStackerState();
-    const supCount = (loaded?.supplements as any[])?.length || 0;
+    const supCount = (loaded?.stacker.supplements as any[])?.length || 0;
     log(
       '8. Authenticated save + load',
-      supCount === 3 && loaded?.selectedStackOption === 'simple',
-      `supplements=${supCount}, stack=${loaded?.selectedStackOption}`
+      supCount === 3 && loaded?.stacker.selectedStackOption === 'simple',
+      `supplements=${supCount}, stack=${loaded?.stacker.selectedStackOption}`
     );
   } catch (err: any) {
     log('8. Authenticated save + load', false, err.message);
@@ -200,11 +200,11 @@ async function testSignInRestore(email: string, password: string) {
     if (error) throw error;
 
     const remote = await claimSession();
-    const supCount = (remote?.supplements as any[])?.length || 0;
+    const supCount = (remote?.stacker.supplements as any[])?.length || 0;
     log(
       '10. Sign in restores previous data',
-      supCount === 3 && remote?.onboardingComplete === true,
-      `supplements=${supCount}, onboarding=${remote?.onboardingComplete}`
+      supCount === 3 && remote?.stacker.onboardingComplete === true,
+      `supplements=${supCount}, onboarding=${remote?.stacker.onboardingComplete}`
     );
   } catch (err: any) {
     log('10. Sign in restores previous data', false, err.message);

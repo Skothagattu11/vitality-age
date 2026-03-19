@@ -46,7 +46,7 @@ export async function saveSkinScannerState(state: SkinScannerState): Promise<voi
 
   await supabase
     .from('skin_scanner_sessions')
-    .upsert(row, { onConflict: 'session_id' });
+    .upsert(row as any, { onConflict: 'session_id' });
 }
 
 /** Load skin scanner state from Supabase */

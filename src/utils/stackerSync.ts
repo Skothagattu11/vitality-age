@@ -59,7 +59,7 @@ export async function saveStackerState(
 
   await supabase
     .from('supplement_stacker_sessions')
-    .upsert(row, { onConflict: 'session_id' });
+    .upsert(row as any, { onConflict: 'session_id' });
 }
 
 /** Load stacker state + nutrition data from Supabase */
