@@ -200,11 +200,11 @@ async function testSignInRestore(email: string, password: string) {
     if (error) throw error;
 
     const remote = await claimSession();
-    const supCount = (remote?.supplements as any[])?.length || 0;
+    const supCount = (remote?.stacker.supplements as any[])?.length || 0;
     log(
       '10. Sign in restores previous data',
-      supCount === 3 && remote?.onboardingComplete === true,
-      `supplements=${supCount}, onboarding=${remote?.onboardingComplete}`
+      supCount === 3 && remote?.stacker.onboardingComplete === true,
+      `supplements=${supCount}, onboarding=${remote?.stacker.onboardingComplete}`
     );
   } catch (err: any) {
     log('10. Sign in restores previous data', false, err.message);

@@ -132,10 +132,14 @@ export function useSkinScanner() {
       // On sign-in, claim the anonymous session and load any existing user data
       if (event === 'SIGNED_IN' && session) {
         claimSkinScannerSession().then((remote) => {
-          if (remote && remote.skinScanner.skinProfile.onboardingComplete) {
+          if (remote && remote.skinProfile.onboardingComplete) {
             setState(prev => ({
               ...prev,
-              ...remote.skinScanner,
+              skinProfile: remote.skinProfile,
+              scanHistory: remote.scanHistory,
+              amRoutine: remote.amRoutine,
+              pmRoutine: remote.pmRoutine,
+              researchCache: remote.researchCache,
               hasAccount: true,
               currentScreen: prev.currentScreen,
             }));
