@@ -119,8 +119,8 @@ async function testClaimSession() {
     const remote = await claimSession();
     log(
       '6. Claim session on login',
-      !!remote && remote.onboardingComplete === true,
-      `Got back onboardingComplete=${remote?.onboardingComplete}, supplements=${(remote?.supplements as any[])?.length || 0}`
+      !!remote && remote.stacker.onboardingComplete === true,
+      `Got back onboardingComplete=${remote?.stacker.onboardingComplete}, supplements=${(remote?.stacker.supplements as any[])?.length || 0}`
     );
   } catch (err: any) {
     log('6. Claim session on login', false, err.message);
