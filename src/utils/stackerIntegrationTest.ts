@@ -64,12 +64,12 @@ async function testGuestSave() {
 async function testGuestLoad() {
   try {
     const loaded = await loadStackerState();
-    const hasSups = loaded?.supplements && (loaded.supplements as any[]).length === 2;
-    const isComplete = loaded?.onboardingComplete === true;
+    const hasSups = loaded?.stacker.supplements && (loaded.stacker.supplements as any[]).length === 2;
+    const isComplete = loaded?.stacker.onboardingComplete === true;
     log(
       '3. Guest load from Supabase',
       !!(hasSups && isComplete),
-      `onboardingComplete=${loaded?.onboardingComplete}, supplements=${JSON.stringify(loaded?.supplements)}`
+      `onboardingComplete=${loaded?.stacker.onboardingComplete}, supplements=${JSON.stringify(loaded?.stacker.supplements)}`
     );
   } catch (err: any) {
     log('3. Guest load from Supabase', false, err.message);
