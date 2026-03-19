@@ -170,11 +170,11 @@ async function testAuthenticatedUpdate() {
   try {
     await saveStackerState(testState);
     const loaded = await loadStackerState();
-    const supCount = (loaded?.supplements as any[])?.length || 0;
+    const supCount = (loaded?.stacker.supplements as any[])?.length || 0;
     log(
       '8. Authenticated save + load',
-      supCount === 3 && loaded?.selectedStackOption === 'simple',
-      `supplements=${supCount}, stack=${loaded?.selectedStackOption}`
+      supCount === 3 && loaded?.stacker.selectedStackOption === 'simple',
+      `supplements=${supCount}, stack=${loaded?.stacker.selectedStackOption}`
     );
   } catch (err: any) {
     log('8. Authenticated save + load', false, err.message);
