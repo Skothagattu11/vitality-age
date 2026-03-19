@@ -107,6 +107,48 @@ export type Database = {
         }
         Relationships: []
       }
+      skin_scanner_sessions: {
+        Row: {
+          id: string
+          user_id: string | null
+          session_id: string
+          skin_profile: Json
+          scan_history: Json
+          am_routine: Json
+          pm_routine: Json
+          research_cache: Json
+          onboarding_complete: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          session_id: string
+          skin_profile?: Json
+          scan_history?: Json
+          am_routine?: Json
+          pm_routine?: Json
+          research_cache?: Json
+          onboarding_complete?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          session_id?: string
+          skin_profile?: Json
+          scan_history?: Json
+          am_routine?: Json
+          pm_routine?: Json
+          research_cache?: Json
+          onboarding_complete?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       supplement_stacker_sessions: {
         Row: {
           activity: Json

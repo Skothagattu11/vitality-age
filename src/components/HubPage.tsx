@@ -67,6 +67,14 @@ const PillIcon = () => (
   </svg>
 );
 
+const SkinIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 22l1.5-3.7a1 1 0 0 1 1.3-.5l1.5.6a1 1 0 0 0 1.2-.3L12 14"/>
+    <path d="M15 2.1a5 5 0 0 1 4.9 4.9c0 2.3-1.9 4.3-4.2 4.9-1 .3-2.1.1-3-.5"/>
+    <circle cx="12" cy="10" r="2"/>
+  </svg>
+);
+
 const RadarIcon = () => (
   <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/>
@@ -154,6 +162,17 @@ const assessments: AssessmentItem[] = [
     status: 'new',
     route: '/supplement-stacker',
     accentColor: 'cyan',
+  },
+  {
+    id: 'skin-scanner',
+    title: 'Skin Scanner',
+    subtitle: 'Ingredient Analysis',
+    description: 'Scan skincare product labels for personalized safety and compatibility scores based on your skin profile.',
+    duration: '2 min',
+    icon: <SkinIcon />,
+    status: 'new' as const,
+    route: '/skin-scanner',
+    accentColor: 'violet' as const,
   },
   {
     id: 'cardiovascular-age',

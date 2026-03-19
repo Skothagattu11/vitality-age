@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 const FunctionalAge = lazy(() => import("./pages/FunctionalAge"));
 const BrainAge = lazy(() => import("./pages/BrainAge"));
 const SupplementStacker = lazy(() => import("./pages/SupplementStacker"));
+const SkinScanner = lazy(() => import("./pages/SkinScanner"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
 const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
@@ -45,6 +46,11 @@ const App = () => (
         <Route path="/supplement-stacker" element={
           <Suspense fallback={<PageLoader />}>
             <SupplementStacker />
+          </Suspense>
+        } />
+        <Route path="/skin-scanner" element={
+          <Suspense fallback={<PageLoader />}>
+            <SkinScanner />
           </Suspense>
         } />
         <Route path="*" element={
