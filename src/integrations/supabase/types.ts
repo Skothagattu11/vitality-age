@@ -109,43 +109,43 @@ export type Database = {
       }
       skin_scanner_sessions: {
         Row: {
-          id: string
-          user_id: string | null
-          session_id: string
-          skin_profile: Json
-          scan_history: Json
           am_routine: Json
+          created_at: string | null
+          id: string
+          onboarding_complete: boolean
           pm_routine: Json
           research_cache: Json
-          onboarding_complete: boolean
-          created_at: string
-          updated_at: string
+          scan_history: Json
+          session_id: string | null
+          skin_profile: Json
+          updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          id?: string
-          user_id?: string | null
-          session_id: string
-          skin_profile?: Json
-          scan_history?: Json
           am_routine?: Json
+          created_at?: string | null
+          id?: string
+          onboarding_complete?: boolean
           pm_routine?: Json
           research_cache?: Json
-          onboarding_complete?: boolean
-          created_at?: string
-          updated_at?: string
+          scan_history?: Json
+          session_id?: string | null
+          skin_profile?: Json
+          updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string | null
-          session_id?: string
-          skin_profile?: Json
-          scan_history?: Json
           am_routine?: Json
+          created_at?: string | null
+          id?: string
+          onboarding_complete?: boolean
           pm_routine?: Json
           research_cache?: Json
-          onboarding_complete?: boolean
-          created_at?: string
-          updated_at?: string
+          scan_history?: Json
+          session_id?: string | null
+          skin_profile?: Json
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
