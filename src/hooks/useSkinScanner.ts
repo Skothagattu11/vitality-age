@@ -206,6 +206,10 @@ export function useSkinScanner() {
     setState(prev => ({ ...prev, hasAccount }));
   }, []);
 
+  const clearScanHistory = useCallback(() => {
+    setState(prev => ({ ...prev, scanHistory: [] }));
+  }, []);
+
   const reset = useCallback(() => {
     setState(initialState);
     localStorage.removeItem(STORAGE_KEY);
@@ -223,6 +227,7 @@ export function useSkinScanner() {
     setScreen,
     setHasAccount,
     setOnRemoteLoad,
+    clearScanHistory,
     reset,
   };
 }

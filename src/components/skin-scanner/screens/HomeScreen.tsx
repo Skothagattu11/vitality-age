@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import type { useSkinScanner } from '@/hooks/useSkinScanner';
 import type { SkinScanResult } from '@/types/skinScanner';
 
 interface HomeScreenProps {
   scanner: ReturnType<typeof useSkinScanner>;
+  onViewScan?: (scan: SkinScanResult) => void;
 }
 
 function timeAgo(timestamp: number): string {
@@ -42,10 +42,9 @@ function tierCount(scan: SkinScanResult) {
   };
 }
 
-export function HomeScreen({ scanner }: HomeScreenProps) {
+export function HomeScreen({ scanner, onViewScan }: HomeScreenProps) {
   const { state, setScreen } = scanner;
   const profile = state.skinProfile;
-  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   // Count answered profile questions (6 total)
   const profileFields: (keyof typeof profile)[] = ['skinType', 'sensitivity', 'concerns', 'allergies', 'ageRange', 'routineComplexity'];
@@ -129,8 +128,20 @@ export function HomeScreen({ scanner }: HomeScreenProps) {
       )}
 
       {/* Recent Scans */}
-      <div className="text-[11px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-        Recent Scans
+      <div className="flex items-center justify-between mb-2.5">
+        <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--ss-text-muted))' }}>
+          Recent Scans
+        </div>
+        {state.scanHistory.length > 0 && (
+          <button
+            type="button"
+            onClick={() => scanner.clearScanHistory()}
+            className="text-[11px] font-medium transition-opacity active:opacity-60"
+            style={{ color: 'hsl(var(--ss-danger))' }}
+          >
+            Clear History
+          </button>
+        )}
       </div>
 
       {state.scanHistory.length === 0 ? (
@@ -161,21 +172,19 @@ export function HomeScreen({ scanner }: HomeScreenProps) {
       ) : (
         <div className="space-y-2">
           {state.scanHistory.map((scan, index) => {
-            const isExpanded = expandedId === index;
             const tiers = tierCount(scan);
             return (
               <button
                 key={`${scan.scannedAt}-${index}`}
                 type="button"
-                onClick={() => setExpandedId(isExpanded ? null : index)}
-                className="w-full text-left rounded-xl overflow-hidden transition-all active:scale-[0.98]"
+                onClick={() => onViewScan?.(scan)}
+                className="w-full text-left rounded-xl overflow-hidden transition-all active:scale-[0.97]"
                 style={{
                   background: 'hsl(var(--ss-surface))',
                   border: '1px solid hsl(var(--ss-border-soft))',
                   boxShadow: 'var(--ss-shadow-sm)',
                 }}
               >
-                {/* Main row */}
                 <div className="flex items-center gap-3 p-3.5">
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-semibold truncate" style={{ color: 'hsl(var(--ss-text))' }}>
@@ -215,40 +224,20 @@ export function HomeScreen({ scanner }: HomeScreenProps) {
                     </div>
                   </div>
 
-                  <svg
-                    className="w-4 h-4 flex-shrink-0 transition-transform"
-                    style={{
-                      color: 'hsl(var(--ss-text-muted))',
-                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </div>
-
-                {/* Expanded details */}
-                {isExpanded && (
-                  <div className="px-3.5 pb-3.5" style={{ borderTop: '1px solid hsl(var(--ss-border-soft))' }}>
-                    <div className="pt-3">
-                      {/* Verdict */}
-                      <p className="text-[12px] leading-relaxed mb-3" style={{ color: 'hsl(var(--ss-text-secondary))' }}>
-                        {scan.verdict}
-                      </p>
-
-                      {/* Ingredient tier summary */}
-                      <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-                        Ingredient Breakdown
-                      </div>
-                      <div className="grid grid-cols-4 gap-1.5">
-                        <TierBadge label="Hero" count={tiers.hero} color="var(--ss-accent)" />
-                        <TierBadge label="Support" count={tiers.supporting} color="var(--ss-good)" />
-                        <TierBadge label="Base" count={tiers.base} color="var(--ss-text-muted)" />
-                        <TierBadge label="Watch" count={tiers.watchOut} color="var(--ss-danger)" />
-                      </div>
-                    </div>
+                  {/* Tier mini-indicators + arrow */}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {tiers.watchOut > 0 && (
+                      <span className="w-2 h-2 rounded-full" style={{ background: 'hsl(var(--ss-danger))' }} />
+                    )}
+                    <svg
+                      className="w-4 h-4"
+                      style={{ color: 'hsl(var(--ss-text-muted))' }}
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6"/>
+                    </svg>
                   </div>
-                )}
+                </div>
               </button>
             );
           })}
@@ -258,18 +247,3 @@ export function HomeScreen({ scanner }: HomeScreenProps) {
   );
 }
 
-function TierBadge({ label, count, color }: { label: string; count: number; color: string }) {
-  return (
-    <div
-      className="rounded-lg py-1.5 text-center"
-      style={{ background: `hsl(${color} / 0.08)` }}
-    >
-      <div className="ss-font-mono text-[14px] font-bold" style={{ color: `hsl(${color})` }}>
-        {count}
-      </div>
-      <div className="text-[9px] font-medium" style={{ color: `hsl(${color})` }}>
-        {label}
-      </div>
-    </div>
-  );
-}

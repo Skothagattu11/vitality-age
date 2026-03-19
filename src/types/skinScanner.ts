@@ -85,7 +85,7 @@ export interface SkinProfile {
 
 // ── App State ──
 
-export type SkinScannerScreen = 'home' | 'routine' | 'profile';
+export type SkinScannerScreen = 'home' | 'routine' | 'profile' | 'results';
 
 export interface SkinScannerState {
   skinProfile: SkinProfile;

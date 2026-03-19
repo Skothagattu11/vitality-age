@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { useSkinScanner } from '@/hooks/useSkinScanner';
+import type { SkinScanResult } from '@/types/skinScanner';
 import { BottomNav } from './BottomNav';
 import { ScanFAB } from './ScanFAB';
 import { ThemeToggle } from '@/components/supplement-stacker/ThemeToggle';
@@ -8,6 +9,7 @@ import { ScanSheet } from './scanner/ScanSheet';
 import { HomeScreen } from './screens/HomeScreen';
 import { RoutineScreen } from './screens/RoutineScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { ScanResultsScreen } from './screens/ScanResultsScreen';
 
 interface SkinScannerAppProps {
   scanner: ReturnType<typeof useSkinScanner>;
@@ -20,6 +22,7 @@ export function SkinScannerApp({ scanner, isDark, onToggleTheme }: SkinScannerAp
   const { state, setScreen } = scanner;
   const [scanOpen, setScanOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [activeResult, setActiveResult] = useState<SkinScanResult | null>(null);
 
   // Toast auto-dismiss
   useEffect(() => {
@@ -28,42 +31,75 @@ export function SkinScannerApp({ scanner, isDark, onToggleTheme }: SkinScannerAp
     return () => clearTimeout(t);
   }, [toast]);
 
+  // When a scan completes, navigate to results page
+  const handleScanComplete = useCallback((result: SkinScanResult) => {
+    setActiveResult(result);
+    setScreen('results');
+    setScanOpen(false);
+  }, [setScreen]);
+
+  // View a scan from history
+  const handleViewScan = useCallback((result: SkinScanResult) => {
+    setActiveResult(result);
+    setScreen('results');
+  }, [setScreen]);
+
+  // Back from results
+  const handleResultsBack = useCallback(() => {
+    setActiveResult(null);
+    setScreen('home');
+  }, [setScreen]);
+
+  const isResults = state.currentScreen === 'results';
+
   const renderScreen = () => {
+    if (isResults && activeResult) {
+      return (
+        <ScanResultsScreen
+          scanner={scanner}
+          result={activeResult}
+          onBack={handleResultsBack}
+        />
+      );
+    }
+
     switch (state.currentScreen) {
       case 'home':
-        return <HomeScreen scanner={scanner} />;
+        return <HomeScreen scanner={scanner} onViewScan={handleViewScan} />;
       case 'routine':
         return <RoutineScreen scanner={scanner} />;
       case 'profile':
         return <ProfileScreen scanner={scanner} isDark={isDark} onToggleTheme={onToggleTheme} />;
       default:
-        return <HomeScreen scanner={scanner} />;
+        return <HomeScreen scanner={scanner} onViewScan={handleViewScan} />;
     }
   };
 
   return (
     <div className="relative min-h-dvh">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3">
-        <h1 className="ss-heading text-[22px]">Skin Scanner</h1>
-        <div className="flex items-center gap-2">
-          <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
+      {/* Header — hidden on results page */}
+      {!isResults && (
+        <div className="flex items-center justify-between px-5 pt-4 pb-3">
+          <h1 className="ss-heading text-[22px]">Skin Scanner</h1>
+          <div className="flex items-center gap-2">
+            <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
 
-          <button
-            onClick={() => navigate('/')}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border))' }}
-            aria-label="Back to hub"
-          >
-            <svg className="w-4 h-4" style={{ color: 'hsl(var(--ss-text-secondary))' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m15 18-6-6 6-6"/>
-            </svg>
-          </button>
+            <button
+              onClick={() => navigate('/')}
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+              style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border))' }}
+              aria-label="Back to hub"
+            >
+              <svg className="w-4 h-4" style={{ color: 'hsl(var(--ss-text-secondary))' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Guest mode banner */}
-      {!state.hasAccount && (
+      {/* Guest mode banner — hidden on results page */}
+      {!isResults && !state.hasAccount && (
         <div
           className="mx-5 mb-3 flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-[11px] leading-relaxed"
           style={{
@@ -88,21 +124,26 @@ export function SkinScannerApp({ scanner, isDark, onToggleTheme }: SkinScannerAp
       )}
 
       {/* Screen content */}
-      <div className="px-5 pb-[calc(64px+env(safe-area-inset-bottom,0px)+24px)]">
-        {renderScreen()}
-      </div>
+      {isResults ? (
+        renderScreen()
+      ) : (
+        <div className="px-5 pb-[calc(64px+env(safe-area-inset-bottom,0px)+24px)]">
+          {renderScreen()}
+        </div>
+      )}
 
-      {/* FAB */}
-      <ScanFAB onClick={() => setScanOpen(true)} />
+      {/* FAB — hidden on results page */}
+      {!isResults && <ScanFAB onClick={() => setScanOpen(true)} />}
 
-      {/* Bottom Nav */}
-      <BottomNav currentScreen={state.currentScreen} onNavigate={setScreen} />
+      {/* Bottom Nav — hidden on results page */}
+      {!isResults && <BottomNav currentScreen={state.currentScreen} onNavigate={setScreen} />}
 
       {/* Scan Sheet */}
       <ScanSheet
         open={scanOpen}
         onClose={() => setScanOpen(false)}
         scanner={scanner}
+        onScanComplete={handleScanComplete}
       />
 
       {/* Toast notification */}

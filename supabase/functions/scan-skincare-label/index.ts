@@ -13,22 +13,20 @@ const corsHeaders = {
 
 function buildPrompt(skinProfile: Record<string, unknown>): string {
   const profileStr = JSON.stringify(skinProfile);
-  return `Analyze this skincare/cosmetic product label image. User skin profile: ${profileStr}
+  return `Analyze this skincare product label. Skin profile: ${profileStr}
 
-Return JSON:
-{"productName":"string","brand":"string|null","safetyScore":number,"compatibilityScore":number,"compatibilityConfidence":"full"|"partial"|"generic","verdict":"string","applicationInstructions":{"timeOfDay":"AM"|"PM"|"both","routineStep":"string","routineCategory":"cleanser"|"toner"|"serum"|"moisturizer"|"sunscreen"|"treatment"|"mask"|"exfoliant"|"eye"|"other","amount":"string","waitTime":"string|null","tips":["string"]},"ingredients":{"heroActives":[{"name":"string","purpose":"string","safety":number,"compatibility":number,"detail":"string","dose":"string|null","flagReason":"string|null"}],"supporting":[],"baseFiller":[],"watchOut":[]},"unknownIngredients":[{"name":"string","rawText":"string"}],"detectedType":"skincare"|"cosmetic"|"unknown"}
+Return JSON (no markdown):
+{"productName":"string","brand":"string|null","safetyScore":1-10,"compatibilityScore":0-100,"compatibilityConfidence":"full"|"partial"|"generic","verdict":"1-2 sentence summary","applicationInstructions":{"timeOfDay":"AM"|"PM"|"both","routineStep":"string","routineCategory":"cleanser"|"toner"|"serum"|"moisturizer"|"sunscreen"|"treatment"|"mask"|"exfoliant"|"eye"|"other","amount":"string","waitTime":"string|null","tips":["max 2 tips"]},"ingredients":{"heroActives":[{"name":"string","purpose":"2-3 words","safety":"good"|"moderate"|"bad","compatibility":"beneficial"|"neutral"|"caution"|"avoid","detail":"1 sentence max","dose":null,"flagReason":null}],"supporting":[],"baseFiller":[],"watchOut":[]},"unknownIngredients":[],"detectedType":"skincare"|"cosmetic"|"unknown"}
 
-Rules:
-- safetyScore: 1-10 EWG-style (1=safest, 10=most hazardous). Score each ingredient, take weighted average biased toward worst.
-- compatibilityScore: 0-100 personalized to skin profile. Factor skin type, sensitivity, concerns, allergies. Start 70, adjust per ingredient interaction.
-- compatibilityConfidence: "full" if profile has type+concerns+sensitivity, "partial" if incomplete, "generic" if no profile.
-- Categorize every ingredient into exactly one of: heroActives (key actives), supporting (beneficial but secondary), baseFiller (base/texture/preservative), watchOut (irritants/allergens/flagged for this profile).
-- safety per ingredient: 1-10 EWG scale. compatibility per ingredient: 0-100 for this user's skin.
-- flagReason: why it's in watchOut (e.g. "irritant for sensitive skin", "contains allergen: fragrance"). null for other categories unless notable.
-- unknownIngredients: ingredients you cannot confidently identify from the label. Never guess — list them here.
-- applicationInstructions: practical usage guidance based on product type and ingredients.
-
-JSON only, no markdown.`;
+Keep it concise:
+- safetyScore: 1=safest, 10=worst. Weighted average biased toward worst ingredients.
+- compatibilityScore: 0-100 personalized. "full" if profile has type+concerns+sensitivity.
+- Limit: max 5 heroActives, 5 supporting, 8 baseFiller, all watchOut items. Skip trivial base ingredients like water.
+- purpose: 2-3 words only (e.g. "hydration", "UV protection", "exfoliant")
+- detail: 1 short sentence max
+- flagReason: only for watchOut items
+- verdict: 1-2 sentences, direct
+- tips: max 2`;
 }
 
 // ── Helper: Convert image File to base64 ──
@@ -172,7 +170,7 @@ serve(async (req: Request) => {
         ],
         generationConfig: {
           temperature: 0,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 2048,
           responseMimeType: "application/json",
           thinkingConfig: { thinkingBudget: 0 },
         },
@@ -213,13 +211,23 @@ serve(async (req: Request) => {
     }
 
     // Validate and normalize the response
+    const normSafety = (val: unknown): string => {
+      if (val === "good" || val === "moderate" || val === "bad") return val;
+      if (typeof val === "number") return val <= 3 ? "good" : val <= 6 ? "moderate" : "bad";
+      return "moderate";
+    };
+    const normCompat = (val: unknown): string => {
+      if (["beneficial", "neutral", "caution", "avoid"].includes(val as string)) return val as string;
+      if (typeof val === "number") return val >= 70 ? "beneficial" : val >= 40 ? "neutral" : "caution";
+      return "neutral";
+    };
     const normalizeIngredientList = (list: unknown) =>
       Array.isArray(list)
         ? list.map((ing: Record<string, unknown>) => ({
             name: ing.name || "Unknown",
             purpose: ing.purpose || "",
-            safety: typeof ing.safety === "number" ? Math.max(1, Math.min(10, ing.safety)) : 5,
-            compatibility: typeof ing.compatibility === "number" ? Math.max(0, Math.min(100, ing.compatibility)) : 50,
+            safety: normSafety(ing.safety),
+            compatibility: normCompat(ing.compatibility),
             detail: ing.detail || "",
             dose: ing.dose || null,
             flagReason: ing.flagReason || null,

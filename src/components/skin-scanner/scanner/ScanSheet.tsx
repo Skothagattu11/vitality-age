@@ -1,193 +1,20 @@
 import { useState } from 'react';
 import type { useSkinScanner } from '@/hooks/useSkinScanner';
-import type { SkinScanResult, RoutineProduct } from '@/types/skinScanner';
+import type { SkinScanResult } from '@/types/skinScanner';
 import { scanSkinLabel } from '@/services/skinScanService';
 import { ImageUpload } from '@/components/supplement-stacker/scanner/ImageUpload';
 
-type ScanState = 'upload' | 'analyzing' | 'results' | 'error';
+type ScanState = 'upload' | 'analyzing' | 'error';
 
 interface ScanSheetProps {
   open: boolean;
   onClose: () => void;
   scanner: ReturnType<typeof useSkinScanner>;
+  onScanComplete: (result: SkinScanResult) => void;
 }
 
-function scoreColor(score: number, max: number): string {
-  const pct = score / max;
-  if (pct >= 0.7) return 'hsl(var(--ss-good))';
-  if (pct >= 0.4) return 'hsl(var(--ss-warn))';
-  return 'hsl(var(--ss-danger))';
-}
-
-function SkinScanResults({
-  result,
-  onAddToRoutine,
-  onScanAnother,
-}: {
-  result: SkinScanResult;
-  onAddToRoutine: (routine: 'am' | 'pm') => void;
-  onScanAnother: () => void;
-}) {
-  const totalIngredients =
-    result.ingredients.heroActives.length +
-    result.ingredients.supporting.length +
-    result.ingredients.baseFiller.length +
-    result.ingredients.watchOut.length;
-
-  const watchOutCount = result.ingredients.watchOut.length;
-
-  return (
-    <div>
-      {/* Product header */}
-      <div className="mb-4">
-        <h3 className="ss-heading text-base">{result.productName}</h3>
-        {result.brand && (
-          <p className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-            {result.brand}
-          </p>
-        )}
-      </div>
-
-      {/* Dual score display */}
-      <div className="flex gap-3 mb-4">
-        <div
-          className="flex-1 rounded-xl p-3 text-center"
-          style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border))' }}
-        >
-          <p className="text-[10px] font-medium mb-1" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-            Safety
-          </p>
-          <p className="ss-font-mono text-2xl font-bold" style={{ color: scoreColor(result.safetyScore, 10) }}>
-            {result.safetyScore}
-          </p>
-          <p className="text-[10px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>/10</p>
-        </div>
-        <div
-          className="flex-1 rounded-xl p-3 text-center"
-          style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border))' }}
-        >
-          <p className="text-[10px] font-medium mb-1" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-            Compatibility
-          </p>
-          <p className="ss-font-mono text-2xl font-bold" style={{ color: scoreColor(result.compatibilityScore, 100) }}>
-            {result.compatibilityScore}
-          </p>
-          <p className="text-[10px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>/100</p>
-        </div>
-      </div>
-
-      {/* Confidence badge */}
-      <div className="flex justify-center mb-3">
-        <span
-          className="text-[10px] font-medium px-2.5 py-1 rounded-full"
-          style={{
-            background: result.compatibilityConfidence === 'full'
-              ? 'hsl(var(--ss-good) / 0.12)'
-              : result.compatibilityConfidence === 'partial'
-                ? 'hsl(var(--ss-warn) / 0.12)'
-                : 'hsl(var(--ss-text-muted) / 0.12)',
-            color: result.compatibilityConfidence === 'full'
-              ? 'hsl(var(--ss-good))'
-              : result.compatibilityConfidence === 'partial'
-                ? 'hsl(var(--ss-warn))'
-                : 'hsl(var(--ss-text-muted))',
-          }}
-        >
-          {result.compatibilityConfidence === 'full' ? 'Full profile match' :
-           result.compatibilityConfidence === 'partial' ? 'Partial profile match' :
-           'Generic analysis'}
-        </span>
-      </div>
-
-      {/* Verdict */}
-      <div
-        className="rounded-xl p-3 mb-4 text-[12px] leading-relaxed"
-        style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border))', color: 'hsl(var(--ss-text))' }}
-      >
-        {result.verdict}
-      </div>
-
-      {/* Ingredient summary */}
-      <div
-        className="flex items-center justify-between rounded-xl px-3 py-2.5 mb-4 text-[11px]"
-        style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border))' }}
-      >
-        <span style={{ color: 'hsl(var(--ss-text-secondary))' }}>
-          {totalIngredients} ingredient{totalIngredients !== 1 ? 's' : ''} analyzed
-        </span>
-        {watchOutCount > 0 && (
-          <span style={{ color: 'hsl(var(--ss-danger))' }}>
-            {watchOutCount} to watch
-          </span>
-        )}
-      </div>
-
-      {/* Application info */}
-      <div
-        className="rounded-xl p-3 mb-4 text-[11px]"
-        style={{ background: 'hsl(var(--ss-surface))', border: '1px solid hsl(var(--ss-border))' }}
-      >
-        <div className="flex items-center gap-2 mb-1.5">
-          <svg className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'hsl(var(--ss-accent))' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <span style={{ color: 'hsl(var(--ss-text))' }}>
-            {result.applicationInstructions.timeOfDay === 'AM' ? 'Morning' :
-             result.applicationInstructions.timeOfDay === 'PM' ? 'Evening' : 'AM & PM'}
-            {' \u2022 '}
-            {result.applicationInstructions.routineStep}
-          </span>
-        </div>
-        <p style={{ color: 'hsl(var(--ss-text-muted))' }}>
-          Amount: {result.applicationInstructions.amount}
-          {result.applicationInstructions.waitTime && ` \u2022 Wait: ${result.applicationInstructions.waitTime}`}
-        </p>
-      </div>
-
-      {/* Add to routine buttons */}
-      <div className="flex gap-2 mb-2">
-        {(result.applicationInstructions.timeOfDay === 'AM' || result.applicationInstructions.timeOfDay === 'both') && (
-          <button
-            type="button"
-            onClick={() => onAddToRoutine('am')}
-            className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.97]"
-            style={{ background: 'hsl(var(--ss-accent))', color: '#fff', boxShadow: '0 2px 10px hsl(var(--ss-accent) / 0.35)' }}
-          >
-            Add to AM Routine
-          </button>
-        )}
-        {(result.applicationInstructions.timeOfDay === 'PM' || result.applicationInstructions.timeOfDay === 'both') && (
-          <button
-            type="button"
-            onClick={() => onAddToRoutine('pm')}
-            className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.97]"
-            style={{
-              background: result.applicationInstructions.timeOfDay === 'both' ? 'hsl(var(--ss-surface-raised))' : 'hsl(var(--ss-accent))',
-              color: result.applicationInstructions.timeOfDay === 'both' ? 'hsl(var(--ss-text))' : '#fff',
-              border: '1px solid hsl(var(--ss-border))',
-            }}
-          >
-            Add to PM Routine
-          </button>
-        )}
-      </div>
-
-      {/* Scan another */}
-      <button
-        type="button"
-        onClick={onScanAnother}
-        className="w-full py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-[0.97] mt-2"
-        style={{ background: 'hsl(var(--ss-surface-raised))', color: 'hsl(var(--ss-text-secondary))', border: '1px solid hsl(var(--ss-border))' }}
-      >
-        Scan Another
-      </button>
-    </div>
-  );
-}
-
-export function ScanSheet({ open, onClose, scanner }: ScanSheetProps) {
+export function ScanSheet({ open, onClose, scanner, onScanComplete }: ScanSheetProps) {
   const [scanState, setScanState] = useState<ScanState>('upload');
-  const [result, setResult] = useState<SkinScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!open) return null;
@@ -198,9 +25,9 @@ export function ScanSheet({ open, onClose, scanner }: ScanSheetProps) {
 
     try {
       const data = await scanSkinLabel(file, scanner.state.skinProfile);
-      setResult(data);
       scanner.addScanResult(data);
-      setScanState('results');
+      resetState();
+      onScanComplete(data);
     } catch (err) {
       console.error('Skin scan failed:', err);
       setErrorMsg(err instanceof Error ? err.message : 'Failed to analyze label. Please try again.');
@@ -208,23 +35,8 @@ export function ScanSheet({ open, onClose, scanner }: ScanSheetProps) {
     }
   };
 
-  const handleAddToRoutine = (routine: 'am' | 'pm') => {
-    if (!result) return;
-    const product: RoutineProduct = {
-      id: `routine-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      scanResult: result,
-      routineCategory: result.applicationInstructions.routineCategory,
-      sortOrder: routine === 'am' ? scanner.state.amRoutine.length : scanner.state.pmRoutine.length,
-      addedAt: Date.now(),
-    };
-    scanner.addToRoutine(product, routine);
-    onClose();
-    resetState();
-  };
-
   const resetState = () => {
     setScanState('upload');
-    setResult(null);
     setErrorMsg(null);
   };
 
@@ -271,7 +83,6 @@ export function ScanSheet({ open, onClose, scanner }: ScanSheetProps) {
           {/* Analyzing */}
           {scanState === 'analyzing' && (
             <div className="flex flex-col items-center py-10 text-center">
-              {/* Pulsing scan icon */}
               <div className="relative w-16 h-16 mb-4">
                 <div className="absolute inset-0 rounded-full animate-ping opacity-20"
                      style={{ background: 'hsl(var(--ss-accent))' }} />
@@ -310,15 +121,6 @@ export function ScanSheet({ open, onClose, scanner }: ScanSheetProps) {
                 Try Again
               </button>
             </div>
-          )}
-
-          {/* Results */}
-          {scanState === 'results' && result && (
-            <SkinScanResults
-              result={result}
-              onAddToRoutine={handleAddToRoutine}
-              onScanAnother={resetState}
-            />
           )}
         </div>
       </div>
