@@ -89,10 +89,14 @@ export function useSkinScanner() {
   // On mount: try loading from Supabase (may have newer data from another device)
   useEffect(() => {
     loadSkinScannerState().then((remote) => {
-      if (remote && remote.skinScanner.skinProfile.onboardingComplete) {
+      if (remote && remote.skinProfile.onboardingComplete) {
         setState(prev => ({
           ...prev,
-          ...remote.skinScanner,
+          skinProfile: remote.skinProfile,
+          scanHistory: remote.scanHistory,
+          amRoutine: remote.amRoutine,
+          pmRoutine: remote.pmRoutine,
+          researchCache: remote.researchCache,
           hasAccount: prev.hasAccount,
           currentScreen: prev.currentScreen,
         }));
