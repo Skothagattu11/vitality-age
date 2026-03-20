@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { SkinScanResult, ChatMessage, ChatRateLimit } from '@/types/skinScanner';
+import type { ChatMessage, ChatRateLimit } from '@/types/skinScanner';
 
 // ── Lightweight markdown → JSX (bold, bullets, line breaks) ──
 function renderMarkdown(text: string) {
@@ -56,18 +56,8 @@ function renderInline(text: string): React.ReactNode {
   return parts.length === 1 ? parts[0] : <>{parts}</>;
 }
 
-// ── Quick suggestion pills ──
-function getQuickSuggestions(result: SkinScanResult): string[] {
-  const suggestions: string[] = [];
-  if (result.ingredients.watchOut.length > 0) {
-    const first = result.ingredients.watchOut[0].name;
-    suggestions.push(`Why is ${first} flagged?`);
-  }
-  suggestions.push('Any better alternatives?');
-  if (result.ingredients.heroActives.length > 0)
-    suggestions.push('Is this safe for daily use?');
-  return suggestions.slice(0, 3);
-}
+// ── Default quick suggestion pills (skincare fallback) ──
+const DEFAULT_SUGGESTIONS = ['Any better alternatives?', 'Is this safe for daily use?'];
 
 // ── Single Message Bubble ──
 function MessageBubble({ msg }: { msg: ChatMessage }) {
@@ -142,7 +132,10 @@ function TypingIndicator() {
 // ── Main ChatPanel (FAB + floating window) ──
 
 interface ChatPanelProps {
-  result: SkinScanResult;
+  productName: string;
+  assistantLabel?: string;
+  suggestions?: string[];
+  emptyStateHint?: string;
   messages: ChatMessage[];
   rateLimit: ChatRateLimit | null;
   isAuthenticated: boolean;
@@ -152,7 +145,10 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({
-  result,
+  productName,
+  assistantLabel = 'Ingredient Assistant',
+  suggestions: suggestionsProp,
+  emptyStateHint = 'Why an ingredient was flagged, safer alternatives, how to layer with other products...',
   messages,
   rateLimit,
   isAuthenticated,
@@ -190,7 +186,7 @@ export function ChatPanel({
     setInput('');
   }, [input, isTyping, isLimited, onSendMessage]);
 
-  const suggestions = getQuickSuggestions(result);
+  const suggestions = suggestionsProp ?? DEFAULT_SUGGESTIONS;
 
   return (
     <>
@@ -240,10 +236,10 @@ export function ChatPanel({
             </div>
             <div className="flex-1 min-w-0">
               <span className="text-[13px] font-semibold block truncate" style={{ color: 'hsl(var(--ss-text))' }}>
-                {result.productName}
+                {productName}
               </span>
               <span className="text-[10px]" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-                Ingredient Assistant
+                {assistantLabel}
               </span>
             </div>
             <span
@@ -289,7 +285,7 @@ export function ChatPanel({
                   Ask about this product
                 </p>
                 <p className="text-[10.5px] mt-1 px-4 leading-relaxed" style={{ color: 'hsl(var(--ss-text-muted))' }}>
-                  Why an ingredient was flagged, safer alternatives, how to layer with other products...
+                  {emptyStateHint}
                 </p>
               </div>
             )}

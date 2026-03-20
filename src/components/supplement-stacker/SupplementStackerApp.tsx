@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { useSupplementStacker } from '@/hooks/useSupplementStacker';
 import { useNutritionCart } from '@/hooks/useNutritionCart';
@@ -10,9 +10,11 @@ import { ThemeToggle } from './ThemeToggle';
 import { HomeScreen } from './screens/HomeScreen';
 import { StackScreen } from './screens/StackScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { SupplementScanResultsScreen } from './screens/ScanResultsScreen';
 import { ScanSheet } from './scanner/ScanSheet';
+import type { ScanMode } from './scanner/ScanSheet';
 import { CartDrawer } from './cart/CartDrawer';
-import type { CartItem } from '@/types/supplementStacker';
+import type { CartItem, ScanResult, NutrientEntry } from '@/types/supplementStacker';
 
 interface SupplementStackerAppProps {
   stacker: ReturnType<typeof useSupplementStacker>;
@@ -26,6 +28,12 @@ export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: Supplem
   const [scanOpen, setScanOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [activeResult, setActiveResult] = useState<{
+    result: ScanResult;
+    mode: ScanMode;
+    nutrients?: NutrientEntry[];
+    macros?: { calories: number; protein: number; carbs: number; fat: number; fiber: number };
+  } | null>(null);
 
   const cart = useNutritionCart();
   const nutritionPlans = useNutritionPlans();
@@ -78,6 +86,15 @@ export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: Supplem
     setToast(`${item.productName} added to cart`);
   };
 
+  const handleScanComplete = useCallback((
+    result: ScanResult,
+    mode: ScanMode,
+    nutrients?: NutrientEntry[],
+    macros?: { calories: number; protein: number; carbs: number; fat: number; fiber: number },
+  ) => {
+    setActiveResult({ result, mode, nutrients, macros });
+  }, []);
+
   const renderScreen = () => {
     switch (state.currentScreen) {
       case 'home':
@@ -90,6 +107,27 @@ export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: Supplem
         return <HomeScreen stacker={stacker} nutritionPlans={nutritionPlans} />;
     }
   };
+
+  // ── Full-page scan results view ──
+  if (activeResult) {
+    return (
+      <SupplementScanResultsScreen
+        result={activeResult.result}
+        scanMode={activeResult.mode}
+        macros={activeResult.macros}
+        nutrients={activeResult.nutrients}
+        isAuthenticated={state.hasAccount}
+        onBack={() => setActiveResult(null)}
+        onAddToStack={(findings) => {
+          handleAddFromScan(findings);
+          setToast('Added to stack');
+        }}
+        onAddToCart={(item) => {
+          handleAddToCart(item);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="relative min-h-dvh">
@@ -177,6 +215,7 @@ export function SupplementStackerApp({ stacker, isDark, onToggleTheme }: Supplem
         onAddScanResult={addScanResult}
         onAddToStack={handleAddFromScan}
         onAddToCart={handleAddToCart}
+        onScanComplete={handleScanComplete}
       />
 
       {/* Cart Drawer */}

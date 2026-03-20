@@ -19,6 +19,7 @@ interface ScanSheetProps {
   onAddScanResult: (result: ScanResult) => void;
   onAddToStack: (findings: ScanResult['findings']) => void;
   onAddToCart: (item: CartItem) => void;
+  onScanComplete?: (result: ScanResult, mode: ScanMode, nutrients?: NutrientEntry[], macros?: { calories: number; protein: number; carbs: number; fat: number; fiber: number }) => void;
 }
 
 type ScanState = 'upload' | 'analyzing' | 'results' | 'error';
@@ -44,7 +45,7 @@ function buildCartItem(
 }
 
 
-export function ScanSheet({ open, onClose, onAddScanResult, onAddToStack, onAddToCart }: ScanSheetProps) {
+export function ScanSheet({ open, onClose, onAddScanResult, onAddToStack, onAddToCart, onScanComplete }: ScanSheetProps) {
   const [scanState, setScanState] = useState<ScanState>('upload');
   const [scanMode, setScanMode] = useState<ScanMode>('supplement');
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -64,10 +65,11 @@ export function ScanSheet({ open, onClose, onAddScanResult, onAddToStack, onAddT
     try {
       const data = await scanLabel(file, scanMode);
       // Auto-switch mode based on what AI actually detected
+      let effectiveMode = scanMode;
       if (data._detectedType) {
-        const detectedMode = data._detectedType === 'supplement' ? 'supplement' : 'food';
-        if (detectedMode !== scanMode) {
-          setScanMode(detectedMode);
+        effectiveMode = data._detectedType === 'supplement' ? 'supplement' : 'food';
+        if (effectiveMode !== scanMode) {
+          setScanMode(effectiveMode);
         }
       }
       // Store extended fields before stripping them
@@ -84,6 +86,14 @@ export function ScanSheet({ open, onClose, onAddScanResult, onAddToStack, onAddT
       };
       setResult(scanResult);
       onAddScanResult(scanResult);
+
+      // If full-page callback is provided, navigate to full-page results
+      if (onScanComplete) {
+        onScanComplete(scanResult, effectiveMode, data._nutrients, data._macros);
+        onClose();
+        resetState();
+        return;
+      }
       setScanState('results');
     } catch (err) {
       console.error('Scan failed:', err);

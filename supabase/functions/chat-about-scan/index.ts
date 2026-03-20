@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -19,14 +19,33 @@ const AUTH_LIMIT = 20;         // per hour
 const AUTH_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 // ── System prompt builder ──
-function buildSystemPrompt(scanResult: Record<string, unknown>, skinProfile: Record<string, unknown>): string {
+function buildSystemPrompt(
+  scanResult: Record<string, unknown>,
+  profileContext: Record<string, unknown>,
+  toolContext: string,
+): string {
+  if (toolContext === "supplement") {
+    return `You are a supplement and nutrition expert embedded in a product scanner app. The user just scanned a supplement or food label and is asking follow-up questions.
+
+SCANNED PRODUCT:
+${JSON.stringify(scanResult, null, 2)}
+
+RULES:
+- Only answer questions about this product's ingredients, supplement science, dosing, bioavailability, and nutrition.
+- If the user asks anything unrelated to supplements, nutrition, or this product, respond with: "I can only help with questions about your scanned products and supplement ingredients. Try asking about a specific ingredient, dosing, or alternative product."
+- Keep answers concise: 2-4 sentences max. Use bullet points for lists.
+- Never provide medical advice. For medical concerns say "consult a healthcare provider."
+- Reference specific findings from the scan when relevant (quality forms, bioavailability, fillers, doses).
+- Be direct and helpful, not verbose.`;
+  }
+
   return `You are a skincare ingredient expert embedded in a product scanner app. The user just scanned a product and is asking follow-up questions.
 
 SCANNED PRODUCT:
 ${JSON.stringify(scanResult, null, 2)}
 
 USER'S SKIN PROFILE:
-${JSON.stringify(skinProfile, null, 2)}
+${JSON.stringify(profileContext, null, 2)}
 
 RULES:
 - Only answer questions about this product's ingredients, skincare science, routines, and related products.
@@ -159,14 +178,17 @@ serve(async (req: Request) => {
       history,
       sessionId,
       userId,
+      toolContext: rawToolContext,
     } = body as {
       message: string;
       scanResult: Record<string, unknown>;
-      skinProfile: Record<string, unknown>;
+      skinProfile?: Record<string, unknown>;
       history: Array<{ role: string; content: string }>;
       sessionId: string;
       userId?: string;
+      toolContext?: string;
     };
+    const toolContext = rawToolContext || "skincare";
 
     // Validate input
     if (!message || typeof message !== "string" || message.trim().length === 0) {
@@ -210,7 +232,7 @@ serve(async (req: Request) => {
     }
 
     // ── Build Gemini conversation ──
-    const systemPrompt = buildSystemPrompt(scanResult, skinProfile || {});
+    const systemPrompt = buildSystemPrompt(scanResult, skinProfile || {}, toolContext);
 
     // Build contents array: system instruction + history + new message
     const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];

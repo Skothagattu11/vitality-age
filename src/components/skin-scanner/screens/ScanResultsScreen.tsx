@@ -654,7 +654,14 @@ export function ScanResultsScreen({ scanner, result, onBack }: ScanResultsScreen
 
       {/* ── Chat FAB + Floating Window (fixed, outside scroll) ── */}
       <ChatPanel
-        result={result}
+        productName={result.productName}
+        suggestions={(() => {
+          const s: string[] = [];
+          if (result.ingredients.watchOut.length > 0) s.push(`Why is ${result.ingredients.watchOut[0].name} flagged?`);
+          s.push('Any better alternatives?');
+          if (result.ingredients.heroActives.length > 0) s.push('Is this safe for daily use?');
+          return s.slice(0, 3);
+        })()}
         messages={chatMessages}
         rateLimit={chatRateLimit}
         isAuthenticated={scanner.state.hasAccount}
