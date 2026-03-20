@@ -1,6 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { track } from '@vercel/analytics';
 
 // Lazy load NotifyModal — only needed when user clicks "Notify Me"
@@ -242,33 +241,6 @@ const assessments: AssessmentItem[] = [
   },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
-  },
-};
-
-const headerVariants = {
-  hidden: { opacity: 0, y: -16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
-  },
-};
 
 function StatusBadge({ status }: { status: AssessmentItem['status'] }) {
   if (status === 'active') {
@@ -327,7 +299,7 @@ function AssessmentCard({ assessment, isSubscribed, onNotifyClick }: {
   // Available cards are clickable buttons
   if (isAvailable) {
     return (
-      <motion.div variants={cardVariants} className="h-full">
+      <div className="h-full hub-card-enter">
         <button
           type="button"
           onClick={handleClick}
@@ -378,13 +350,13 @@ function AssessmentCard({ assessment, isSubscribed, onNotifyClick }: {
             </div>
           </div>
         </button>
-      </motion.div>
+      </div>
     );
   }
 
   // Coming-soon cards are divs with a "Notify Me" button
   return (
-    <motion.div variants={cardVariants} className="h-full">
+    <div className="h-full hub-card-enter">
       <div className="relative w-full h-full text-left rounded-2xl border p-5 sm:p-6 bg-muted/40 border-border/40 opacity-75">
         <div className="flex flex-col h-full">
           <div className="flex items-start justify-between mb-4">
@@ -432,7 +404,7 @@ function AssessmentCard({ assessment, isSubscribed, onNotifyClick }: {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -485,12 +457,7 @@ export function HubPage() {
 
       <main className="flex-1 flex flex-col items-center px-4 sm:px-6 py-10 sm:py-16 relative z-10">
         {/* Header */}
-        <motion.header
-          className="text-center max-w-2xl mx-auto mb-10 sm:mb-14"
-          variants={headerVariants}
-          initial="hidden"
-          animate="visible"
-        >
+        <header className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 hub-header-enter">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary mb-5 animate-float" aria-hidden="true">
             <SparklesIcon />
           </div>
@@ -505,15 +472,10 @@ export function HubPage() {
               {activeCount} of {totalCount} assessments available
             </span>
           </p>
-        </motion.header>
+        </header>
 
         {/* Assessment grid — equal height cards via grid stretch */}
-        <motion.div
-          className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 auto-rows-fr"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 auto-rows-fr">
           {assessments.map((assessment) => (
             <AssessmentCard
               key={assessment.id}
@@ -522,17 +484,12 @@ export function HubPage() {
               onNotifyClick={handleNotifyClick}
             />
           ))}
-        </motion.div>
+        </div>
 
         {/* Bottom tagline */}
-        <motion.p
-          className="mt-10 sm:mt-14 text-sm text-muted-foreground/60 text-center max-w-md"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.8 }}
-        >
+        <p className="mt-10 sm:mt-14 text-sm text-muted-foreground/60 text-center max-w-md hub-tagline-enter">
           All assessments are private — your data never leaves your device.
-        </motion.p>
+        </p>
       </main>
 
       {/* Footer */}

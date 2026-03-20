@@ -286,6 +286,41 @@
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
+
+  /* Hub page entrance animations — replaces framer-motion */
+  .hub-header-enter {
+    animation: hubFadeDown 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+  .hub-card-enter {
+    animation: hubFadeUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+  .hub-card-enter:nth-child(1) { animation-delay: 0.2s; }
+  .hub-card-enter:nth-child(2) { animation-delay: 0.28s; }
+  .hub-card-enter:nth-child(3) { animation-delay: 0.36s; }
+  .hub-card-enter:nth-child(4) { animation-delay: 0.44s; }
+  .hub-card-enter:nth-child(5) { animation-delay: 0.52s; }
+  .hub-card-enter:nth-child(6) { animation-delay: 0.6s; }
+  .hub-card-enter:nth-child(7) { animation-delay: 0.68s; }
+  .hub-card-enter:nth-child(8) { animation-delay: 0.76s; }
+  .hub-card-enter:nth-child(9) { animation-delay: 0.84s; }
+  .hub-card-enter:nth-child(10) { animation-delay: 0.92s; }
+  .hub-tagline-enter {
+    animation: hubFadeIn 0.8s ease both;
+    animation-delay: 1s;
+  }
+
+  @keyframes hubFadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes hubFadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes hubFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
 @layer utilities {
