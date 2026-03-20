@@ -2,7 +2,7 @@
    Sage Green + Muted Violet palette
    Typography: Outfit (headings), IBM Plex Mono (data/numbers) */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+/* Fonts loaded via <link> in index.html to avoid render-blocking @import */
 
 /* ─── Light Theme (default) ─── */
 .supplement-stacker {
