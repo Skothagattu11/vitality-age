@@ -107,6 +107,33 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_rate_limits: {
+        Row: {
+          created_at: string
+          id: string
+          identifier: string
+          identifier_type: string
+          message_count: number
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          identifier: string
+          identifier_type: string
+          message_count?: number
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          identifier?: string
+          identifier_type?: string
+          message_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       skin_scanner_sessions: {
         Row: {
           am_routine: Json
