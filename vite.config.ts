@@ -47,9 +47,16 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('framer-motion')) {
             return 'framer';
           }
-          // Let Vite handle recharts/d3 chunking naturally to avoid circular deps
+          // Recharts + D3 — only used in BrainAgeResults (lazy loaded)
+          if (id.includes('recharts') || id.includes('d3-')) {
+            return 'charts';
+          }
           if (id.includes('html2canvas')) {
             return 'canvas';
+          }
+          // Supabase — only used in lazy-loaded tool routes
+          if (id.includes('@supabase')) {
+            return 'supabase';
           }
           // Radix UI - used throughout but can be deferred
           if (id.includes('@radix-ui')) {
