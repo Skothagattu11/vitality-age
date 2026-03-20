@@ -48,15 +48,7 @@ const initialState: SupplementStackerState = {
 };
 
 function loadState(): SupplementStackerState {
-  if (typeof window === 'undefined') return initialState;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    try {
-      return { ...initialState, ...JSON.parse(stored) };
-    } catch {
-      return initialState;
-    }
-  }
+  // Always start fresh — state is only restored after we check auth status
   return initialState;
 }
 
@@ -70,15 +62,17 @@ export function useSupplementStacker() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Persist to localStorage on every change (skip during logout)
+  // Persist to localStorage on every change — only for authenticated users
   useEffect(() => {
     if (isLoggingOut) return;
+    if (!state.hasAccount) return; // Guests get no persistence
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  // Debounced save to Supabase (500ms after last change)
+  // Debounced save to Supabase (500ms after last change) — only for authenticated users
   useEffect(() => {
     if (isLoggingOut) return;
+    if (!state.hasAccount) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       saveStackerState(state).catch(() => {
@@ -97,20 +91,37 @@ export function useSupplementStacker() {
     onRemoteLoad.current = cb;
   }, []);
 
-  // On mount: try loading from Supabase (may have newer data from another device)
+  // On mount: restore state for authenticated users, guests start fresh
   useEffect(() => {
-    loadStackerState().then((remote) => {
-      if (remote && remote.stacker.onboardingComplete) {
-        setState(prev => ({
-          ...prev,
-          ...remote.stacker,
-          hasAccount: prev.hasAccount,
-          currentScreen: prev.currentScreen,
-          currentOnboardingStep: prev.currentOnboardingStep,
-        }));
-        onRemoteLoad.current?.(remote);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        // Guest: wipe any stale localStorage and stay at initialState (onboarding)
+        localStorage.removeItem(STORAGE_KEY);
+        return;
       }
-    }).catch(() => {});
+
+      // Authenticated: try localStorage first (instant), then Supabase (may be newer)
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const parsed = { ...initialState, ...JSON.parse(stored), hasAccount: true };
+          setState(parsed);
+        } catch { /* fall through to remote load */ }
+      }
+
+      loadStackerState().then((remote) => {
+        if (remote && remote.stacker.onboardingComplete) {
+          setState(prev => ({
+            ...prev,
+            ...remote.stacker,
+            hasAccount: true,
+            currentScreen: prev.currentScreen,
+            currentOnboardingStep: prev.currentOnboardingStep,
+          }));
+          onRemoteLoad.current?.(remote);
+        }
+      }).catch(() => {});
+    });
   }, []);
 
   // Sync hasAccount with Supabase auth session + claim anonymous data on login
@@ -136,6 +147,13 @@ export function useSupplementStacker() {
       const isLoggedIn = !!session;
       setState(prev => ({ ...prev, hasAccount: isLoggedIn }));
       setUserProfile(isLoggedIn ? extractProfile(session) : null);
+
+      // On sign-out, clear everything — next visit starts fresh
+      if (event === 'SIGNED_OUT') {
+        localStorage.removeItem(STORAGE_KEY);
+        setState(initialState);
+        return;
+      }
 
       // On sign-in, claim the anonymous session and load any existing user data
       if (event === 'SIGNED_IN' && session) {
