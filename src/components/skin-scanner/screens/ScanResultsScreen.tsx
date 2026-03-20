@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { useSkinScanner } from '@/hooks/useSkinScanner';
-import type { SkinScanResult, IngredientEntry, RoutineProduct } from '@/types/skinScanner';
+import type { SkinScanResult, IngredientEntry, RoutineProduct, ChatMessage, ChatRateLimit } from '@/types/skinScanner';
+import { ChatPanel } from '@/components/skin-scanner/chat/ChatPanel';
+import { sendChatMessage, RateLimitError } from '@/services/chatService';
 
 // ── Score helpers ──
 
@@ -265,6 +267,67 @@ export function ScanResultsScreen({ scanner, result, onBack }: ScanResultsScreen
   const [showVerdict, setShowVerdict] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [addedRoutine, setAddedRoutine] = useState<'am' | 'pm' | null>(null);
+
+  // ── Chat state ──
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatRateLimit, setChatRateLimit] = useState<ChatRateLimit | null>(null);
+  const [chatTyping, setChatTyping] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+
+  // Reset chat when product changes
+  useEffect(() => {
+    setChatMessages([]);
+    setChatRateLimit(null);
+    setChatError(null);
+  }, [result.scannedAt]);
+
+  const handleChatSend = useCallback(async (message: string) => {
+    // Add user message immediately
+    const userMsg: ChatMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      role: 'user',
+      content: message,
+      timestamp: Date.now(),
+    };
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatError(null);
+    setChatTyping(true);
+
+    try {
+      const response = await sendChatMessage({
+        message,
+        scanResult: result,
+        skinProfile: scanner.state.skinProfile,
+        history: [...chatMessages, userMsg],
+      });
+
+      const assistantMsg: ChatMessage = {
+        id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        role: 'assistant',
+        content: response.reply,
+        timestamp: Date.now(),
+      };
+      setChatMessages(prev => [...prev, assistantMsg]);
+      setChatRateLimit({
+        remaining: response.remaining,
+        limit: response.limit,
+        resetsAt: response.resetsAt ? new Date(response.resetsAt).getTime() : null,
+      });
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        setChatRateLimit({
+          remaining: 0,
+          limit: err.limit,
+          resetsAt: err.resetsAt ? new Date(err.resetsAt).getTime() : null,
+        });
+        setChatError('Message limit reached.');
+      } else {
+        setChatError('Something went wrong. Try again.');
+      }
+    } finally {
+      setChatTyping(false);
+    }
+  }, [result, scanner.state.skinProfile, chatMessages]);
 
   const handleAddToRoutine = (routine: 'am' | 'pm') => {
     const product: RoutineProduct = {
@@ -586,7 +649,19 @@ export function ScanResultsScreen({ scanner, result, onBack }: ScanResultsScreen
             Scan Another Product
           </button>
         </div>
+
       </div>
+
+      {/* ── Chat FAB + Floating Window (fixed, outside scroll) ── */}
+      <ChatPanel
+        result={result}
+        messages={chatMessages}
+        rateLimit={chatRateLimit}
+        isAuthenticated={scanner.state.hasAccount}
+        isTyping={chatTyping}
+        errorMessage={chatError}
+        onSendMessage={handleChatSend}
+      />
 
       {/* ── Animations ── */}
       <style>{`

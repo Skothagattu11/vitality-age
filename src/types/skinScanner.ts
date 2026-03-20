@@ -83,6 +83,27 @@ export interface SkinProfile {
   onboardingComplete: boolean;
 }
 
+// ── Chat ──
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+}
+
+export interface ChatSession {
+  productName: string;
+  messages: ChatMessage[];
+  startedAt: number;
+}
+
+export interface ChatRateLimit {
+  remaining: number;
+  limit: number;
+  resetsAt: number | null; // null for guest (lifetime cap)
+}
+
 // ── App State ──
 
 export type SkinScannerScreen = 'home' | 'routine' | 'profile' | 'results';
