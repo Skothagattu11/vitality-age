@@ -47,16 +47,9 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('framer-motion')) {
             return 'framer';
           }
-          // Recharts + D3 — only used in BrainAgeResults (lazy loaded)
-          if (id.includes('recharts') || id.includes('d3-')) {
-            return 'charts';
-          }
+          // Recharts/D3 — let Vite handle naturally (manual split causes circular deps)
           if (id.includes('html2canvas')) {
             return 'canvas';
-          }
-          // Supabase — only used in lazy-loaded tool routes
-          if (id.includes('@supabase')) {
-            return 'supabase';
           }
           // Radix UI - used throughout but can be deferred
           if (id.includes('@radix-ui')) {
