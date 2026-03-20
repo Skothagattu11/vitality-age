@@ -1,6 +1,61 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { SkinScanResult, ChatMessage, ChatRateLimit } from '@/types/skinScanner';
 
+// ── Lightweight markdown → JSX (bold, bullets, line breaks) ──
+function renderMarkdown(text: string) {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Bullet line: * item or - item
+    if (/^[\*\-]\s+/.test(trimmed)) {
+      const content = trimmed.replace(/^[\*\-]\s+/, '');
+      elements.push(
+        <div key={i} className="flex items-start gap-1.5 mt-1">
+          <span className="mt-[7px] w-[4px] h-[4px] rounded-full flex-shrink-0" style={{ background: 'currentColor', opacity: 0.4 }} />
+          <span>{renderInline(content)}</span>
+        </div>
+      );
+    } else if (trimmed === '') {
+      // Empty line → spacer
+      if (i > 0 && i < lines.length - 1) {
+        elements.push(<div key={i} className="h-1.5" />);
+      }
+    } else {
+      // Normal paragraph
+      if (i > 0) elements.push(<div key={`br-${i}`} className="h-1" />);
+      elements.push(<span key={i}>{renderInline(trimmed)}</span>);
+    }
+  }
+
+  return <>{elements}</>;
+}
+
+// Inline: **bold** → <strong>
+function renderInline(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.+?)\*\*/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(<strong key={match.index} className="font-semibold">{match[1]}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length === 1 ? parts[0] : <>{parts}</>;
+}
+
 // ── Quick suggestion pills ──
 function getQuickSuggestions(result: SkinScanResult): string[] {
   const suggestions: string[] = [];
@@ -43,7 +98,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
           boxShadow: isUser ? '0 2px 8px hsl(var(--ss-accent2) / 0.3)' : 'var(--ss-shadow-sm)',
         }}
       >
-        {msg.content}
+        {isUser ? msg.content : renderMarkdown(msg.content)}
       </div>
     </div>
   );
